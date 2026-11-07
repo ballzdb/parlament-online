@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Профіль{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h1>Профіль</h1>
+    <p><strong>Електронна пошта:</strong> {{ user.email }}</p>
+    <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
+    <p><strong>Ім’я:</strong> {{ user.display_name }}</p>
+    <p><strong>Клас:</strong> {{ user.grade|default:'—' }}</p>
+  </div>
+{% endblock %}

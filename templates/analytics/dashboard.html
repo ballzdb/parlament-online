@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналітика{% endblock %}
+
+{% block content %}
+  <h1>Аналітика</h1>
+  <div class="grid">
+    <div class="card">
+      <h3>Події</h3>
+      {% for event in events %}
+        <p>{{ event.timestamp|date:'d.m.Y H:i' }} · {{ event.action }}</p>
+      {% empty %}
+        <p>Подій ще немає.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

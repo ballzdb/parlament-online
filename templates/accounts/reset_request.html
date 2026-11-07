@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Скидання пароля{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h1>Скидання пароля</h1>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      <label for="email">Електронна пошта</label>
+      <input type="email" name="email" required>
+      <button type="submit" class="btn">Надіслати посилання</button>
+    </form>
+  </div>
+{% endblock %}

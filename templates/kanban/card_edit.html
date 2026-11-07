@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Редагування картки{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h1>Редагування картки</h1>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Зберегти</button>
+    </form>
+  </div>
+{% endblock %}

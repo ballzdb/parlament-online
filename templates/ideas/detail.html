@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ idea.title }}{% endblock %}
+
+{% block content %}
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h1>{{ idea.title }}</h1>
+    <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+    <p>{{ idea.body }}</p>
+    <div class="meta">Комісія: {{ idea.commission|default:'—' }} · Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
+    {% if idea.completion_report %}
+      <h3>Публічний звіт</h3>
+      <p>{{ idea.completion_report }}</p>
+    {% endif %}
+    {% if not has_voted %}
+      <form method="post" style="margin-top:1rem;">
+        {% csrf_token %}
+        <input type="hidden" name="vote" value="1">
+        <button type="submit" class="btn">Підтримати</button>
+      </form>
+    {% else %}
+      <p>Ви вже підтримали цю ідею.</p>
+    {% endif %}
+  </div>
+
+  {% if status_form %}
+    <div class="card">
+      <h2>Змінити статус</h2>
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        {% for field in status_form %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn">Зберегти</button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

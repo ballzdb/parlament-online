@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Черга модерації{% endblock %}
+
+{% block content %}
+  <h1>Черга модерації</h1>
+  {% for entry in entries %}
+    <div class="card" style="margin-bottom: 1rem;">
+      <div class="meta">{{ entry.target_type }} #{{ entry.target_id }}</div>
+      <pre>{{ entry.verdict|safe }}</pre>
+    </div>
+  {% empty %}
+    <p>Пунктів на перевірку немає.</p>
+  {% endfor %}
+{% endblock %}

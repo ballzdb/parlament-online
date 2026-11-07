@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Вхід{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h1>Вхід</h1>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Увійти</button>
+      <p><a href="{% url 'accounts:reset_request' %}">Забули пароль?</a></p>
+    </form>
+  </div>
+{% endblock %}

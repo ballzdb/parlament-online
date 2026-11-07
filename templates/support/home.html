@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Підтримка{% endblock %}
+
+{% block content %}
+  <h1>Підтримка</h1>
+  {% for faq in faqs %}
+    <div class="card" style="margin-bottom: 1rem;">
+      <h3>{{ faq.question }}</h3>
+      <p>{{ faq.answer }}</p>
+    </div>
+  {% empty %}
+    <p>Питань поки не додано.</p>
+  {% endfor %}
+{% endblock %}

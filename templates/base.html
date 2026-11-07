@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Парламент.Online{% endblock %}</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --accent: #1c5fb6;
+        --muted: #5a6473;
+        --text: #18212d;
+        --border: #dfe7f1;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      nav { background: #163a67; color: white; padding: 1rem 2rem; }
+      .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+      .brand { font-weight: 700; }
+      .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+      .nav-links a { color: white; opacity: 0.9; }
+      .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+      .card { background: var(--panel); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .meta { color: var(--muted); font-size: 0.9rem; }
+      .btn { display: inline-block; background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.7rem 1rem; font-weight: 600; cursor: pointer; }
+      .btn.secondary { background: #eaf0ff; color: var(--text); }
+      .form-grid { display: grid; gap: 1rem; max-width: 520px; }
+      input, select, textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+      .errorlist { color: #b42318; list-style: none; padding-left: 0; }
+      .message { padding: 0.7rem 1rem; background: #edf7ed; border: 1px solid #cbe9d2; border-radius: 8px; margin-bottom: 1rem; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-inner">
+        <div class="brand">Парламент.Online</div>
+        <div class="nav-links">
+          <a href="{% url 'home' %}">Головна</a>
+          <a href="{% url 'ideas:list' %}">Ідеї</a>
+          <a href="{% url 'appeals:list' %}">Відгуки</a>
+          <a href="{% url 'support:home' %}">Підтримка</a>
+          <a href="{% url 'analytics:dashboard' %}">Аналітика</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'accounts:profile' %}">{{ user.email }}</a>
+            <a href="{% url 'accounts:logout' %}">Вийти</a>
+          {% else %}
+            <a href="{% url 'accounts:login' %}">Увійти</a>
+            <a href="{% url 'accounts:register' %}">Реєстрація</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <main class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

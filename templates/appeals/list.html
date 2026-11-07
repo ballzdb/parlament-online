@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Відгуки та пропозиції{% endblock %}
+
+{% block content %}
+  <h1>Відгуки та пропозиції</h1>
+  {% for appeal in appeals %}
+    <div class="card" style="margin-bottom: 1rem;">
+      <h3>{{ appeal.subject }}</h3>
+      <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
+      <p>{{ appeal.body }}</p>
+    </div>
+  {% empty %}
+    <p>Немає відгуків.</p>
+  {% endfor %}
+{% endblock %}

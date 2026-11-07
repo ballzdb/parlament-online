@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Головна | Парламент.Online{% endblock %}
+
+{% block content %}
+  <section style="margin-bottom: 2rem;">
+    <h1>Парламент.Online</h1>
+    <p>Платформа, де учні можуть ділитися ідеями, голосувати, відстежувати виконання і бачити результати роботи парламенту.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Ідей</h3>
+        <p>{{ stats.idea_count }}</p>
+      </div>
+      <div class="card">
+        <h3>Відгуків</h3>
+        <p>{{ stats.appeal_count }}</p>
+      </div>
+      <div class="card">
+        <h3>Підтримка</h3>
+        <p>Робота парламенту стала доступною онлайн для всіх учнів.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div>
+      <h2>Останні ідеї</h2>
+      {% for idea in ideas %}
+        <div class="card" style="margin-bottom: 1rem;">
+          <h3>{{ idea.title }}</h3>
+          <div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+          <p>{{ idea.body|truncatewords:24 }}</p>
+          <div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
+        </div>
+      {% empty %}
+        <p>Ідей ще немає.</p>
+      {% endfor %}
+    </div>
+
+    <div>
+      <h2>Відгуки</h2>
+      {% for appeal in appeals %}
+        <div class="card" style="margin-bottom: 1rem;">
+          <h3>{{ appeal.subject }}</h3>
+          <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
+          <p>{{ appeal.body|truncatewords:20 }}</p>
+        </div>
+      {% empty %}
+        <p>Відгуків ще немає.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
