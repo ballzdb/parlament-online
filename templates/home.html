@@ -22,6 +22,17 @@
     </div>
   </section>
 
+  {% if social_links %}
+    <section class="card" style="margin-bottom: 2rem;">
+      <h2>Ми в соцмережах</h2>
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        {% for item in social_links %}
+          <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" class="card" style="display: block; min-height: 44px;">{{ item.label }}</a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
   <section class="grid">
     <div>
       <h2>Останні ідеї</h2>

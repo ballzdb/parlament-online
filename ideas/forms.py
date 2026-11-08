@@ -18,8 +18,9 @@ class IdeaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['commission'].queryset = Commission.objects.all().order_by('sort_order', 'name')
+        self.fields['commission'].queryset = Commission.objects.filter(is_hidden=False).order_by('sort_order', 'name')
         self.fields['commission'].required = False
+        self.fields['commission'].empty_label = 'Не знаю / інше (без комісії)'
 
 
 class IdeaStatusForm(forms.ModelForm):

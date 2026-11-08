@@ -63,5 +63,36 @@
       {% endif %}
       {% block content %}{% endblock %}
     </main>
+
+    {% if social_links %}
+      <footer style="background: #163a67; color: white; margin-top: 2rem;">
+        <div class="container" style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+          <h2 style="margin-top: 0; margin-bottom: 0.75rem;">Ми в соцмережах</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center;">
+            {% for item in social_links %}
+              <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="color: white; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px;">
+                {% if item.key == 'instagram_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm5.75-3.25a1.25 1.25 0 1 1-1.25 1.25 1.25 1.25 0 0 1 1.25-1.25z"/></svg>
+                {% elif item.key == 'telegram_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.71 6.59-1.66 7.82c-.12.56-.46.7-.93.43l-2.58-1.9-1.24 1.2c-.14.13-.26.26-.52.26l.18-2.65 4.82-4.35c.21-.18-.05-.29-.37-.11L8.7 13.25l-2.57-.8c-.56-.17-.57-.56.12-.83l10.11-3.9c.47-.17.88.11.72.82z"/></svg>
+                {% elif item.key == 'facebook_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3h-3.1V7.5c0-.87.24-1.46 1.52-1.46H16V3.1c-.26-.03-1.17-.1-2.22-.1-2.19 0-3.69 1.34-3.69 3.8V11H8v3h2.09v8h3.41z"/></svg>
+                {% elif item.key == 'tiktok_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.5 3c.42 1.72 1.7 3.04 3.5 3.14v2.87c-1.39-.05-2.64-.47-3.7-1.2v5.58A5.82 5.82 0 1 1 10.54 7.2v2.82a2.95 2.95 0 1 0 2.08 2.85V3h3.88z"/></svg>
+                {% elif item.key == 'youtube_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21.6 7.2a2.95 2.95 0 0 0-2.08-2.09C17.7 4.7 12 4.7 12 4.7s-5.7 0-7.52.41A2.95 2.95 0 0 0 2.4 7.2 30.55 30.55 0 0 0 2 12a30.55 30.55 0 0 0 .4 4.8 2.95 2.95 0 0 0 2.08 2.09c1.82.41 7.52.41 7.52.41s5.7 0 7.52-.41A2.95 2.95 0 0 0 21.6 16.8 30.55 30.55 0 0 0 22 12a30.55 30.55 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+                {% elif item.key == 'discord_url' %}
+                  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.3 5.3A17.7 17.7 0 0 0 15.7 4l-.3.7A15.8 15.8 0 0 1 12 4.9a15.8 15.8 0 0 1-3.4-.2L8 4a17.7 17.7 0 0 0-4.6 1.3C2.2 9.1 2 12.7 2 16.3A16.7 16.7 0 0 0 8.9 18c.5-.7.9-1.5 1.2-2.3a11.8 11.8 0 0 1-1.8-.9L8 14.8c1.8.8 3.7.8 5.5 0l-.3.1a11.8 11.8 0 0 1-1.8.9c.3.8.7 1.6 1.2 2.3A16.7 16.7 0 0 0 22 16.3c0-3.6-.2-7.2-1.7-11zm-9.2 9.1c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8zm6.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8z"/></svg>
+                {% endif %}
+                <span>{{ item.label }}</span>
+              </a>
+            {% endfor %}
+          </div>
+          {% if contact_email %}
+            <div style="margin-top: 1rem;">Контактна пошта: <a href="mailto:{{ contact_email }}" style="color: white;">{{ contact_email }}</a></div>
+          {% endif %}
+        </div>
+      </footer>
+    {% endif %}
   </body>
 </html>
