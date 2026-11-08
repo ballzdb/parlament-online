@@ -1,22 +1,39 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Вхід{% endblock %}
 
 {% block content %}
   <div class="card">
     <h1>Вхід</h1>
+    {% if login_error_reason %}
+      <div class="message">{{ login_error_reason }}</div>
+    {% endif %}
     <form method="post" class="form-grid">
       {% csrf_token %}
       {{ form.non_field_errors }}
       {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-        </div>
+        {% if field.name != 'remember_me' %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
       {% endfor %}
+      <div>
+        <label><input type="checkbox" name="remember_me" value="1"> Запам’ятати мене на 30 днів</label>
+      </div>
       <button type="submit" class="btn">Увійти</button>
+      <button type="button" class="btn secondary" onclick="togglePasswordVisibility()">Показати пароль</button>
       <p><a href="{% url 'accounts:reset_request' %}">Забули пароль?</a></p>
     </form>
   </div>
+  <script>
+    function togglePasswordVisibility() {
+      const field = document.querySelector('input[name="password"]');
+      if (field) {
+        field.type = field.type === 'password' ? 'text' : 'password';
+      }
+    }
+  </script>
 {% endblock %}

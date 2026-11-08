@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from django.contrib.auth.base_user import BaseUserManager
 
@@ -6,7 +6,19 @@ from django.contrib.auth.base_user import BaseUserManager
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, password=None, **extra_fields):
+    def normalize_email(self, email):
+        email = (email or '').strip()
+        if not email:
+            return ''
+        if '@' in email:
+            local_part, domain = email.rsplit('@', 1)
+            return f'{local_part.strip().lower()}@{domain.strip().lower()}'
+        return email.lower()
+
+    def get_by_natural_key(self, email):
+        return self.get(email__iexact=self.normalize_email(email))
+
+    def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('The email field must be set')
         email = self.normalize_email(email)
