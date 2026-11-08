@@ -252,6 +252,41 @@ class AuditLog(models.Model):
         return f'{self.action} :: {self.email or "system"}'
 
 
+SITE_SETTINGS_DEFAULTS = {
+    'school_site_url': 'https://lyceum.karazin.ua',
+    'parliament_site_url': 'https://lyceum.karazin.ua/index.php/ua/samovryaduvannya/257-parlament-litseyu',
+    'self_governance_url': 'https://lyceum.karazin.ua/index.php/ua/samovryaduvannya',
+    'school_contacts_url': 'https://lyceum.karazin.ua/index.php/ua/kontaktna-informatsiya',
+    'contact_email': '',
+    'instagram_url': '',
+    'telegram_url': '',
+    'facebook_url': '',
+    'tiktok_url': '',
+    'youtube_url': '',
+    'discord_url': '',
+}
+
+
+def ensure_default_site_settings():
+    for key, value in SITE_SETTINGS_DEFAULTS.items():
+        SiteSettings.objects.get_or_create(key=key, defaults={'value': value, 'description': key})
+
+
+def get_institution_links():
+    keys = {
+        'school_site_url': 'Сайт ліцею',
+        'parliament_site_url': 'Парламент на сайті ліцею',
+        'self_governance_url': 'Самоврядування ліцею',
+        'school_contacts_url': 'Контакти ліцею',
+    }
+    links = []
+    for key, label in keys.items():
+        value = SiteSettings.get_value(key, SITE_SETTINGS_DEFAULTS.get(key, '')).strip()
+        if value and validate_site_url(value):
+            links.append({'key': key, 'label': label, 'url': value})
+    return links
+
+
 def get_public_social_links():
     keys = {
         'instagram_url': 'Instagram',

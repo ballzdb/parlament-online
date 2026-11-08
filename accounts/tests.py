@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.core.management import call_command
 from django.test import TestCase
 
-from .models import AuditLog, Commission, SiteSettings, User, get_public_social_links
+from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
 from .utils import is_allowed_email
 
 
@@ -144,6 +144,30 @@ class CommissionAndSettingsTests(TestCase):
         links = get_public_social_links()
         self.assertEqual([item['key'] for item in links], ['instagram_url'])
         self.assertEqual(self.client.get('/').status_code, 200)
+
+    def test_default_institution_links_are_created_once_and_visible_on_home(self):
+        SiteSettings.objects.all().delete()
+        ensure_default_site_settings()
+        ensure_default_site_settings()
+        self.assertEqual(SiteSettings.objects.filter(key='school_site_url').count(), 1)
+        self.assertEqual(SiteSettings.objects.filter(key='parliament_site_url').count(), 1)
+        links = get_institution_links()
+        self.assertEqual([item['key'] for item in links], ['school_site_url', 'parliament_site_url', 'self_governance_url', 'school_contacts_url'])
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode('utf-8')
+        self.assertIn('Ліцей і парламент онлайн', html)
+        self.assertIn('Сайт ліцею', html)
+        self.assertIn('пр. Науки, 20, м. Харків, 61166', html)
+
+    def test_invalid_social_urls_are_rejected_and_empty_social_block_is_hidden(self):
+        SiteSettings.objects.filter(key__in=['instagram_url', 'telegram_url', 'facebook_url', 'tiktok_url', 'youtube_url', 'discord_url']).delete()
+        SiteSettings.objects.create(key='instagram_url', value='javascript:alert(1)')
+        SiteSettings.objects.create(key='telegram_url', value='http://example.com')
+        self.assertEqual(get_public_social_links(), [])
+        response = self.client.get('/')
+        html = response.content.decode('utf-8')
+        self.assertNotIn('Ми в соцмережах', html)
 
 
 class RoleManagementTests(TestCase):
