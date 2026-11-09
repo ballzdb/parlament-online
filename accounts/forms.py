@@ -1,75 +1,35 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+import re
 
 from django import forms
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm
-from django.core.exceptions import ValidationError
 
+from .models import User
 from .utils import is_allowed_email, normalize_email
 
-User = get_user_model()
 
-
-class RegistrationForm(forms.ModelForm):
+class RegistrationForm(forms.Form):
+    email = forms.EmailField(label='Електронна пошта')
     password = forms.CharField(widget=forms.PasswordInput, min_length=8, label='Пароль')
-    password_confirm = forms.CharField(widget=forms.PasswordInput, min_length=8, label='Підтвердження пароля')
-    consent = forms.BooleanField(label='Погоджуюсь з правилами', required=True)
-
-    class Meta:
-        model = User
-        fields = ['email', 'display_name', 'grade', 'class_letter', 'password']
-        labels = {
-            'email': 'Електронна пошта',
-            'display_name': 'Ім’я для відображення',
-            'grade': 'Клас',
-            'class_letter': 'Літера класу',
-        }
+    display_name = forms.CharField(max_length=120, label='Ім’я')
+    school_class = forms.CharField(max_length=12, label='Клас', help_text='Наприклад, 9-А')
 
     def clean_email(self):
         email = normalize_email(self.cleaned_data.get('email'))
         if not is_allowed_email(email):
             raise forms.ValidationError('Реєстрація доступна лише для пошти @khul.ukr.education.')
+        if User.objects.filter(email__iexact=email, is_active=True).exists():
+            raise forms.ValidationError('Користувач з такою поштою вже існує.')
         return email
 
-    def validate_unique(self):
-        email = normalize_email(self.cleaned_data.get('email'))
-        if email:
-            existing = User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).first()
-            if existing and not existing.is_active:
-                return
-        super().validate_unique()
-        email = normalize_email(self.cleaned_data.get('email'))
-        if email:
-            existing = User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).first()
-            if existing and existing.is_active:
-                raise ValidationError({'email': 'Користувач з такою поштою вже існує.'})
-
-    def clean_grade(self):
-        grade = self.cleaned_data.get('grade')
-        if grade is not None and not 5 <= int(grade) <= 11:
-            raise forms.ValidationError('Клас має бути від 5 до 11.')
-        return grade
-
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        password_confirm = cleaned_data.get('password_confirm')
-        if password and password_confirm and password != password_confirm:
-            self.add_error('password_confirm', 'Паролі не співпадають.')
-        if not cleaned_data.get('consent'):
-            self.add_error('consent', 'Потрібна згода з правилами.')
-        return cleaned_data
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = normalize_email(user.email)
-        user.set_password(self.cleaned_data['password'])
-        user.is_active = True
-        user.email_verified_at = None
-        user.must_change_password = False
-        if commit:
-            user.save()
-        return user
+    def clean_school_class(self):
+        value = self.cleaned_data['school_class'].replace(' ', '')
+        match = re.fullmatch(r'(5|6|7|8|9|10|11)(?:-?([A-Za-zА-Яа-яІіЇїЄєҐґ]))?', value)
+        if not match:
+            raise forms.ValidationError('Вкажіть клас від 5 до 11, наприклад 9-А.')
+        return int(match.group(1)), (match.group(2) or '').upper()
 
 
 class EmailAuthenticationForm(AuthenticationForm):

@@ -4,12 +4,13 @@
 
 {% block content %}
   <div class="card">
-    <h1>Скидання пароля</h1>
+    <h1>Скидання пароля учня</h1>
+    <p>Створіть тимчасовий пароль і передайте його учню особисто. Під час наступного входу учень має змінити пароль.</p>
     <form method="post" class="form-grid">
       {% csrf_token %}
       <label for="email">Електронна пошта</label>
       <input type="email" name="email" required>
-      <button type="submit" class="btn">Надіслати посилання</button>
+      <button type="submit" class="btn">Створити тимчасовий пароль</button>
     </form>
   </div>
 {% endblock %}

@@ -25,7 +25,7 @@ If something is ambiguous, choose a sensible default and write it in docs/DECISI
 ### Phase 1: Foundation
 - Django project (settings module reading env vars), apps: accounts, kanban, ideas, appeals, support, moderation, analytics.
 - Custom user model with unique case-insensitive email as login. Role field with 4 levels: student, member, commission_head, secretary. Enforce permissions on the BACKEND (mixins/decorators), never only in templates.
-- Registration by email: register -> account inactive -> confirmation email with a signed link -> activation. Password reset. Dev email backend prints to console.
+- Registration is immediate and requires the configured school email domain, password, display name, and class. No email confirmation is sent; a secretary issues temporary passwords for resets.
 - Commissions are a database model (admin can add more). Seed command creates: "Навчання", "Порядок", "Дозвілля". Also a command that creates demo data.
 - Base layout, responsive navigation, home page explaining what the parliament does and showing latest public ideas and appeal statuses.
 

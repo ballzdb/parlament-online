@@ -6,7 +6,6 @@
 - role: one of student, member, commission_head, secretary.
 - grade: school grade 5–11.
 - class_letter: optional class letter.
-- email_verified_at: confirmation timestamp.
 
 ## commissions
 - name: commission name.

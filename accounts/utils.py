@@ -14,6 +14,6 @@ def is_allowed_email(email: str) -> bool:
     local, domain = value.split('@', 1)
     if not local or not domain:
         return False
-    if domain != settings.ALLOWED_EMAIL_DOMAIN:
+    if domain != settings.ALLOWED_EMAIL_DOMAIN.strip().lower():
         return False
     return True

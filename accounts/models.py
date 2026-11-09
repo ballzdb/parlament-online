@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils import timezone
 
 from .managers import UserManager
 
@@ -37,7 +36,6 @@ class User(AbstractUser):
     display_name = models.CharField(max_length=120, default='')
     grade = models.PositiveSmallIntegerField(null=True, blank=True)
     class_letter = models.CharField(max_length=10, blank=True)
-    email_verified_at = models.DateTimeField(null=True, blank=True)
     anon_key = models.CharField(max_length=48, unique=True, null=True, blank=True)
     last_seen_at = models.DateTimeField(null=True, blank=True)
     must_change_password = models.BooleanField(default=False)
@@ -68,83 +66,6 @@ class User(AbstractUser):
 
     def requires_roles(self, *roles):
         return self.has_role(*roles)
-
-
-class EmailAllowlist(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_REGISTERED = 'registered'
-    STATUS_REMOVED = 'removed'
-    STATUS_CHOICES = [
-        (STATUS_PENDING, 'Не зареєстрований'),
-        (STATUS_REGISTERED, 'Зареєстрований'),
-        (STATUS_REMOVED, 'Видалений'),
-    ]
-
-    email = models.EmailField(unique=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    last_invite_sent_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['email']
-
-    def __str__(self) -> str:
-        return self.email
-
-
-class EmailVerificationCode(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_codes')
-    code = models.CharField(max_length=6)
-    expires_at = models.DateTimeField(default=timezone.now)
-    attempts_used = models.PositiveSmallIntegerField(default=0)
-    is_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_sent_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self) -> str:
-        return f'{self.user.email} :: {self.code}'
-
-    @property
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-
-    @property
-    def attempts_left(self):
-        return max(0, 5 - self.attempts_used)
-
-
-class EmailOutbox(models.Model):
-    STATUS_QUEUED = 'queued'
-    STATUS_SENT = 'sent'
-    STATUS_FAILED = 'failed'
-    STATUS_CHOICES = [
-        (STATUS_QUEUED, 'queued'),
-        (STATUS_SENT, 'sent'),
-        (STATUS_FAILED, 'failed'),
-    ]
-
-    recipient = models.EmailField()
-    subject = models.CharField(max_length=255)
-    body = models.TextField()
-    html_body = models.TextField(blank=True, default='')
-    message_type = models.CharField(max_length=32, default='system')
-    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_QUEUED)
-    attempts = models.PositiveSmallIntegerField(default=0)
-    last_error = models.TextField(blank=True, default='')
-    scheduled_for = models.DateTimeField(default=timezone.now)
-    sent_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self) -> str:
-        return f'{self.recipient} :: {self.subject}'
 
 
 class Commission(models.Model):

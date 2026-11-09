@@ -1,18 +1,20 @@
 ﻿from __future__ import annotations
 
-import random
+import secrets
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from app.permissions import requires_roles
+
 from .forms import EmailAuthenticationForm, PasswordChangeForm, RegistrationForm
-from .models import User
+from .models import AuditLog, User
 from .utils import normalize_email
 
 
@@ -62,29 +64,23 @@ def register_view(request):
             if cache.get(ip_key, 0) >= 10:
                 messages.error(request, 'Занадто багато реєстрацій з цієї IP. Спробуйте пізніше.')
                 return render(request, 'accounts/register.html', {'form': form})
-            try:
-                with transaction.atomic():
-                    existing = User.objects.filter(email__iexact=email).first()
-                    if existing and existing.is_active:
-                        form.add_error('email', 'Користувач з такою поштою вже існує.')
-                        return render(request, 'accounts/register.html', {'form': form})
-                    if existing:
-                        user = existing
-                    else:
-                        user = User(email=email)
-                    user.role = User.Role.STUDENT
-                    user.display_name = (form.cleaned_data.get('display_name') or '').strip() or email.split('@', 1)[0]
-                    user.grade = form.cleaned_data.get('grade')
-                    user.class_letter = form.cleaned_data.get('class_letter', '')
-                    user.set_password(form.cleaned_data['password'])
-                    user.is_active = True
-                    user.email_verified_at = timezone.now()
-                    user.must_change_password = False
-                    user.save()
-                    cache.set(ip_key, cache.get(ip_key, 0) + 1, timeout=60 * 60)
-            except Exception:
-                messages.error(request, 'Не вдалося створити обліковий запис. Спробуйте ще раз.')
-                return render(request, 'accounts/register.html', {'form': form})
+            with transaction.atomic():
+                existing = User.objects.filter(email__iexact=email).first()
+                if existing and existing.is_active:
+                    form.add_error('email', 'Користувач з такою поштою вже існує.')
+                    return render(request, 'accounts/register.html', {'form': form})
+                if existing:
+                    user = existing
+                else:
+                    user = User(email=email)
+                user.role = User.Role.STUDENT
+                user.display_name = form.cleaned_data['display_name'].strip()
+                user.grade, user.class_letter = form.cleaned_data['school_class']
+                user.set_password(form.cleaned_data['password'])
+                user.is_active = True
+                user.must_change_password = False
+                user.save()
+                cache.set(ip_key, cache.get(ip_key, 0) + 1, timeout=60 * 60)
             messages.success(request, 'Реєстрація успішна. Тепер ви можете увійти.')
             return redirect('accounts:login')
     else:
@@ -151,19 +147,23 @@ def logout_view(request):
     return redirect('home')
 
 
+@login_required
+@requires_roles(User.Role.SECRETARY)
 def request_password_reset(request):
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        user = User.objects.filter(email=email).first()
-        if user and user.is_secretary:
-            temp_password = ''.join(random.choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789') for _ in range(12))
-            user.set_password(temp_password)
-            user.must_change_password = True
-            user.save(update_fields=['password', 'must_change_password'])
-            messages.success(request, f'Тимчасовий пароль для {user.email}: {temp_password}. Він показаний один раз. Після входу користувач повинен змінити його.')
-            return redirect('accounts:login')
-        messages.success(request, 'Якщо користувач із такою поштою існує, запит оброблено.')
-        return redirect('accounts:login')
+        email = normalize_email(request.POST.get('email'))
+        user = User.objects.filter(email__iexact=email).first()
+        if user:
+            temp_password = ''.join(secrets.choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789') for _ in range(12))
+            with transaction.atomic():
+                user.set_password(temp_password)
+                user.must_change_password = True
+                user.save(update_fields=['password', 'must_change_password'])
+                AuditLog.objects.create(action='password_reset', email=user.email, user=user)
+            messages.success(request, f'Тимчасовий пароль для {user.email}: {temp_password}. Передайте його користувачу особисто. Під час наступного входу пароль потрібно змінити.')
+        else:
+            messages.error(request, 'Користувача з такою поштою не знайдено.')
+        return redirect('accounts:reset_request')
     return render(request, 'accounts/reset_request.html')
 
 
@@ -174,6 +174,7 @@ def profile_view(request):
         request.user.set_password(form.cleaned_data['new_password'])
         request.user.must_change_password = False
         request.user.save(update_fields=['password', 'must_change_password'])
+        update_session_auth_hash(request, request.user)
         messages.success(request, 'Пароль успішно змінено.')
         return redirect('accounts:profile')
     return render(request, 'accounts/profile.html', {'user': request.user, 'form': form})

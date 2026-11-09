@@ -80,25 +80,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-EMAIL_BACKEND_NAME = os.getenv('EMAIL_BACKEND', 'console').strip().lower()
-EMAIL_BACKEND_MAP = {
-    'console': 'django.core.mail.backends.console.EmailBackend',
-    'smtp': 'django.core.mail.backends.smtp.EmailBackend',
-    'resend': 'app.email_backends.ResendEmailBackend',
-}
-EMAIL_BACKEND = EMAIL_BACKEND_MAP.get(EMAIL_BACKEND_NAME, EMAIL_BACKEND_MAP['console'])
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Парламент ліцею <no-reply@parlament-online.local>')
-BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
-SECRETARY_EMAIL = os.getenv('SECRETARY_EMAIL', 'secretary@parlament-online.local')
 ALLOWED_EMAIL_DOMAIN = os.getenv('ALLOWED_EMAIL_DOMAIN', 'khul.ukr.education')
-EMAIL_HOST = os.getenv('EMAIL_HOST', '')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').lower() in {'1', 'true', 'yes'}
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
-RESEND_API_URL = os.getenv('RESEND_API_URL', 'https://api.resend.com/emails')
-EMAIL_DAILY_LIMIT = int(os.getenv('EMAIL_DAILY_LIMIT', '400'))
 ENV = os.getenv('ENV', 'dev').strip().lower()
 TOTAL_STUDENTS = int(os.getenv('TOTAL_STUDENTS', '0'))
 
@@ -109,4 +91,3 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-

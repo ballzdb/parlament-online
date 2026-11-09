@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.core.management import call_command
+from django.db import connection
 from django.test import TestCase
 
 from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
@@ -12,28 +13,48 @@ def key_for(*codes):
 
 
 pw_key = key_for(112, 97, 115, 115, 119, 111, 114, 100)
-confirm_key = key_for(112, 97, 115, 115, 119, 111, 114, 100, 95, 99, 111, 110, 102, 105, 114, 109)
 display_key = key_for(100, 105, 115, 112, 108, 97, 121, 95, 110, 97, 109, 101)
-consent_key = key_for(99, 111, 110, 115, 101, 110, 116)
 username_key = key_for(117, 115, 101, 114, 110, 97, 109, 101)
 
 
 class AccountFlowTests(TestCase):
+    def test_registration_related_email_tables_are_not_in_schema(self):
+        forbidden_tables = {
+            'accounts_emailallowlist',
+            'accounts_emailverificationcode',
+            'accounts_emailoutbox',
+        }
+        with connection.cursor() as cursor:
+            tables = set(connection.introspection.table_names(cursor))
+        self.assertTrue(forbidden_tables.isdisjoint(tables))
+        self.assertNotIn('email_verified_at', {field.name for field in User._meta.get_fields()})
+
     def test_registration_allowed_domain_and_active_account(self):
         payload = {
             'email': 'student@khul.ukr.education',
             display_key: 'Student',
-            'grade': 9,
-            'class_letter': 'A',
+            'school_class': '9-А',
             pw_key: 'Password123',
-            confirm_key: 'Password123',
-            consent_key: 'on',
         }
         response = self.client.post('/accounts/register/', payload)
         self.assertEqual(response.status_code, 302)
         user = User.objects.get(email='student@khul.ukr.education')
         self.assertTrue(user.is_active)
         self.assertEqual(user.role, User.Role.STUDENT)
+        self.assertEqual((user.grade, user.class_letter), (9, 'А'))
+
+    def test_registration_rejects_invalid_class(self):
+        response = self.client.post(
+            '/accounts/register/',
+            {
+                'email': 'student@khul.ukr.education',
+                display_key: 'Student',
+                'school_class': '12-Б',
+                pw_key: 'Password123',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
 
     def test_email_domain_validation_blocks_bad_addresses(self):
         invalid = [
@@ -45,6 +66,27 @@ class AccountFlowTests(TestCase):
             self.assertFalse(is_allowed_email(email))
 
         self.assertTrue(is_allowed_email(' student@khul.ukr.education '))
+
+    def test_registration_rejects_spoofed_email_domain(self):
+        response = self.client.post(
+            '/accounts/register/',
+            {
+                'email': 'student@khul.ukr.education.evil.com',
+                display_key: 'Student',
+                'school_class': '9-А',
+                pw_key: 'Password123',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(email__startswith='student@').exists())
+
+    def test_registration_form_has_only_account_fields(self):
+        from .forms import RegistrationForm
+
+        self.assertEqual(
+            list(RegistrationForm().fields),
+            ['email', 'password', 'display_name', 'school_class'],
+        )
 
     def test_login_lockout_after_five_failed_attempts(self):
         User.objects.create_user(
@@ -69,11 +111,8 @@ class AccountFlowTests(TestCase):
             {
                 'email': 'student@khul.ukr.education',
                 display_key: 'Student',
-                'grade': 9,
-                'class_letter': 'A',
+                'school_class': '9-А',
                 pw_key: 'Password123',
-                confirm_key: 'Password123',
-                consent_key: 'on',
             },
         )
         response = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
@@ -90,11 +129,8 @@ class AccountFlowTests(TestCase):
             {
                 'email': 'inactive@khul.ukr.education',
                 display_key: 'NewUser',
-                'grade': 10,
-                'class_letter': 'B',
+                'school_class': '10-Б',
                 pw_key: 'Password123',
-                confirm_key: 'Password123',
-                consent_key: 'on',
             },
         )
         self.assertEqual(response.status_code, 302)
@@ -109,11 +145,8 @@ class AccountFlowTests(TestCase):
             {
                 'email': 'student@khul.ukr.education',
                 display_key: 'Student',
-                'grade': 9,
-                'class_letter': 'A',
+                'school_class': '9-А',
                 pw_key: 'short',
-                confirm_key: 'short',
-                consent_key: 'on',
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -184,3 +217,49 @@ class RoleManagementTests(TestCase):
         self.client.force_login(user)
         response = self.client.get('/admin/')
         self.assertEqual(response.status_code, 302)
+
+    def test_only_secretary_can_reset_another_users_password(self):
+        target = User.objects.create_user(email='student@khul.ukr.education', **{pw_key: 'Password123', 'is_active': True})
+        student = User.objects.create_user(email='other@khul.ukr.education', **{pw_key: 'Password123', 'is_active': True})
+        self.client.force_login(student)
+
+        response = self.client.post('/accounts/reset/', {'email': target.email})
+
+        self.assertEqual(response.status_code, 403)
+        target.refresh_from_db()
+        self.assertTrue(target.check_password('Password123'))
+
+    def test_secretary_reset_generates_temporary_password_and_requires_change(self):
+        target = User.objects.create_user(email='student@khul.ukr.education', **{pw_key: 'Password123', 'is_active': True})
+        secretary = User.objects.create_user(email='secretary@khul.ukr.education', **{pw_key: 'Password123', 'is_active': True})
+        secretary.role = User.Role.SECRETARY
+        secretary.is_staff = True
+        secretary.save(update_fields=['role', 'is_staff'])
+        self.client.force_login(secretary)
+
+        response = self.client.post('/accounts/reset/', {'email': target.email}, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        target.refresh_from_db()
+        self.assertTrue(target.must_change_password)
+        self.assertFalse(target.check_password('Password123'))
+        self.assertTrue(AuditLog.objects.filter(action='password_reset', user=target).exists())
+        self.assertContains(response, f'Тимчасовий пароль для {target.email}:')
+
+    def test_user_can_change_temporary_password_without_being_logged_out(self):
+        user = User.objects.create_user(email='student@khul.ukr.education', **{pw_key: 'Temporary123!', 'is_active': True})
+        user.must_change_password = True
+        user.save(update_fields=['must_change_password'])
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/accounts/profile/',
+            {'new_password': 'Permanent123!', 'new_password_confirm': 'Permanent123!'},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        user.refresh_from_db()
+        self.assertFalse(user.must_change_password)
+        self.assertTrue(user.check_password('Permanent123!'))
+        self.assertEqual(str(response.context['user']), str(user))
