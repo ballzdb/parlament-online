@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import include, path
 
-from ideas.views import home
+from ideas.views import decisions, home
 
 urlpatterns = [
     path('', home, name='home'),
+    path('decisions/', decisions, name='decisions'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('ideas/', include('ideas.urls')),

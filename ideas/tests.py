@@ -31,3 +31,44 @@ class IdeaVoteTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.idea.refresh_from_db()
         self.assertEqual(self.idea.status, Idea.Status.IN_PROGRESS)
+
+
+class ParliamentDecisionPageTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='author@example.com',
+            password='Password123',
+            display_name='Автор',
+            is_active=True,
+        )
+
+    def test_public_page_shows_decisions_and_hides_undecided_ideas(self):
+        Idea.objects.create(
+            title='Виконана ідея',
+            body='Опис виконаної ідеї',
+            status=Idea.Status.DONE,
+            completion_report='Опублікований звіт',
+            author=self.user,
+        )
+        Idea.objects.create(
+            title='Відхилена ідея',
+            body='Опис відхиленої ідеї',
+            status=Idea.Status.REJECTED,
+            status_reason='Причина рішення',
+            author=self.user,
+        )
+        Idea.objects.create(
+            title='Ідея на розгляді',
+            body='Ще немає рішення',
+            status=Idea.Status.UNDER_REVIEW,
+            author=self.user,
+        )
+
+        response = self.client.get('/decisions/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Виконана ідея')
+        self.assertContains(response, 'Опублікований звіт')
+        self.assertContains(response, 'Відхилена ідея')
+        self.assertContains(response, 'Причина рішення')
+        self.assertNotContains(response, 'Ідея на розгляді')

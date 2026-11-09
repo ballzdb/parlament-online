@@ -32,6 +32,16 @@ def idea_list(request):
     return render(request, 'ideas/list.html', {'ideas': ideas})
 
 
+def decisions(request):
+    decided_statuses = [Idea.Status.IN_PROGRESS, Idea.Status.DONE, Idea.Status.REJECTED]
+    ideas = (
+        Idea.objects.filter(status__in=decided_statuses)
+        .select_related('commission')
+        .order_by('-updated_at', '-created_at')
+    )
+    return render(request, 'ideas/decisions.html', {'decisions': ideas})
+
+
 @login_required
 def idea_create(request):
     if request.method == 'POST':

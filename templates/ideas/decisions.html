@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Рішення парламенту | Парламент.Online{% endblock %}
+
+{% block content %}
+  <h1>Рішення парламенту</h1>
+  <p>Тут зібрані ідеї, щодо яких парламент визначив подальші дії.</p>
+  {% for idea in decisions %}
+    <article class="card" style="margin-bottom: 1rem;">
+      <h2>{{ idea.title }}</h2>
+      <div class="meta">
+        {% if idea.commission %}{{ idea.commission.name }} · {% endif %}
+        {{ idea.updated_at|date:'d.m.Y' }} · {{ idea.get_status_display }}
+      </div>
+      <p>{{ idea.body }}</p>
+      {% if idea.status == 'done' and idea.completion_report %}
+        <p><strong>Звіт про виконання:</strong> {{ idea.completion_report }}</p>
+      {% elif idea.status == 'rejected' and idea.status_reason %}
+        <p><strong>Причина відхилення:</strong> {{ idea.status_reason }}</p>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p>Рішень поки немає.</p>
+  {% endfor %}
+{% endblock %}
