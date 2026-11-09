@@ -4,13 +4,24 @@
 
 {% block content %}
   <h1>Відгуки та пропозиції</h1>
+  {% if user.is_authenticated %}
+    <p><a class="btn" href="{% url 'appeals:create' %}">Нове звернення</a></p>
+  {% endif %}
   {% for appeal in appeals %}
     <div class="card" style="margin-bottom: 1rem;">
       <h3>{{ appeal.subject }}</h3>
       <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
       <p>{{ appeal.body }}</p>
+      {% if user.is_authenticated and not user.is_student %}
+        <div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>
+      {% else %}
+        <div class="meta">Авторство приховане</div>
+      {% endif %}
+      {% if appeal.public_answer %}
+        <p><strong>Відповідь парламенту:</strong> {{ appeal.public_answer }}</p>
+      {% endif %}
     </div>
   {% empty %}
-    <p>Немає відгуків.</p>
+    <p>Поки немає звернень.</p>
   {% endfor %}
 {% endblock %}

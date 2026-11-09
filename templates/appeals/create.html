@@ -1,10 +1,22 @@
 {% extends 'base.html' %}
 
-{% block title %}Нова пропозиція{% endblock %}
+{% block title %}Нове звернення{% endblock %}
 
 {% block content %}
   <div class="card">
-    <h1>Надіслати відгук</h1>
-    <p>Форма створення буде розширена пізніше.</p>
+    <h1>Нове звернення</h1>
+    <p>Ваші ім’я та електронна пошта не відображатимуться на публічній сторінці. Секретар парламенту зможе побачити автора й опрацювати звернення.</p>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Надіслати звернення</button>
+    </form>
   </div>
 {% endblock %}
