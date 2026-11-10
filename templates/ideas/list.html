@@ -3,14 +3,14 @@
 {% block title %}Ідеї{% endblock %}
 
 {% block content %}
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-    <h1 style="margin:0;">Ідеї</h1>
+  <div class="page-heading">
+    <h1>Ідеї</h1>
     {% if user.is_authenticated %}
       <a href="{% url 'ideas:create' %}" class="btn">Подати ідею</a>
     {% endif %}
   </div>
   {% for idea in ideas %}
-    <div class="card" style="margin-bottom: 1rem;">
+    <div class="card feed-card">
       <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
       <div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
       <p>{{ idea.body }}</p>

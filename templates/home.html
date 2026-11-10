@@ -3,40 +3,60 @@
 {% block title %}Головна | Парламент.Online{% endblock %}
 
 {% block content %}
-  <section style="margin-bottom: 2rem;">
-    <h1>Парламент.Online</h1>
-    <p>Платформа, де учні можуть ділитися ідеями, голосувати, відстежувати виконання і бачити результати роботи парламенту.</p>
-    <div class="grid">
-      <div class="card">
-        <h3>Ідей</h3>
-        <p>{{ stats.idea_count }}</p>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Учнівське самоврядування · ХУЛ</span>
+      <h1>Ідеї, що змінюють<br>шкільне життя.</h1>
+      <p>Пропонуй, підтримуй і стеж за тим, як рішення парламенту стають реальністю.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{% url 'ideas:list' %}">Переглянути ідеї</a>
+        {% if user.is_authenticated %}
+          <a class="btn secondary" href="{% url 'ideas:create' %}">Запропонувати ідею</a>
+        {% else %}
+          <a class="btn secondary" href="{% url 'accounts:register' %}">Приєднатися</a>
+        {% endif %}
       </div>
-      <div class="card">
-        <h3>Відгуків</h3>
-        <p>{{ stats.appeal_count }}</p>
-      </div>
-      <div class="card">
-        <h3>Підтримка</h3>
-        <p>Робота парламенту стала доступною онлайн для всіх учнів.</p>
-      </div>
+    </div>
+    <div class="hero-mark" aria-hidden="true">
+      <span class="hero-mark-orbit"></span>
+      <span class="hero-mark-star">✳</span>
+      <span class="hero-mark-caption">Твій голос<br>має значення</span>
+    </div>
+  </section>
+
+  <section class="stats-grid" aria-label="Статистика платформи">
+    <div class="card stat-card">
+      <span class="stat-icon">✦</span>
+      <div><strong>{{ stats.idea_count }}</strong><span>ідей від учнів</span></div>
+    </div>
+    <div class="card stat-card">
+      <span class="stat-icon">↗</span>
+      <div><strong>{{ stats.appeal_count }}</strong><span>відгуків і пропозицій</span></div>
+    </div>
+    <div class="card stat-card stat-note">
+      <span class="stat-icon">◎</span>
+      <div><strong>Разом</strong><span>робимо шкільне життя кращим</span></div>
     </div>
   </section>
 
   {% if institution_links or social_links %}
-    <section class="card" style="margin-bottom: 2rem;">
-      <h2>Ліцей і парламент онлайн</h2>
+    <section class="card institution-card">
+      <div>
+        <span class="eyebrow">Корисні посилання</span>
+        <h2>Ліцей і парламент онлайн</h2>
+      </div>
       {% if institution_links %}
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; margin-bottom: 1rem;">
+        <div class="institution-links">
           {% for item in institution_links %}
-            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="display: inline-flex; align-items: center; min-height: 44px;">{{ item.label }}</a>
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">{{ item.label }} <span aria-hidden="true">↗</span></a>
           {% endfor %}
         </div>
-        <p style="margin-top: 0; margin-bottom: 1rem;">пр. Науки, 20, м. Харків, 61166</p>
+        <p class="address">пр. Науки, 20, м. Харків, 61166</p>
       {% endif %}
       {% if social_links %}
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center;">
+        <div class="institution-links social-links">
           {% for item in social_links %}
-            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px;">
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">
               {% if item.key == 'instagram_url' %}
                 <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm5.75-3.25a1.25 1.25 0 1 1-1.25 1.25 1.25 1.25 0 0 1 1.25-1.25z"/></svg>
               {% elif item.key == 'telegram_url' %}
@@ -58,31 +78,38 @@
     </section>
   {% endif %}
 
-  <section class="grid">
+  <section class="home-columns">
     <div>
-      <h2>Останні ідеї</h2>
+      <div class="section-heading">
+        <div><span class="eyebrow">Думки учнів</span><h2>Останні ідеї</h2></div>
+        <a href="{% url 'ideas:list' %}">Усі ідеї <span aria-hidden="true">→</span></a>
+      </div>
       {% for idea in ideas %}
-        <div class="card" style="margin-bottom: 1rem;">
-          <h3>{{ idea.title }}</h3>
-          <div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+        <article class="card feed-card">
+          <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
+          <div class="meta">{{ idea.created_at|date:'d.m.Y' }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
           <p>{{ idea.body|truncatewords:24 }}</p>
-          <div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
-        </div>
+          <div class="feed-footer"><span class="status-chip">{{ idea.get_status_display }}</span><span class="meta">♡ {{ idea.vote_count }} голосів</span></div>
+        </article>
       {% empty %}
-        <p>Ідей ще немає.</p>
+        <p class="empty-state">Ідей ще немає. Будьте першими, хто запропонує зміни!</p>
       {% endfor %}
     </div>
 
     <div>
-      <h2>Відгуки</h2>
+      <div class="section-heading">
+        <div><span class="eyebrow">Зворотний зв’язок</span><h2>Відгуки</h2></div>
+        <a href="{% url 'appeals:list' %}">Усі відгуки <span aria-hidden="true">→</span></a>
+      </div>
       {% for appeal in appeals %}
-        <div class="card" style="margin-bottom: 1rem;">
+        <article class="card feed-card">
           <h3>{{ appeal.subject }}</h3>
-          <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
+          <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.created_at|date:'d.m.Y' }}</div>
           <p>{{ appeal.body|truncatewords:20 }}</p>
-        </div>
+          <div class="feed-footer"><span class="status-chip">{{ appeal.get_status_display }}</span></div>
+        </article>
       {% empty %}
-        <p>Відгуків ще немає.</p>
+        <p class="empty-state">Відгуків ще немає.</p>
       {% endfor %}
     </div>
   </section>

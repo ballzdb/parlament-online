@@ -4,9 +4,9 @@
 
 {% block content %}
   <h1>Канбан</h1>
-  <div style="margin-bottom:1rem;">
+  <div class="commission-navigation">
     {% for item in commissions %}
-      <a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary" style="margin-right:0.5rem; margin-bottom:0.5rem;">{{ item.name }}</a>
+      <a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary">{{ item.name }}</a>
     {% endfor %}
   </div>
   {% if commission %}
@@ -18,7 +18,7 @@
         <h3>{{ status_label }}</h3>
         {% for card in cards %}
           {% if card.status == status_key %}
-            <div style="border:1px solid #dfe7f1; border-radius:8px; padding:0.75rem; margin-top:0.75rem;">
+            <div class="kanban-card">
               <strong>{{ card.title }}</strong>
               <div class="meta">{{ card.assignee|default:'Без відповідального' }}</div>
               <p>{{ card.description|default:'Опис відсутній' }}</p>
