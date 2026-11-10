@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Сповіщення | Парламент.Online{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <h1>Сповіщення</h1>
+  </div>
+  <p>Тут з’являються повідомлення про зміни статусу ваших ідей.</p>
+
+  {% if page_obj.object_list %}
+    <div class="notification-list">
+      {% for notification in page_obj %}
+        <article class="card notification-item{% if not notification.is_read %} is-unread{% endif %}">
+          <div class="notification-copy">
+            <p>
+              Статус ідеї <strong>«{{ notification.idea.title }}»</strong>
+              змінено з «{{ notification.get_previous_status_display }}»
+              на «{{ notification.get_new_status_display }}».
+            </p>
+            <time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|date:"d.m.Y H:i" }}</time>
+          </div>
+          <form method="post" action="{% url 'notifications:open' notification.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn secondary">Переглянути ідею</button>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <nav class="pagination" aria-label="Сторінки сповіщень">
+        {% if page_obj.has_previous %}
+          <a class="btn secondary" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        {% endif %}
+        <span>Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn secondary" href="?page={{ page_obj.next_page_number }}">Далі</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">Сповіщень поки немає.</div>
+  {% endif %}
+{% endblock %}

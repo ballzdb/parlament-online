@@ -363,6 +363,32 @@ form .btn + .btn { margin-top: .3rem; }
   .privacy-consent-actions { flex-direction: row; }
   .privacy-consent-actions .btn { flex: 1 1 0; }
 }
+.nav-notifications { gap: .45rem; }
+.notification-count {
+  display: inline-grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 .25rem;
+  place-items: center;
+  border-radius: 999px;
+  color: #142247;
+  background: #dce6ff;
+  font-size: .72rem;
+  font-weight: 750;
+  line-height: 1;
+}
+.notification-list { display: grid; gap: .8rem; }
+.notification-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.notification-item.is-unread { border-left: 4px solid var(--accent); }
+.notification-copy p { margin-bottom: .35rem; }
+.notification-copy time { color: var(--muted); font-size: .85rem; }
+.notification-item form { flex: 0 0 auto; }
+.pagination { display: flex; margin-top: 1.2rem; align-items: center; justify-content: center; gap: 1rem; }
+.pagination span { color: var(--muted); font-size: .9rem; }
+@media (max-width: 600px) {
+  .notification-item { align-items: stretch; flex-direction: column; }
+  .notification-item form, .notification-item .btn { width: 100%; }
+}
 @media (max-width: 380px) {
   .container { width: min(100% - 1.25rem, 1120px); }
   .hero { padding: 1.65rem 1.1rem; }

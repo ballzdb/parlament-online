@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import Commission
 from appeals.models import Appeal
+from notifications.models import Notification
 from .forms import IdeaForm, IdeaStatusForm
 from .models import Idea, IdeaVote
 
@@ -64,9 +65,18 @@ def idea_detail(request, pk):
     status_form = None
     if request.user.has_role(request.user.Role.MEMBER, request.user.Role.COMMISSION_HEAD, request.user.Role.SECRETARY):
         if request.method == 'POST':
+            previous_status = idea.status
             status_form = IdeaStatusForm(request.POST, instance=idea)
             if status_form.is_valid():
-                status_form.save()
+                with transaction.atomic():
+                    status_form.save()
+                    if previous_status != idea.status and idea.author_id != request.user.pk:
+                        Notification.objects.create(
+                            recipient=idea.author,
+                            idea=idea,
+                            previous_status=previous_status,
+                            new_status=idea.status,
+                        )
                 messages.success(request, 'Статус ідеї оновлено.')
                 return redirect('ideas:detail', pk=idea.pk)
         else:

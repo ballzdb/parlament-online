@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'support',
     'moderation',
     'analytics',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.csrf',
                 'accounts.context_processors.site_settings',
+                'notifications.context_processors.unread_count',
             ],
         },
     },

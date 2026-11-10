@@ -33,3 +33,10 @@
 - section: allowlisted site section, never a URL or query string.
 - page_views: total consented page views for that date and section.
 - No IP address, account, email, session, referrer, or per-visitor identifier is stored.
+
+## notifications
+- recipient: user who receives a private in-site notification.
+- idea: idea whose status changed.
+- previous_status / new_status: the status transition that triggered the notification.
+- is_read: whether the recipient opened the linked idea from the notification.
+- Notifications are created only when another parliament member changes an idea's status.
