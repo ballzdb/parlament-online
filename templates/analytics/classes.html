@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Парламент за класами | Парламент.Online{% endblock %}
+
+{% block content %}
+  <span class="eyebrow">Представництво учнів</span>
+  <h1>Парламент за класами</h1>
+  <p class="classes-note">Анонімна статистика активних учнівських облікових записів. Імена, пошта й інші особисті дані тут не відображаються.</p>
+
+  <section class="classes-summary" aria-label="Загальна статистика">
+    <div class="card">
+      <strong>{{ total_students }}</strong>
+      <span>активних учнів на платформі</span>
+    </div>
+    {% if coverage != None %}
+      <div class="card">
+        <strong>{{ coverage }}%</strong>
+        <span>від загальної кількості учнів ліцею ({{ school_size }})</span>
+      </div>
+    {% endif %}
+  </section>
+
+  <section aria-label="Кількість учнів за класами">
+    <div class="class-list">
+      {% for item in classes %}
+        <article class="card class-row">
+          <strong class="class-row-label">{{ item.label }}</strong>
+          <span class="class-bar" aria-hidden="true"><span class="class-bar-fill" style="width: {{ item.bar_width }}%;"></span></span>
+          <span class="class-row-count">{{ item.student_count }} {{ item.student_label }}</span>
+        </article>
+      {% empty %}
+        <p class="empty-state">Поки немає активних учнів із зазначеним класом.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

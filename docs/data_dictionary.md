@@ -27,3 +27,9 @@
 - status: new, in_progress, resolved, declined.
 - subject: short summary.
 - body: full message content.
+
+## anonymous_metrics
+- date: local calendar date of the aggregate.
+- section: allowlisted site section, never a URL or query string.
+- page_views: total consented page views for that date and section.
+- No IP address, account, email, session, referrer, or per-visitor identifier is stored.
