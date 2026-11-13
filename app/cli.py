@@ -12,7 +12,7 @@ def main():
 
     create_secretary = subparsers.add_parser('create-secretary', help='Create the first secretary account')
     create_secretary.add_argument('--email', default='secretary@parlament-online.local')
-    create_secretary.add_argument('--password', default='Parlament123!')
+    create_secretary.add_argument('--password')
     create_secretary.add_argument('--name', default='Secretary')
 
     set_role = subparsers.add_parser('set-role', help='Set a user role')
