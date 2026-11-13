@@ -103,6 +103,9 @@ p { color: var(--body-copy); }
 .nav-links a { display: inline-flex; min-height: 40px; padding: 0.5rem 0.7rem; align-items: center; border-radius: 9px; color: rgba(255,255,255,.82); font-size: 0.88rem; font-weight: 550; transition: background 160ms ease, color 160ms ease; }
 .nav-links a:hover { color: #fff; background: rgba(255,255,255,.12); }
 .nav-links .nav-user { color: #fff; background: rgba(255,255,255,.13); }
+.nav-logout-form { display: inline-flex; margin: 0; }
+.nav-links .nav-logout { display: inline-flex; min-height: 40px; padding: 0.5rem 0.7rem; align-items: center; border: 0; border-radius: 9px; color: rgba(255,255,255,.82); background: transparent; font: inherit; font-size: 0.88rem; font-weight: 550; cursor: pointer; }
+.nav-links .nav-logout:hover { color: #fff; background: rgba(255,255,255,.12); }
 .nav-menu-toggle { display: none; }
 .theme-toggle {
   display: inline-flex;
