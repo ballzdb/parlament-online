@@ -11,6 +11,15 @@ from .models import AnonymousMetric
 
 
 class ClassStatisticsTests(TestCase):
+    def setUp(self):
+        parliamentarian = User.objects.create_user(
+            email='parliamentarian@example.com',
+            password='Password123!',
+            role=User.Role.MEMBER,
+            is_active=True,
+        )
+        self.client.force_login(parliamentarian)
+
     def create_student(self, email, **kwargs):
         kwargs.setdefault('is_active', True)
         return User.objects.create_user(
@@ -20,9 +29,12 @@ class ClassStatisticsTests(TestCase):
         )
 
     @override_settings(TOTAL_STUDENTS=10)
-    def test_public_page_shows_anonymous_counts_and_school_coverage(self):
+    def test_parliament_page_shows_anonymous_counts_and_school_coverage(self):
         self.create_student('one@example.com', grade=9, class_letter='А', display_name='Учениця')
         self.create_student('two@example.com', grade=9, class_letter='А')
+        self.create_student('student-4@example.com', grade=9, class_letter='А')
+        self.create_student('student-5@example.com', grade=9, class_letter='А')
+        self.create_student('student-6@example.com', grade=9, class_letter='А')
         self.create_student('three@example.com', grade=10, class_letter='Б')
         self.create_student('inactive@example.com', grade=9, class_letter='А', is_active=False)
         self.create_student(
@@ -36,10 +48,10 @@ class ClassStatisticsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Парламент за класами')
-        self.assertContains(response, '30%')
+        self.assertContains(response, '60%')
         self.assertContains(response, '9-А')
-        self.assertContains(response, '10-Б')
-        self.assertContains(response, '2 учні')
+        self.assertNotContains(response, '10-Б')
+        self.assertContains(response, '5 учнів')
         self.assertNotContains(response, 'one@example.com')
         self.assertNotContains(response, 'Учениця')
 

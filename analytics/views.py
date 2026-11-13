@@ -25,6 +25,7 @@ def classes(request):
         students.filter(grade__isnull=False)
         .values('grade', 'class_letter')
         .annotate(student_count=Count('id'))
+        .filter(student_count__gte=5)
         .order_by('grade', 'class_letter')
     )
     class_rows = [

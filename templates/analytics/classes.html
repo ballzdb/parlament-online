@@ -17,6 +17,8 @@
         <strong>{{ coverage }}%</strong>
         <span>від загальної кількості учнів ліцею ({{ school_size }})</span>
       </div>
+    {% else %}
+      <p class="empty-state">Загальну кількість учнів ліцею не задано.</p>
     {% endif %}
   </section>
 
