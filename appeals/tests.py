@@ -69,6 +69,34 @@ class AppealSubmissionTests(TestCase):
         self.assertContains(response, own_private_appeal.subject)
         self.assertNotContains(response, 'Приватне чуже')
 
+    def test_private_appeal_text_is_not_shown_on_homepage_to_guests_or_other_students(self):
+        private_appeal = Appeal.objects.create(
+            author=self.user,
+            subject='Приватна тема',
+            body='Унікальний приватний текст звернення',
+            visibility=Appeal.Visibility.PRIVATE,
+        )
+        public_appeal = Appeal.objects.create(
+            author=self.user,
+            subject='Публічна тема',
+            body='Публічний текст звернення',
+            visibility=Appeal.Visibility.PUBLIC,
+        )
+
+        guest_response = self.client.get('/')
+        self.assertNotContains(guest_response, private_appeal.body)
+        self.assertContains(guest_response, public_appeal.body)
+
+        other_student = User.objects.create_user(
+            email='other@khul.ukr.education',
+            password='Password123!',
+            is_active=True,
+        )
+        self.client.force_login(other_student)
+        student_response = self.client.get('/')
+        self.assertNotContains(student_response, private_appeal.body)
+        self.assertContains(student_response, public_appeal.body)
+
     def test_secretary_can_see_author_of_anonymous_submission(self):
         appeal = Appeal.objects.create(author=self.user, subject='Анонімне звернення', body='Текст')
         secretary = User.objects.create_user(

@@ -16,7 +16,9 @@ from .models import Idea, IdeaVote
 
 def home(request):
     ideas = Idea.objects.select_related('commission', 'author').order_by('-created_at')[:6]
-    appeals = Appeal.objects.order_by('-created_at')[:5]
+    appeals = Appeal.objects.filter(
+        visibility=Appeal.Visibility.PUBLIC,
+    ).order_by('-created_at')[:5]
     context = {
         'ideas': ideas,
         'appeals': appeals,
