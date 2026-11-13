@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import secrets
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -18,27 +19,45 @@ from .models import AuditLog, User
 from .utils import normalize_email
 
 
-def get_lockout_key(email: str, ip: str) -> str:
-    return f'auth_lockout:{email}:{ip}'
+LOGIN_FAILURE_ACTION = 'login_failed'
+LOGIN_FAILURE_LIMIT = 5
+LOGIN_FAILURE_WINDOW = timedelta(minutes=15)
 
 
-def _login_failed_attempts(request, email: str):
-    key = get_lockout_key(email, request.META.get('REMOTE_ADDR', 'unknown'))
-    return cache.get(key, 0)
+def _login_failed_attempts(email: str, ip: str) -> int:
+    cutoff = timezone.now() - LOGIN_FAILURE_WINDOW
+    AuditLog.objects.filter(
+        action=LOGIN_FAILURE_ACTION,
+        created_at__lt=cutoff,
+    ).delete()
+    return AuditLog.objects.filter(
+        action=LOGIN_FAILURE_ACTION,
+        email=email,
+        details=ip,
+        created_at__gte=cutoff,
+    ).count()
 
 
-def _record_login_failure(request, email: str):
-    key = get_lockout_key(email, request.META.get('REMOTE_ADDR', 'unknown'))
-    attempts = cache.get(key, 0) + 1
-    cache.set(key, attempts, timeout=60 * 15)
-    return attempts
+def _record_login_failure(email: str, ip: str, user: User | None) -> int:
+    with transaction.atomic():
+        AuditLog.objects.create(
+            action=LOGIN_FAILURE_ACTION,
+            email=email,
+            details=ip,
+            user=user,
+        )
+        return _login_failed_attempts(email, ip)
 
 
-def _clear_login_failure(request, email: str):
-    cache.delete(get_lockout_key(email, request.META.get('REMOTE_ADDR', 'unknown')))
+def _clear_login_failures(email: str, ip: str) -> None:
+    AuditLog.objects.filter(
+        action=LOGIN_FAILURE_ACTION,
+        email=email,
+        details=ip,
+    ).delete()
 
 
-def _get_login_error_reason(email: str, password: str | None, request) -> str:
+def _get_login_error_reason(email: str, password: str | None) -> str:
     normalized = normalize_email(email)
     if not normalized:
         return 'Немає облікового запису з такою поштою.'
@@ -47,9 +66,6 @@ def _get_login_error_reason(email: str, password: str | None, request) -> str:
         return 'Немає облікового запису з такою поштою.'
     if not user.is_active:
         return 'Аккаунт не активований.'
-    lockout_key = get_lockout_key(normalized, request.META.get('REMOTE_ADDR', 'unknown'))
-    if cache.get(lockout_key, 0) >= 5:
-        return 'Аккаунт заблоковано на 15 хвилин.'
     if password is not None and not user.check_password(password):
         return 'Невірний пароль.'
     return 'Невірна пошта або пароль.'
@@ -97,9 +113,13 @@ def login_view(request):
         password = request.POST.get('password')
         user = User.objects.filter(email__iexact=email).first() if email else None
         ip = request.META.get('REMOTE_ADDR', 'unknown')
-        lockout_key = get_lockout_key(email, ip)
-        if user is not None and cache.get(lockout_key, 0) >= 5:
+        if email and _login_failed_attempts(email, ip) >= LOGIN_FAILURE_LIMIT:
             login_error_reason = 'Аккаунт заблоковано на 15 хвилин.'
+            form.add_error(None, login_error_reason)
+            return render(request, 'accounts/login.html', {
+                'form': form,
+                'login_error_reason': login_error_reason,
+            })
         elif user is None and email:
             login_error_reason = 'Немає облікового запису з такою поштою.'
         elif user is not None and not user.is_active:
@@ -107,7 +127,7 @@ def login_view(request):
         elif form.is_valid():
             user = form.get_user()
             if user is not None:
-                _clear_login_failure(request, email)
+                _clear_login_failures(email, ip)
                 if getattr(user, 'must_change_password', False):
                     login(request, user)
                     messages.warning(request, 'Спочатку змініть тимчасовий пароль.')
@@ -121,7 +141,7 @@ def login_view(request):
                 return redirect('home')
         if settings.ENV == 'dev':
             if not login_error_reason:
-                login_error_reason = _get_login_error_reason(email, password, request)
+                login_error_reason = _get_login_error_reason(email, password)
         else:
             login_error_reason = 'Невірна пошта або пароль.'
         if login_error_reason:
@@ -129,14 +149,10 @@ def login_view(request):
                 form.add_error(None, login_error_reason)
             else:
                 form.add_error(None, 'Невірна пошта або пароль.')
-        attempts = _login_failed_attempts(request, email) if email else 0
-        if user is not None and password and not form.errors:
-            attempts = _record_login_failure(request, email)
-            if attempts >= 5:
-                login_error_reason = 'Невірна пошта або пароль. Обліковий запис заблоковано на 15 хвилин.'
-                form.add_error(None, login_error_reason)
-            else:
-                login_error_reason = 'Невірна пошта або пароль.'
+        if email and password:
+            attempts = _record_login_failure(email, ip, user)
+            if attempts >= LOGIN_FAILURE_LIMIT:
+                login_error_reason = 'Аккаунт заблоковано на 15 хвилин.'
                 form.add_error(None, login_error_reason)
     return render(request, 'accounts/login.html', {'form': form, 'login_error_reason': login_error_reason})
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.cache import cache
 from django.core.management import call_command
 from django.db import connection
 from django.test import TestCase
@@ -96,7 +97,23 @@ class AccountFlowTests(TestCase):
         for _ in range(5):
             response = self.client.post('/accounts/login/', {username_key: 'student@khul.ukr.education', pw_key: 'WrongPassword'})
             self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Невірна пошта або пароль.')
+        self.assertContains(response, 'Аккаунт заблоковано на 15 хвилин.')
+        self.assertEqual(AuditLog.objects.filter(action='login_failed').count(), 5)
+
+        cache.clear()
+        locked_response = self.client.post(
+            '/accounts/login/',
+            {username_key: 'student@khul.ukr.education', pw_key: 'Password123'},
+        )
+        self.assertContains(locked_response, 'Аккаунт заблоковано на 15 хвилин.')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        other_ip_response = self.client.post(
+            '/accounts/login/',
+            {username_key: 'student@khul.ukr.education', pw_key: 'Password123'},
+            REMOTE_ADDR='192.0.2.2',
+        )
+        self.assertEqual(other_ip_response.status_code, 302)
 
     def test_create_secretary_command(self):
         kw = {'email': 'secretary@example.com', pw_key: 'Secret123!', 'name': 'Secretary'}
