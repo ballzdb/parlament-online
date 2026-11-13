@@ -7,7 +7,7 @@
   {% for entry in entries %}
     <div class="card" style="margin-bottom: 1rem;">
       <div class="meta">{{ entry.target_type }} #{{ entry.target_id }}</div>
-      <pre>{{ entry.verdict|safe }}</pre>
+      <pre>{{ entry.verdict }}</pre>
     </div>
   {% empty %}
     <p>Пунктів на перевірку немає.</p>
