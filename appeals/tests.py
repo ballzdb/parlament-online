@@ -110,6 +110,6 @@ class AppealSubmissionTests(TestCase):
         response = self.client.get('/appeals/')
 
         self.assertContains(response, appeal.subject)
-        self.assertContains(response, self.user.email)
+        self.assertContains(response, self.user.display_name)
 
 # Create your tests here.

@@ -2,7 +2,9 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from accounts.models import Commission, User
+from appeals.models import Appeal
 from ideas.models import Idea, IdeaVote
+from kanban.models import KanbanCard
 
 
 class IdeaVoteTests(TestCase):
@@ -72,3 +74,47 @@ class ParliamentDecisionPageTests(TestCase):
         self.assertContains(response, 'Відхилена ідея')
         self.assertContains(response, 'Причина рішення')
         self.assertNotContains(response, 'Ідея на розгляді')
+
+
+class PublicEmailPrivacyTests(TestCase):
+    def test_public_pages_do_not_render_student_email(self):
+        author = User.objects.create_user(
+            email='author@khul.ukr.education',
+            password='Password123',
+            display_name='',
+            is_active=True,
+        )
+        commission = Commission.objects.create(name='Навчання', slug='navchannia')
+        idea = Idea.objects.create(title='Публічна ідея', body='Опис', author=author)
+        KanbanCard.objects.create(
+            commission=commission,
+            title='Публічна картка',
+            assignee=author,
+        )
+        Appeal.objects.create(
+            author=author,
+            subject='Публічне звернення',
+            body='Опис звернення',
+        )
+        public_pages = [
+            '/',
+            '/ideas/',
+            f'/ideas/{idea.pk}/',
+            '/kanban/',
+            '/kanban/navchannia/',
+            '/appeals/',
+            '/decisions/',
+            '/events/',
+            '/support/',
+            '/accounts/login/',
+            '/accounts/register/',
+        ]
+        self.client.force_login(author)
+
+        for path in public_pages:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertNotContains(response, '@khul.ukr.education')
+                if path in {f'/ideas/{idea.pk}/', '/ideas/', '/kanban/', '/kanban/navchannia/'}:
+                    self.assertContains(response, 'Учень')

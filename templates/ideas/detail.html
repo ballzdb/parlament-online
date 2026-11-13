@@ -5,7 +5,7 @@
 {% block content %}
   <div class="card" style="margin-bottom: 1.5rem;">
     <h1>{{ idea.title }}</h1>
-    <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+    <div class="meta">Автор: {{ idea.author.display_name|default:'Учень' }} · {{ idea.created_at|date:'d.m.Y' }}</div>
     <p>{{ idea.body }}</p>
     <div class="meta">Комісія: {{ idea.commission|default:'—' }} · Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
     {% if idea.completion_report %}

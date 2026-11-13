@@ -13,7 +13,7 @@
       <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
       <p>{{ appeal.body }}</p>
       {% if user.is_authenticated and not user.is_student %}
-        <div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>
+        <div class="meta">Автор: {{ appeal.author.display_name|default:'Учень' }}</div>
       {% else %}
         <div class="meta">Авторство приховане</div>
       {% endif %}

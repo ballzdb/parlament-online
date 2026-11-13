@@ -12,7 +12,7 @@
   {% for idea in ideas %}
     <div class="card feed-card">
       <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
-      <div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+      <div class="meta">{{ idea.author.display_name|default:'Учень' }} · {{ idea.created_at|date:'d.m.Y' }}</div>
       <p>{{ idea.body }}</p>
       <div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
     </div>

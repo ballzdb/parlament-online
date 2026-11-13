@@ -14,7 +14,7 @@
     <section class="privacy-consent" id="privacy-consent" data-endpoint="{% url 'analytics:anonymous_event' %}" aria-labelledby="privacy-consent-title" hidden>
       <div>
         <h2 id="privacy-consent-title">Анонімна статистика</h2>
-        <p>Лише за вашою згодою сайт рахує перегляди розділів у спільних добових підсумках. У записах цієї статистики немає IP-адрес, імен, пошти, облікових записів чи історії окремих відвідувачів. Звіт надходитиме лише на ye74@khul.ukr.education.</p>
+        <p>Лише за вашою згодою сайт рахує перегляди розділів у спільних добових підсумках. У записах цієї статистики немає IP-адрес, імен, пошти, облікових записів чи історії окремих відвідувачів. Звіт отримуватиме секретар парламенту.</p>
       </div>
       <div class="privacy-consent-actions">
         <button type="button" class="btn" data-consent-choice="accept">Дозволити</button>
@@ -45,7 +45,7 @@
               Сповіщення
               {% if unread_notification_count %}<span class="notification-count" aria-label="Непрочитані сповіщення: {{ unread_notification_count }}">{{ unread_notification_count }}</span>{% endif %}
             </a>
-            <a href="{% url 'accounts:profile' %}" class="nav-user">{{ user.email }}</a>
+            <a href="{% url 'accounts:profile' %}" class="nav-user">{{ user.display_name|default:'Учень' }}</a>
             {% if user.role == 'secretary' %}
               <a href="{% url 'accounts:reset_request' %}">Скинути пароль учня</a>
             {% endif %}

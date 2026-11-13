@@ -20,7 +20,7 @@
           {% if card.status == status_key %}
             <div class="kanban-card">
               <strong>{{ card.title }}</strong>
-              <div class="meta">{{ card.assignee|default:'Без відповідального' }}</div>
+              <div class="meta">{{ card.assignee.display_name|default:'Учень' }}</div>
               <p>{{ card.description|default:'Опис відсутній' }}</p>
               {% if user.is_authenticated and user.is_member %}
                 <a href="{% url 'kanban:card_edit' card.pk %}">Редагувати</a>
