@@ -284,6 +284,8 @@ class RoleManagementTests(TestCase):
             password='Password123',
             is_active=True,
         )
+        self.admin.role = User.Role.SECRETARY
+        self.admin.save(update_fields=['role'])
         self.student = User.objects.create_user(
             email='student@khul.ukr.education',
             password='Password123',
