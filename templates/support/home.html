@@ -4,12 +4,14 @@
 
 {% block content %}
   <h1>Підтримка</h1>
+  <div class="record-list">
   {% for faq in faqs %}
-    <div class="card" style="margin-bottom: 1rem;">
+    <article class="card record-card">
       <h3>{{ faq.question }}</h3>
       <p>{{ faq.answer }}</p>
-    </div>
+    </article>
   {% empty %}
-    <p>Питань поки не додано.</p>
+    <div class="empty-state">Питань поки не додано.</div>
   {% endfor %}
+  </div>
 {% endblock %}
