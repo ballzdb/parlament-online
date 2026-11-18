@@ -46,6 +46,7 @@
           <a href="{% url 'support:home' %}">Підтримка</a>
           {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
             <a href="{% url 'analytics:dashboard' %}">Аналітика</a>
+            <a href="{% url 'accounts:role_management' %}">Керування ролями</a>
           {% endif %}
           {% if user.is_authenticated %}
             <a href="{% url 'accounts:profile' %}">{{ user.email }}</a>
