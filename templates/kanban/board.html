@@ -12,13 +12,13 @@
   {% if commission %}
     <h2>{{ commission.name }}</h2>
   {% endif %}
-  <div class="grid">
+  <div class="grid kanban-grid">
     {% for status_key, status_label in status_columns %}
       <div class="card">
         <h3>{{ status_label }}</h3>
         {% for card in cards %}
           {% if card.status == status_key %}
-            <div style="border:1px solid #dfe7f1; border-radius:8px; padding:0.75rem; margin-top:0.75rem;">
+            <div class="kanban-card">
               <strong>{{ card.title }}</strong>
               <div class="meta">{{ card.assignee|default:'Без відповідального' }}</div>
               <p>{{ card.description|default:'Опис відсутній' }}</p>
