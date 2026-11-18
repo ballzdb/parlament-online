@@ -31,7 +31,7 @@ class User(AbstractUser):
 
     class Role(models.TextChoices):
         STUDENT = 'student', 'Студент'
-        MEMBER = 'member', 'Член парламенту'
+        MEMBER = 'member', 'Парламентарій'
         COMMISSION_HEAD = 'commission_head', 'Голова комісії'
         SECRETARY = 'secretary', 'Секретар'
 
