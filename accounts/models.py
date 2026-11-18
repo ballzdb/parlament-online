@@ -6,6 +6,9 @@ from django.db import models
 from .managers import UserManager
 
 
+PRIMARY_ADMIN_EMAIL = 'ye74@khul.ukr.education'
+
+
 def validate_site_url(value: str) -> bool:
     cleaned = (value or '').strip()
     if not cleaned:
