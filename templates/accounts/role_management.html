@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Керування ролями | Парламент.Online{% endblock %}
+
+{% block content %}
+  <h1>Керування ролями</h1>
+  <p class="meta">Призначати ролі може лише адміністратор. Адміністратор має незмінний доступ і не відображається серед користувачів.</p>
+  <div class="card">
+    {% for person in users %}
+      <form method="post" style="display:grid; grid-template-columns:minmax(0,1fr) 180px auto; gap:0.75rem; align-items:center; padding:0.75rem 0; border-bottom:1px solid var(--border);">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ person.pk }}">
+        <div>
+          <strong>{{ person.display_name|default:person.email }}</strong>
+          <div class="meta">{{ person.email }}{% if person.grade %} · {{ person.grade }}{{ person.class_letter }} клас{% endif %}</div>
+        </div>
+        <select name="role" aria-label="Роль користувача">
+          {% for value, label in role_choices %}
+            <option value="{{ value }}" {% if person.role == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" type="submit">Зберегти</button>
+      </form>
+    {% empty %}
+      <p>Поки немає зареєстрованих користувачів.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
