@@ -20,3 +20,7 @@ truststore==0.10.5
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.6
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary
