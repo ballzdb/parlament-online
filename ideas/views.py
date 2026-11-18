@@ -6,19 +6,22 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from accounts.models import Commission
+from accounts.models import Commission, User
 from appeals.models import Appeal
-from .forms import IdeaForm, IdeaStatusForm
-from .models import Idea, IdeaVote
+from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
+from .models import Event, Idea, IdeaVote
 
 
 def home(request):
     ideas = Idea.objects.select_related('commission', 'author').order_by('-created_at')[:6]
     appeals = Appeal.objects.order_by('-created_at')[:5]
+    events = Event.objects.filter(starts_at__gte=timezone.now()).select_related('created_by', 'source_idea')[:6]
     context = {
         'ideas': ideas,
         'appeals': appeals,
+        'events': events,
         'stats': {
             'idea_count': Idea.objects.count(),
             'appeal_count': Appeal.objects.count(),
@@ -73,3 +76,33 @@ def idea_detail(request, pk):
         return redirect('ideas:detail', pk=idea.pk)
 
     return render(request, 'ideas/detail.html', {'idea': idea, 'has_voted': has_voted, 'status_form': status_form})
+
+
+
+@login_required
+def event_create(request, pk):
+    if not request.user.has_role(
+        User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY
+    ):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    idea = get_object_or_404(Idea, pk=pk)
+    if request.method == 'POST':
+        form = EventCreateForm(request.POST, initial={
+            'title': idea.title,
+            'description': idea.body,
+        })
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.source_idea = idea
+            event.created_by = request.user
+            event.save()
+            messages.success(request, 'Подію створено. Вона з’явиться на головній сторінці.')
+            return redirect('ideas:detail', pk=idea.pk)
+    else:
+        form = EventCreateForm(initial={
+            'title': idea.title,
+            'description': idea.body,
+        })
+    return render(request, 'ideas/event_create.html', {'form': form, 'idea': idea})
