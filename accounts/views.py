@@ -85,7 +85,7 @@ def _send_verification_code(user):
 
     subject = 'Код підтвердження — Парламент.Online'
     message = (
-        f'Ваш код підтвердження: {code}\\n\\n'
+        f'Ваш код підтвердження: {code}\n\n'
         'Код дійсний протягом 10 хвилин. Не повідомляйте його іншим людям. '
         'Якщо ви не реєструвалися на Парламент.Online, просто проігноруйте цей лист.'
     )
@@ -167,7 +167,7 @@ def verify_email_view(request):
             messages.error(request, 'Вичерпано кількість спроб. Надішліть новий код пізніше.')
         elif timezone.now() >= verification.expires_at:
             messages.error(request, 'Термін дії коду минув. Надішліть новий код.')
-        elif not re.fullmatch(r'\\d{6}', code):
+        elif not re.fullmatch(r'[0-9]{6}', code):
             messages.error(request, 'Введіть шестизначний код із листа.')
         elif not check_password(code, verification.code_hash):
             verification.attempts_used += 1
