@@ -116,7 +116,7 @@ def idea_delete(request, pk):
         return HttpResponseNotAllowed(['POST'])
 
     is_admin = request.user.email.casefold() == PRIMARY_ADMIN_EMAIL
-    is_parliamentarian = request.user.role == User.Role.MEMBER
+    is_parliamentarian = request.user.is_member
     if not (is_admin or is_parliamentarian):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
