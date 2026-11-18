@@ -3,103 +3,97 @@
 {% block title %}Головна | Парламент.Online{% endblock %}
 
 {% block content %}
-  <section style="margin-bottom: 2rem;">
-    <h1>Парламент.Online</h1>
-    <p>Платформа, де учні можуть ділитися ідеями, голосувати, відстежувати виконання і бачити результати роботи парламенту.</p>
-    <div class="grid">
-      <div class="card">
-        <h3>Ідей</h3>
-        <p>{{ stats.idea_count }}</p>
-      </div>
-      <div class="card">
-        <h3>Відгуків</h3>
-        <p>{{ stats.appeal_count }}</p>
-      </div>
-      <div class="card">
-        <h3>Підтримка</h3>
-        <p>Робота парламенту стала доступною онлайн для всіх учнів.</p>
-      </div>
+  <style>
+    .home-hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:2rem; min-height:245px; padding:clamp(1.5rem,4vw,3rem); margin-bottom:1.4rem; border-radius:22px; color:#fff; background:linear-gradient(115deg,#173b68 0%,#245da8 68%,#477fc0 100%); box-shadow:0 18px 38px rgba(25,65,115,.2); }
+    html[data-theme="usa"] .home-hero { background:linear-gradient(115deg,#142b4d 0%,#24466f 65%,#a72a3a 100%); }
+    html[data-theme="gta"] .home-hero { background:linear-gradient(115deg,#291b3b 0%,#66345f 55%,#d46b82 100%); }
+    .hero-copy { position:relative; z-index:1; max-width:700px; }
+    .eyebrow { font-size:.73rem; font-weight:800; letter-spacing:.16em; opacity:.78; margin-bottom:.8rem; }
+    .home-hero h1 { margin:0 0 .75rem; font-size:clamp(2.2rem,5vw,3.8rem); letter-spacing:-.055em; }
+    .home-hero h1 span { color:#cfe2ff; }
+    html[data-theme="gta"] .home-hero h1 span { color:#ffd1dc; }
+    .home-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(1rem,2vw,1.15rem); }
+    .hero-mark { width:150px; height:150px; flex:0 0 150px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.25); border-radius:38px; transform:rotate(8deg); background:rgba(255,255,255,.1); box-shadow:inset 0 0 35px rgba(255,255,255,.08); }
+    .hero-mark span { font-size:3.2rem; font-weight:900; letter-spacing:-.1em; color:rgba(255,255,255,.9); transform:rotate(-8deg); }
+    .home-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-bottom:2.4rem; }
+    .stat-card { display:flex; flex-direction:column; justify-content:center; min-height:118px; }
+    .stat-card strong { display:block; font-size:2rem; line-height:1.2; letter-spacing:-.04em; color:var(--accent); }
+    .stat-card .meta { font-weight:650; }
+    .home-section { margin:2.2rem 0; }
+    .home-section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+    .home-section-heading h2 { margin:0; }
+    .home-list { display:grid; gap:.85rem; }
+    .home-list .card { box-shadow:none; }
+    .home-list .card:hover { box-shadow:var(--shadow); }
+    .home-info { margin-bottom:2rem; }
+    .home-socials { display:flex; flex-wrap:wrap; gap:.65rem; }
+    .home-socials a { display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; min-height:42px; border:1px solid var(--border); border-radius:10px; background:var(--soft); font-weight:650; }
+    .home-socials a:hover { text-decoration:none; border-color:var(--accent); }
+    @media(max-width:650px) { .home-hero { min-height:unset; } .hero-mark { width:84px;height:84px;flex-basis:84px;border-radius:24px; } .hero-mark span {font-size:2rem;} .home-stats {grid-template-columns:1fr;} .stat-card {min-height:88px;} }
+  </style>
+  <section class="home-hero">
+    <div class="hero-copy">
+      <div class="eyebrow">ШКІЛЬНЕ САМОВРЯДУВАННЯ · ОНЛАЙН</div>
+      <h1>Парламент<span>.Online</span></h1>
+      <p>Простір, де голос кожного учня може перетворитися на реальні зміни у житті ліцею.</p>
     </div>
+    <div class="hero-mark" aria-hidden="true"><span>PO</span></div>
   </section>
-
+  <section class="home-stats">
+    <div class="card stat-card"><div class="meta">Ідей від учнів</div><strong>{{ stats.idea_count }}</strong></div>
+    <div class="card stat-card"><div class="meta">Звернень і відгуків</div><strong>{{ stats.appeal_count }}</strong></div>
+    <div class="card stat-card"><div class="meta">Для кожного учня</div><strong>Відкрито</strong></div>
+  </section>
   {% if institution_links or social_links %}
-    <section class="card" style="margin-bottom: 2rem;">
-      <h2>Ліцей і парламент онлайн</h2>
+    <section class="card home-info">
+      <div class="home-section-heading"><h2>Ліцей і парламент онлайн</h2></div>
       {% if institution_links %}
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; margin-bottom: 1rem;">
-          {% for item in institution_links %}
-            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="display: inline-flex; align-items: center; min-height: 44px;">{{ item.label }}</a>
-          {% endfor %}
+        <div class="home-socials" style="margin-bottom:1rem;">
+          {% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}
         </div>
-        <p style="margin-top: 0; margin-bottom: 1rem;">пр. Науки, 20, м. Харків, 61166</p>
+        <p class="meta">пр. Науки, 20, м. Харків, 61166</p>
       {% endif %}
       {% if social_links %}
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center;">
+        <div class="home-socials">
           {% for item in social_links %}
-            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px;">
-              {% if item.key == 'instagram_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm5.75-3.25a1.25 1.25 0 1 1-1.25 1.25 1.25 1.25 0 0 1 1.25-1.25z"/></svg>
-              {% elif item.key == 'telegram_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.71 6.59-1.66 7.82c-.12.56-.46.7-.93.43l-2.58-1.9-1.24 1.2c-.14.13-.26.26-.52.26l.18-2.65 4.82-4.35c.21-.18-.05-.29-.37-.11L8.7 13.25l-2.57-.8c-.56-.17-.57-.56.12-.83l10.11-3.9c.47-.17.88.11.72.82z"/></svg>
-              {% elif item.key == 'facebook_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3h-3.1V7.5c0-.87.24-1.46 1.52-1.46H16V3.1c-.26-.03-1.17-.1-2.22-.1-2.19 0-3.69 1.34-3.69 3.8V11H8v3h2.09v8h3.41z"/></svg>
-              {% elif item.key == 'tiktok_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.5 3c.42 1.72 1.7 3.04 3.5 3.14v2.87c-1.39-.05-2.64-.47-3.7-1.2v5.58A5.82 5.82 0 1 1 10.54 7.2v2.82a2.95 2.95 0 1 0 2.08 2.85V3h3.88z"/></svg>
-              {% elif item.key == 'youtube_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21.6 7.2a2.95 2.95 0 0 0-2.08-2.09C17.7 4.7 12 4.7 12 4.7s-5.7 0-7.52.41A2.95 2.95 0 0 0 2.4 7.2 30.55 30.55 0 0 0 2 12a30.55 30.55 0 0 0 .4 4.8 2.95 2.95 0 0 0 2.08 2.09c1.82.41 7.52.41 7.52.41s5.7 0 7.52-.41A2.95 2.95 0 0 0 21.6 16.8 30.55 30.55 0 0 0 22 12a30.55 30.55 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
-              {% elif item.key == 'discord_url' %}
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.3 5.3A17.7 17.7 0 0 0 15.7 4l-.3.7A15.8 15.8 0 0 1 12 4.9a15.8 15.8 0 0 1-3.4-.2L8 4a17.7 17.7 0 0 0-4.6 1.3C2.2 9.1 2 12.7 2 16.3A16.7 16.7 0 0 0 8.9 18c.5-.7.9-1.5 1.2-2.3a11.8 11.8 0 0 1-1.8-.9L8 14.8c1.8.8 3.7.8 5.5 0l-.3.1a11.8 11.8 0 0 1-1.8.9c.3.8.7 1.6 1.2 2.3A16.7 16.7 0 0 0 22 16.3c0-3.6-.2-7.2-1.7-11zm-9.2 9.1c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8zm6.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8z"/></svg>
-              {% endif %}
-              <span>{{ item.label }}</span>
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">
+              {% if item.key == 'instagram_url' %}<span aria-hidden="true">◎</span>{% elif item.key == 'telegram_url' %}<span aria-hidden="true">➤</span>{% elif item.key == 'facebook_url' %}<span aria-hidden="true">f</span>{% elif item.key == 'tiktok_url' %}<span aria-hidden="true">♪</span>{% elif item.key == 'youtube_url' %}<span aria-hidden="true">▶</span>{% elif item.key == 'discord_url' %}<span aria-hidden="true">◈</span>{% endif %}
+              {{ item.label }} ↗
             </a>
           {% endfor %}
         </div>
       {% endif %}
     </section>
   {% endif %}
-
-  <section style="margin-bottom:2rem;">
-    <h2>Найближчі події</h2>
+  <section class="home-section">
+    <div class="home-section-heading"><h2>Найближчі події</h2></div>
     <div class="grid">
       {% for event in events %}
         <article class="card">
+          <div class="meta" style="font-weight:700;color:var(--accent);">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
           <h3>{{ event.title }}</h3>
-          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} о {{ event.starts_at|date:'H:i' }}</div>
           {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
           {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
         </article>
-      {% empty %}
-        <p>Найближчих подій поки немає.</p>
-      {% endfor %}
+      {% empty %}<div class="empty-state">Найближчих подій поки немає.</div>{% endfor %}
     </div>
   </section>
-
   <section class="grid">
-    <div>
-      <h2>Останні ідеї</h2>
-      {% for idea in ideas %}
-        <div class="card" style="margin-bottom: 1rem;">
-          <h3>{{ idea.title }}</h3>
-          <div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
-          <p>{{ idea.body|truncatewords:24 }}</p>
-          <div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
-        </div>
-      {% empty %}
-        <p>Ідей ще немає.</p>
-      {% endfor %}
+    <div class="home-section">
+      <div class="home-section-heading"><h2>Останні ідеї</h2></div>
+      <div class="home-list">
+        {% for idea in ideas %}
+          <article class="card"><h3>{{ idea.title }}</h3><div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div><p>{{ idea.body|truncatewords:24 }}</p><div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div></article>
+        {% empty %}<div class="empty-state">Ідей ще немає.</div>{% endfor %}
+      </div>
     </div>
-
-    <div>
-      <h2>Відгуки</h2>
-      {% for appeal in appeals %}
-        <div class="card" style="margin-bottom: 1rem;">
-          <h3>{{ appeal.subject }}</h3>
-          <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
-          <p>{{ appeal.body|truncatewords:20 }}</p>
-        </div>
-      {% empty %}
-        <p>Відгуків ще немає.</p>
-      {% endfor %}
+    <div class="home-section">
+      <div class="home-section-heading"><h2>Відгуки</h2></div>
+      <div class="home-list">
+        {% for appeal in appeals %}
+          <article class="card"><h3>{{ appeal.subject }}</h3><div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div><p>{{ appeal.body|truncatewords:20 }}</p></article>
+        {% empty %}<div class="empty-state">Відгуків поки немає.</div>{% endfor %}
+      </div>
     </div>
   </section>
 {% endblock %}
