@@ -7,8 +7,9 @@
   {% if user.is_authenticated %}
     <p><a class="btn" href="{% url 'appeals:create' %}">Нове звернення</a></p>
   {% endif %}
+  <div class="record-list">
   {% for appeal in appeals %}
-    <div class="card" style="margin-bottom: 1rem;">
+    <article class="card record-card">
       <h3>{{ appeal.subject }}</h3>
       <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
       <p>{{ appeal.body }}</p>
@@ -20,8 +21,9 @@
       {% if appeal.public_answer %}
         <p><strong>Відповідь парламенту:</strong> {{ appeal.public_answer }}</p>
       {% endif %}
-    </div>
+    </article>
   {% empty %}
-    <p>Поки немає звернень.</p>
+    <div class="empty-state">Поки немає звернень.</div>
   {% endfor %}
+  </div>
 {% endblock %}
