@@ -1,17 +1,50 @@
 {% extends 'base.html' %}
-
-{% block title %}Аналітика{% endblock %}
-
+{% block title %}Аналітика дослідження{% endblock %}
 {% block content %}
-  <h1>Аналітика</h1>
-  <div class="grid">
-    <div class="card">
-      <h3>Події</h3>
-      {% for event in events %}
-        <p>{{ event.timestamp|date:'d.m.Y H:i' }} · {{ event.action }}</p>
-      {% empty %}
-        <p>Подій ще немає.</p>
-      {% endfor %}
-    </div>
-  </div>
+<style>
+.analytics-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin:1rem 0 1.5rem}
+.metric{background:#fff;border:1px solid #dfe7f1;border-radius:12px;padding:1rem}
+.metric small{display:block;color:#5a6473;margin-bottom:.45rem}
+.metric strong{font-size:1.8rem}
+.section{margin:1.5rem 0}.section h2{font-size:1.25rem}
+.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
+.data-table th,.data-table td{text-align:left;padding:.7rem;border-bottom:1px solid #e5eaf1}
+.bar-row{display:grid;grid-template-columns:70px 1fr 45px;gap:.7rem;align-items:center;margin:.55rem 0}
+.bar{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:#2866b2}
+.note{color:#5a6473;font-size:.9rem}
+</style>
+<div class="analytics-head">
+  <div><h1>Аналітика дослідження</h1><p class="note">Дані сайту «Парламент.Online» · оновлено {{ generated_at|date:'d.m.Y H:i' }}</p></div>
+  <a class="btn" href="{% url 'analytics:export_csv' %}">Експортувати CSV</a>
+</div>
+<h2>Відвідуваність</h2>
+<div class="analytics-grid">
+  <div class="metric"><small>Перегляди за 30 днів</small><strong>{{ period_views }}</strong></div>
+  <div class="metric"><small>Унікальні відвідувачі за 30 днів*</small><strong>{{ period_visitors }}</strong></div>
+  <div class="metric"><small>Перегляди за 7 днів</small><strong>{{ week_views }}</strong></div>
+  <div class="metric"><small>Унікальні за весь час*</small><strong>{{ all_visitors }}</strong></div>
+  <div class="metric"><small>Перегляди за весь час</small><strong>{{ all_views }}</strong></div>
+  <div class="metric"><small>Активні облікові записи за 30 днів</small><strong>{{ active_accounts_30d }}</strong></div>
+</div>
+<p class="note">* Унікальність визначається за браузерним cookie, а не за реальною особою. Один учень може мати кілька пристроїв або браузерів.</p>
+<div class="section"><h2>Динаміка відвідуваності за 30 днів</h2>
+{% for day in daily %}<div class="bar-row"><span>{{ day.date }}</span><div class="bar"><span style="width:{% if period_views %}{% widthratio day.views period_views 100 %}{% else %}0{% endif %}%"></span></div><span>{{ day.views }}</span></div>{% endfor %}
+</div>
+<div class="section"><h2>Найпопулярніші сторінки за 30 днів</h2>
+<table class="data-table"><tr><th>Сторінка</th><th>Перегляди</th></tr>
+{% for item in top_pages %}<tr><td>{{ item.path }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Даних поки немає.</td></tr>{% endfor %}</table></div>
+<div class="section"><h2>Охоплення та реєстрації</h2>
+<div class="analytics-grid"><div class="metric"><small>Активні учнівські акаунти</small><strong>{{ registered_students }}</strong></div><div class="metric"><small>Нові реєстрації за 30 днів</small><strong>{{ new_registrations }}</strong></div><div class="metric"><small>Активні відвідувачі за 30 днів*</small><strong>{{ active_visitors_30d }}</strong></div></div>
+<table class="data-table"><tr><th>Клас</th><th>Кількість акаунтів</th></tr>
+{% for item in grade_stats %}<tr><td>{{ item.grade|default:'Не вказано' }} {{ item.class_letter }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Немає даних про класи.</td></tr>{% endfor %}</table></div>
+<div class="section"><h2>Залученість: ідеї та голосування</h2>
+<div class="analytics-grid"><div class="metric"><small>Усього ідей</small><strong>{{ idea_total }}</strong></div><div class="metric"><small>Голоси за ідеї</small><strong>{{ idea_votes }}</strong></div><div class="metric"><small>Середній час до виконання (днів)*</small><strong>{{ average_idea_days|default:'—' }}</strong></div></div>
+<table class="data-table"><tr><th>Статус ідеї</th><th>Кількість</th></tr>{% for item in idea_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Ідей ще немає.</td></tr>{% endfor %}</table>
+<p class="note">* Різниця між датою створення та датою останнього оновлення виконаних ідей; це наближений показник, не точний час відповіді.</p></div>
+<div class="section"><h2>Звернення та відгуки</h2><div class="metric"><small>Усього звернень</small><strong>{{ appeal_total }}</strong></div>
+<table class="data-table"><tr><th>Статус</th><th>Кількість</th></tr>{% for item in appeal_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Звернень ще немає.</td></tr>{% endfor %}</table></div>
+<div class="section"><h2>Журнал подій</h2><table class="data-table"><tr><th>Час</th><th>Дія</th><th>Об'єкт</th></tr>
+{% for event in events %}<tr><td>{{ event.timestamp|date:'d.m.Y H:i' }}</td><td>{{ event.action }}</td><td>{{ event.related_object }}</td></tr>{% empty %}<tr><td colspan="3">Події ще не записувалися.</td></tr>{% endfor %}</table></div>
+<div class="section note"><strong>Важливо для дослідження.</strong> Ця панель показує фактичне використання сайту, а не рівень обізнаності чи довіри учнів. Показники довіри, обізнаності та офлайн-участі потрібно збирати окремими анонімними опитуваннями й журналом відвідування заходів. Не можна робити висновок про причинний вплив сайту лише за зміною цих показників.</div>
 {% endblock %}
