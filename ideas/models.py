@@ -40,3 +40,18 @@ class IdeaVote(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user.email} -> {self.idea.title}'
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=160)
+    description = models.TextField(max_length=3000, blank=True)
+    starts_at = models.DateTimeField()
+    source_idea = models.ForeignKey(Idea, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='created_events')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['starts_at', 'title']
+
+    def __str__(self) -> str:
+        return self.title
