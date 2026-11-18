@@ -3,7 +3,7 @@
 {% block title %}Профіль{% endblock %}
 
 {% block content %}
-  <div class="card">
+  <div class="card form-card">
     <h1>Профіль</h1>
     <p><strong>Електронна пошта:</strong> {{ user.email }}</p>
     <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
