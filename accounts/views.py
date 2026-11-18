@@ -60,6 +60,9 @@ def register_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             email = normalize_email(form.cleaned_data['email'])
+            if email == PRIMARY_ADMIN_EMAIL:
+                form.add_error('email', 'Цей обліковий запис створюється лише через захищену консоль сервера.')
+                return render(request, 'accounts/register.html', {'form': form})
             ip_key = f'registration:{request.META.get("REMOTE_ADDR", "unknown")}'
             if cache.get(ip_key, 0) >= 10:
                 messages.error(request, 'Занадто багато реєстрацій з цієї IP. Спробуйте пізніше.')
@@ -73,9 +76,9 @@ def register_view(request):
                     user = existing
                 else:
                     user = User(email=email)
-                user.role = User.Role.SECRETARY if email == PRIMARY_ADMIN_EMAIL else User.Role.STUDENT
-                user.is_staff = email == PRIMARY_ADMIN_EMAIL
-                user.is_superuser = email == PRIMARY_ADMIN_EMAIL
+                user.role = User.Role.STUDENT
+                user.is_staff = False
+                user.is_superuser = False
                 user.display_name = form.cleaned_data['display_name'].strip()
                 user.grade, user.class_letter = form.cleaned_data['school_class']
                 user.set_password(form.cleaned_data['password'])
