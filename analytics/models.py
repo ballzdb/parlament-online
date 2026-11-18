@@ -15,3 +15,23 @@ class EventLog(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user or "anon"}: {self.action}'
+
+
+class PageView(models.Model):
+    path = models.CharField(max_length=255, db_index=True)
+    visitor_key = models.CharField(max_length=64, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='page_views',
+    )
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [models.Index(fields=['timestamp', 'path'])]
+
+    def __str__(self) -> str:
+        return f'{self.path} @ {self.timestamp:%Y-%m-%d %H:%M}'
