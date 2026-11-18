@@ -14,7 +14,7 @@ from django.utils import timezone
 from app.permissions import requires_roles
 
 from .forms import EmailAuthenticationForm, PasswordChangeForm, RegistrationForm
-from .models import AuditLog, User
+from .models import AuditLog, PRIMARY_ADMIN_EMAIL, User
 from .utils import normalize_email
 
 
@@ -73,7 +73,9 @@ def register_view(request):
                     user = existing
                 else:
                     user = User(email=email)
-                user.role = User.Role.STUDENT
+                user.role = User.Role.SECRETARY if email == PRIMARY_ADMIN_EMAIL else User.Role.STUDENT
+                user.is_staff = email == PRIMARY_ADMIN_EMAIL
+                user.is_superuser = email == PRIMARY_ADMIN_EMAIL
                 user.display_name = form.cleaned_data['display_name'].strip()
                 user.grade, user.class_letter = form.cleaned_data['school_class']
                 user.set_password(form.cleaned_data['password'])
