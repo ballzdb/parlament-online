@@ -1,49 +1,139 @@
 {% extends 'base.html' %}
-{% block title %}Аналітика дослідження{% endblock %}
+{% block title %}Аналітика · Парламент.Online{% endblock %}
 {% block content %}
 <style>
-.analytics-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
-.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin:1rem 0 1.5rem}
-.metric{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:15px;padding:1rem;box-shadow:var(--shadow)}
-.metric small{display:block;color:var(--muted);margin-bottom:.45rem}
-.metric strong{font-size:1.8rem}
-.section{margin:1.5rem 0}.section h2{font-size:1.25rem}
-.data-table{width:100%;border-collapse:collapse;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.data-table th,.data-table td{text-align:left;padding:.8rem;border-bottom:1px solid var(--border)}.data-table th{background:var(--soft)}
-.bar-row{display:grid;grid-template-columns:70px 1fr 45px;gap:.7rem;align-items:center;margin:.55rem 0}
-.bar{height:10px;background:var(--soft);border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent);border-radius:inherit}
-.note{color:var(--muted);font-size:.9rem}
+.analytics-page{max-width:1120px;margin:0 auto}
+.analytics-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;padding:1.5rem;border-radius:20px;background:linear-gradient(120deg,#142b4d,#244f7f 68%,#8f1928);color:#fff;box-shadow:var(--shadow);margin-bottom:1.5rem}
+.analytics-hero h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 .45rem;color:#fff}
+.analytics-hero p{margin:0;color:rgba(255,255,255,.82)}
+.analytics-hero .btn{background:#fff;color:#173b68;white-space:nowrap}
+.analytics-section{margin:1.8rem 0}
+.analytics-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.85rem}
+.analytics-section h2{font-size:1.3rem;margin:0}
+.analytics-subtitle{color:var(--muted);font-size:.9rem;margin:.3rem 0 0}
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:.85rem}
+.metric{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:15px;padding:1rem;box-shadow:var(--shadow);min-width:0}
+.metric-label{display:block;color:var(--muted);font-size:.88rem;line-height:1.4;min-height:2.5em}
+.metric strong{display:block;font-size:1.9rem;line-height:1.2;margin-top:.4rem;font-variant-numeric:tabular-nums}
+.metric-detail{display:block;color:var(--muted);font-size:.78rem;margin-top:.35rem}
+.analytics-panel{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:1rem;box-shadow:var(--shadow)}
+.analytics-note{background:var(--soft);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:.85rem 1rem;color:var(--text);font-size:.9rem;margin-top:1rem}
+.analytics-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+.analytics-table{width:100%;border-collapse:collapse;color:var(--text);min-width:340px}
+.analytics-table th,.analytics-table td{text-align:left;padding:.75rem .85rem;border-bottom:1px solid var(--border)}
+.analytics-table th{background:var(--soft);font-size:.86rem;color:var(--muted);font-weight:700}
+.analytics-table tr:last-child td{border-bottom:0}
+.analytics-table td:last-child,.analytics-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.chart-list{display:grid;gap:.65rem}
+.chart-row{display:grid;grid-template-columns:54px minmax(60px,1fr) 42px;gap:.7rem;align-items:center;font-size:.86rem}
+.chart-track{height:12px;background:var(--soft);border-radius:20px;overflow:hidden}
+.chart-fill{height:100%;background:linear-gradient(90deg,var(--nav),var(--accent));border-radius:20px;min-width:0}
+.chart-value{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.empty-state{color:var(--muted);padding:1rem;text-align:center}
+.analytics-footnote{font-size:.88rem;color:var(--muted);line-height:1.6}
+@media(max-width:600px){.analytics-hero{padding:1.1rem}.metric strong{font-size:1.65rem}.chart-row{grid-template-columns:45px minmax(45px,1fr) 34px;gap:.45rem}}
 </style>
-<div class="analytics-head">
-  <div><h1>Аналітика дослідження</h1><p class="note">Дані сайту «Парламент.Online» · оновлено {{ generated_at|date:'d.m.Y H:i' }}</p></div>
-  <a class="btn" href="{% url 'analytics:export_csv' %}">Експортувати CSV</a>
+
+<div class="analytics-page">
+  <header class="analytics-hero">
+    <div>
+      <h1>Панель аналітики</h1>
+      <p>Основні показники роботи «Парламент.Online»</p>
+      <p style="font-size:.82rem;margin-top:.55rem">Останнє оновлення: {{ generated_at|date:'d.m.Y о H:i' }}</p>
+    </div>
+    <a class="btn" href="{% url 'analytics:export_csv' %}">↓ Експортувати дані (CSV)</a>
+  </header>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head">
+      <div><h2>Відвідуваність сайту</h2><p class="analytics-subtitle">Скільки сторінок переглядали та скільки облікових записів користувалися сайтом</p></div>
+    </div>
+    <div class="analytics-grid">
+      <article class="metric"><span class="metric-label">Перегляди за останні 30 днів</span><strong>{{ period_views }}</strong><span class="metric-detail">Усі зафіксовані перегляди сторінок</span></article>
+      <article class="metric"><span class="metric-label">Активні акаунти за 30 днів</span><strong>{{ period_visitors }}</strong><span class="metric-detail">Унікальні користувачі, які були авторизовані</span></article>
+      <article class="metric"><span class="metric-label">Перегляди за останні 7 днів</span><strong>{{ week_views }}</strong><span class="metric-detail">Для оцінки недавньої активності</span></article>
+      <article class="metric"><span class="metric-label">Активні акаунти за весь час</span><strong>{{ all_visitors }}</strong><span class="metric-detail">Унікальні авторизовані користувачі</span></article>
+      <article class="metric"><span class="metric-label">Усі перегляди за весь час</span><strong>{{ all_views }}</strong><span class="metric-detail">Від моменту запуску збору статистики</span></article>
+    </div>
+    <div class="analytics-note"><strong>Як читати ці числа.</strong> «Перегляди» — це кількість завантажень сторінок, а не кількість людей. «Активні акаунти» — кількість різних облікових записів, з яких переглядали сторінки після входу. Анонімні браузери рахуються окремо й не додаються до активних акаунтів.</div>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Динаміка за 30 днів</h2><p class="analytics-subtitle">Кількість переглядів у кожен день. Довша смуга означає більше переглядів.</p></div></div>
+    <div class="analytics-panel">
+      {% if period_views %}
+        <div class="chart-list">
+          {% for day in daily %}
+            <div class="chart-row">
+              <span>{{ day.date }}</span>
+              <div class="chart-track"><div class="chart-fill" style="width:{% widthratio day.views max_daily_views 100 %}%"></div></div>
+              <span class="chart-value">{{ day.views }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">За цей період переглядів ще не зафіксовано.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Які сторінки переглядають найчастіше</h2><p class="analytics-subtitle">Топ-10 сторінок за останні 30 днів</p></div></div>
+    <div class="analytics-table-wrap"><table class="analytics-table">
+      <thead><tr><th>Сторінка</th><th>Перегляди</th></tr></thead>
+      <tbody>{% for item in top_pages %}<tr><td>{{ item.path }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">Даних поки немає.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Учнівська спільнота</h2><p class="analytics-subtitle">Реєстрації та розподіл активних учнівських акаунтів</p></div></div>
+    <div class="analytics-grid" style="margin-bottom:1rem">
+      <article class="metric"><span class="metric-label">Активні учнівські акаунти</span><strong>{{ registered_students }}</strong><span class="metric-detail">Загальна кількість активних акаунтів учнів</span></article>
+      <article class="metric"><span class="metric-label">Нові реєстрації за 30 днів</span><strong>{{ new_registrations }}</strong><span class="metric-detail">Усі нові акаунти за період</span></article>
+      <article class="metric"><span class="metric-label">Анонімні браузери за 30 днів</span><strong>{{ anonymous_browsers_30d }}</strong><span class="metric-detail">Приблизна кількість браузерів без входу</span></article>
+    </div>
+    <div class="analytics-table-wrap"><table class="analytics-table">
+      <thead><tr><th>Клас</th><th>Кількість акаунтів</th></tr></thead>
+      <tbody>{% for item in grade_stats %}<tr><td>{{ item.grade|default:'Не вказано' }} {{ item.class_letter }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">Немає даних про класи.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="analytics-footnote">Анонімні браузери визначаються за cookie. Одна людина може користуватися кількома браузерами або пристроями, тому цей показник не дорівнює кількості учнів.</p>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Робота з учнівськими ідеями</h2><p class="analytics-subtitle">Кількість пропозицій, голосувань і стан їх розгляду</p></div></div>
+    <div class="analytics-grid" style="margin-bottom:1rem">
+      <article class="metric"><span class="metric-label">Усього поданих ідей</span><strong>{{ idea_total }}</strong></article>
+      <article class="metric"><span class="metric-label">Усього голосів</span><strong>{{ idea_votes }}</strong></article>
+      <article class="metric"><span class="metric-label">Середній час до позначення ідеї виконаною</span><strong>{% if average_idea_days != None %}{{ average_idea_days }}{% else %}—{% endif %}</strong><span class="metric-detail">Днів, приблизна оцінка</span></article>
+    </div>
+    <div class="analytics-table-wrap"><table class="analytics-table">
+      <thead><tr><th>Статус ідеї</th><th>Кількість</th></tr></thead>
+      <tbody>{% for item in idea_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">Ідей ще немає.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="analytics-footnote">Час до виконання розраховується як різниця між датою створення і датою останнього оновлення виконаної ідеї. Це орієнтовний показник, а не точний час розгляду.</p>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Звернення та відгуки</h2><p class="analytics-subtitle">Загальна кількість звернень і їхні поточні статуси</p></div></div>
+    <div class="analytics-grid" style="margin-bottom:1rem">
+      <article class="metric"><span class="metric-label">Усього звернень</span><strong>{{ appeal_total }}</strong></article>
+    </div>
+    <div class="analytics-table-wrap"><table class="analytics-table">
+      <thead><tr><th>Статус звернення</th><th>Кількість</th></tr></thead>
+      <tbody>{% for item in appeal_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">Звернень ще немає.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+
+  <section class="analytics-section">
+    <div class="analytics-section-head"><div><h2>Останні адміністративні події</h2><p class="analytics-subtitle">Останні дії, які система записала до журналу</p></div></div>
+    <div class="analytics-table-wrap"><table class="analytics-table">
+      <thead><tr><th>Дата й час</th><th>Дія</th><th>Об'єкт</th></tr></thead>
+      <tbody>{% for event in events %}<tr><td>{{ event.timestamp|date:'d.m.Y H:i' }}</td><td>{{ event.action }}</td><td>{{ event.related_object|default:'—' }}</td></tr>{% empty %}<tr><td colspan="3" class="empty-state">Подій поки не записано.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+
+  <section class="analytics-note">
+    <strong>Важливо для дослідження.</strong> Аналітика показує використання сайту, але сама по собі не доводить, що сайт підвищив обізнаність або довіру учнів до парламенту. Для цього потрібні окремі анонімні опитування. Відвідуваність також рахується лише з моменту ввімкнення збору статистики.
+  </section>
 </div>
-<h2>Відвідуваність</h2>
-<div class="analytics-grid">
-  <div class="metric"><small>Перегляди за 30 днів</small><strong>{{ period_views }}</strong></div>
-  <div class="metric"><small>Активні облікові записи за 30 днів</small><strong>{{ period_visitors }}</strong></div>
-  <div class="metric"><small>Перегляди за 7 днів</small><strong>{{ week_views }}</strong></div>
-  <div class="metric"><small>Активні облікові записи за весь час</small><strong>{{ all_visitors }}</strong></div>
-  <div class="metric"><small>Перегляди за весь час</small><strong>{{ all_views }}</strong></div>
-</div>
-<p class="note">Ці показники рахують різні авторизовані облікові записи, а не браузери. Анонімні відвідування показані окремо нижче; вони не додаються до кількості акаунтів.</p>
-<div class="section"><h2>Динаміка відвідуваності за 30 днів</h2>
-{% for day in daily %}<div class="bar-row"><span>{{ day.date }}</span><div class="bar"><span style="width:{% if period_views %}{% widthratio day.views period_views 100 %}{% else %}0{% endif %}%"></span></div><span>{{ day.views }}</span></div>{% endfor %}
-</div>
-<div class="section"><h2>Найпопулярніші сторінки за 30 днів</h2>
-<table class="data-table"><tr><th>Сторінка</th><th>Перегляди</th></tr>
-{% for item in top_pages %}<tr><td>{{ item.path }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Даних поки немає.</td></tr>{% endfor %}</table></div>
-<div class="section"><h2>Охоплення та реєстрації</h2>
-<div class="analytics-grid"><div class="metric"><small>Активні учнівські акаунти</small><strong>{{ registered_students }}</strong></div><div class="metric"><small>Нові реєстрації за 30 днів</small><strong>{{ new_registrations }}</strong></div><div class="metric"><small>Анонімні браузери за 30 днів</small><strong>{{ anonymous_browsers_30d }}</strong></div></div>
-<table class="data-table"><tr><th>Клас</th><th>Кількість акаунтів</th></tr>
-{% for item in grade_stats %}<tr><td>{{ item.grade|default:'Не вказано' }} {{ item.class_letter }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Немає даних про класи.</td></tr>{% endfor %}</table></div>
-<div class="section"><h2>Залученість: ідеї та голосування</h2>
-<div class="analytics-grid"><div class="metric"><small>Усього ідей</small><strong>{{ idea_total }}</strong></div><div class="metric"><small>Голоси за ідеї</small><strong>{{ idea_votes }}</strong></div><div class="metric"><small>Середній час до виконання (днів)*</small><strong>{{ average_idea_days|default:'—' }}</strong></div></div>
-<table class="data-table"><tr><th>Статус ідеї</th><th>Кількість</th></tr>{% for item in idea_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Ідей ще немає.</td></tr>{% endfor %}</table>
-<p class="note">* Різниця між датою створення та датою останнього оновлення виконаних ідей; це наближений показник, не точний час відповіді.</p></div>
-<div class="section"><h2>Звернення та відгуки</h2><div class="metric"><small>Усього звернень</small><strong>{{ appeal_total }}</strong></div>
-<table class="data-table"><tr><th>Статус</th><th>Кількість</th></tr>{% for item in appeal_statuses %}<tr><td>{{ item.status }}</td><td>{{ item.total }}</td></tr>{% empty %}<tr><td colspan="2">Звернень ще немає.</td></tr>{% endfor %}</table></div>
-<div class="section"><h2>Журнал подій</h2><table class="data-table"><tr><th>Час</th><th>Дія</th><th>Об'єкт</th></tr>
-{% for event in events %}<tr><td>{{ event.timestamp|date:'d.m.Y H:i' }}</td><td>{{ event.action }}</td><td>{{ event.related_object }}</td></tr>{% empty %}<tr><td colspan="3">Події ще не записувалися.</td></tr>{% endfor %}</table></div>
-<div class="section note"><strong>Важливо для дослідження.</strong> Ця панель показує фактичне використання сайту, а не рівень обізнаності чи довіри учнів. Показники довіри, обізнаності та офлайн-участі потрібно збирати окремими анонімними опитуваннями й журналом відвідування заходів. Не можна робити висновок про причинний вплив сайту лише за зміною цих показників.</div>
 {% endblock %}
