@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Створити подію | Парламент.Online{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h1>Створити подію на основі ідеї</h1>
+    <p><strong>{{ idea.title }}</strong></p>
+    <p>{{ idea.body }}</p>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Створити подію</button>
+      <a href="{% url 'ideas:detail' idea.pk %}">Повернутися до ідеї</a>
+    </form>
+  </div>
+{% endblock %}
