@@ -8,7 +8,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from accounts.models import Commission, User
+from accounts.models import AuditLog, Commission, PRIMARY_ADMIN_EMAIL, User
 from appeals.models import Appeal
 from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
 from .models import Event, Idea, IdeaVote
@@ -106,3 +106,30 @@ def event_create(request, pk):
             'description': idea.body,
         })
     return render(request, 'ideas/event_create.html', {'form': form, 'idea': idea})
+
+
+
+@login_required
+def idea_delete(request, pk):
+    if request.method != 'POST':
+        from django.http import HttpResponseNotAllowed
+        return HttpResponseNotAllowed(['POST'])
+
+    is_admin = request.user.email.casefold() == PRIMARY_ADMIN_EMAIL
+    is_parliamentarian = request.user.role == User.Role.MEMBER
+    if not (is_admin or is_parliamentarian):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    idea = get_object_or_404(Idea, pk=pk)
+    title = idea.title
+    idea_id = idea.pk
+    AuditLog.objects.create(
+        action='idea_deleted',
+        email=request.user.email,
+        user=request.user,
+        details=f'Idea #{idea_id} "{title}" deleted by {request.user.email}',
+    )
+    idea.delete()
+    messages.success(request, 'Ідею видалено.')
+    return redirect('ideas:list')
