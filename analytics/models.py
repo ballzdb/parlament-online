@@ -31,7 +31,7 @@ class PageView(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
-        indexes = [models.Index(fields=['timestamp', 'path'])]
+        indexes = [models.Index(fields=['timestamp', 'path'], name='analytics_p_timepat_7a7e3b_idx')]
 
     def __str__(self) -> str:
         return f'{self.path} @ {self.timestamp:%Y-%m-%d %H:%M}'
