@@ -80,3 +80,57 @@ class ParliamentEventTests(TestCase):
         self.assertEqual(event.source_idea, self.idea)
         self.assertEqual(event.created_by, self.member)
         self.assertContains(self.client.get('/'), 'Шкільний кіновечір')
+
+
+
+class IdeaDeletionTests(TestCase):
+    def setUp(self):
+        self.student = User.objects.create_user(
+            email='student@khul.ukr.education',
+            password='Password123',
+            display_name='Учень',
+            is_active=True,
+        )
+        self.member = User.objects.create_user(
+            email='member@khul.ukr.education',
+            password='Password123',
+            display_name='Парламентарій',
+            role=User.Role.MEMBER,
+            is_active=True,
+        )
+        self.admin = User.objects.create_user(
+            email='ye74@khul.ukr.education',
+            password='Password123',
+            display_name='Адміністратор',
+            role=User.Role.SECRETARY,
+            is_active=True,
+        )
+        self.idea = Idea.objects.create(
+            title='Тестова ідея',
+            body='Опис ідеї',
+            author=self.student,
+        )
+
+    def test_student_cannot_delete_idea(self):
+        self.client.force_login(self.student)
+        response = self.client.post(f'/ideas/{self.idea.pk}/delete/')
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Idea.objects.filter(pk=self.idea.pk).exists())
+
+    def test_parliamentarian_can_delete_idea(self):
+        self.client.force_login(self.member)
+        response = self.client.post(f'/ideas/{self.idea.pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Idea.objects.filter(pk=self.idea.pk).exists())
+
+    def test_primary_admin_can_delete_idea(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(f'/ideas/{self.idea.pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Idea.objects.filter(pk=self.idea.pk).exists())
+
+    def test_delete_requires_post(self):
+        self.client.force_login(self.member)
+        response = self.client.get(f'/ideas/{self.idea.pk}/delete/')
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Idea.objects.filter(pk=self.idea.pk).exists())
