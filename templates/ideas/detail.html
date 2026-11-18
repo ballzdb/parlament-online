@@ -15,7 +15,7 @@
     {% if user.is_member %}
       <p style="margin-top:1rem;"><a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити ідею на подію</a></p>
     {% endif %}
-    {% if user.is_authenticated and (user.email|lower == "ye74@khul.ukr.education" or user.role == "member") %}
+    {% if user.is_authenticated and user.is_member %}
       <form method="post" action="{% url 'ideas:delete' idea.pk %}" style="margin-top:1rem;" onsubmit="return confirm('Ви впевнені, що хочете остаточно видалити цю ідею?');">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Видалити ідею</button>
