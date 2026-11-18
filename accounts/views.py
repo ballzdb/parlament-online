@@ -1,12 +1,16 @@
 ﻿from __future__ import annotations
 
+import re
 import secrets
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -14,7 +18,7 @@ from django.utils import timezone
 from app.permissions import requires_roles
 
 from .forms import EmailAuthenticationForm, PasswordChangeForm, RegistrationForm
-from .models import AuditLog, PRIMARY_ADMIN_EMAIL, User
+from .models import AuditLog, EmailVerification, PRIMARY_ADMIN_EMAIL, User
 from .utils import normalize_email
 
 
@@ -55,6 +59,44 @@ def _get_login_error_reason(email: str, password: str | None, request) -> str:
     return 'Невірна пошта або пароль.'
 
 
+
+def _send_verification_code(user):
+    now = timezone.now()
+    verification = EmailVerification.objects.filter(user=user).first()
+    if verification and now - verification.last_sent_at < timedelta(seconds=60):
+        return False, 'Код уже надіслано. Перевірте пошту або зачекайте хвилину перед повторним надсиланням.'
+
+    code = f'{secrets.randbelow(1_000_000):06d}'
+    expires_at = now + timedelta(minutes=10)
+    if verification:
+        verification.code_hash = make_password(code)
+        verification.expires_at = expires_at
+        verification.attempts_used = 0
+        verification.last_sent_at = now
+        verification.save(update_fields=['code_hash', 'expires_at', 'attempts_used', 'last_sent_at'])
+    else:
+        verification = EmailVerification.objects.create(
+            user=user,
+            code_hash=make_password(code),
+            expires_at=expires_at,
+            attempts_used=0,
+            last_sent_at=now,
+        )
+
+    subject = 'Код підтвердження — Парламент.Online'
+    message = (
+        f'Ваш код підтвердження: {code}\\n\\n'
+        'Код дійсний протягом 10 хвилин. Не повідомляйте його іншим людям. '
+        'Якщо ви не реєструвалися на Парламент.Online, просто проігноруйте цей лист.'
+    )
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+    except Exception:
+        verification.delete()
+        return False, 'Не вдалося надіслати лист. Спробуйте пізніше або повідомте адміністратора сайту.'
+    return True, 'Код підтвердження надіслано на вашу електронну пошту.'
+
+
 def register_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -82,15 +124,67 @@ def register_view(request):
                 user.display_name = form.cleaned_data['display_name'].strip()
                 user.grade, user.class_letter = form.cleaned_data['school_class']
                 user.set_password(form.cleaned_data['password'])
-                user.is_active = True
+                user.is_active = False
+                user.email_verified_at = None
                 user.must_change_password = False
                 user.save()
                 cache.set(ip_key, cache.get(ip_key, 0) + 1, timeout=60 * 60)
-            messages.success(request, 'Реєстрація успішна. Тепер ви можете увійти.')
-            return redirect('accounts:login')
+
+            sent, detail = _send_verification_code(user)
+            if not sent and not EmailVerification.objects.filter(user=user).exists():
+                form.add_error(None, detail)
+                return render(request, 'accounts/register.html', {'form': form})
+            request.session['pending_email_verification_user_id'] = user.pk
+            if sent:
+                messages.success(request, detail)
+            else:
+                messages.info(request, detail)
+            return redirect('accounts:verify_email')
     else:
         form = RegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+
+
+def verify_email_view(request):
+    user_id = request.session.get('pending_email_verification_user_id')
+    user = User.objects.filter(pk=user_id, is_active=False).first() if user_id else None
+    if user is None:
+        messages.info(request, 'Спочатку введіть дані для реєстрації.')
+        return redirect('accounts:register')
+
+    verification = EmailVerification.objects.filter(user=user).first()
+    if request.method == 'POST':
+        if request.POST.get('action') == 'resend':
+            sent, detail = _send_verification_code(user)
+            (messages.success if sent else messages.error)(request, detail)
+            return redirect('accounts:verify_email')
+
+        code = (request.POST.get('code') or '').strip()
+        if verification is None:
+            messages.error(request, 'Код не знайдено. Надішліть новий код.')
+        elif verification.attempts_used >= 5:
+            messages.error(request, 'Вичерпано кількість спроб. Надішліть новий код пізніше.')
+        elif timezone.now() >= verification.expires_at:
+            messages.error(request, 'Термін дії коду минув. Надішліть новий код.')
+        elif not re.fullmatch(r'\\d{6}', code):
+            messages.error(request, 'Введіть шестизначний код із листа.')
+        elif not check_password(code, verification.code_hash):
+            verification.attempts_used += 1
+            verification.save(update_fields=['attempts_used'])
+            messages.error(request, 'Неправильний код підтвердження.')
+        else:
+            user.is_active = True
+            user.email_verified_at = timezone.now()
+            user.save(update_fields=['is_active', 'email_verified_at'])
+            verification.delete()
+            request.session.pop('pending_email_verification_user_id', None)
+            messages.success(request, 'Електронну пошту підтверджено. Тепер ви можете увійти.')
+            return redirect('accounts:login')
+
+        return redirect('accounts:verify_email')
+
+    return render(request, 'accounts/verify_email.html', {'email': user.email})
 
 
 def login_view(request):
