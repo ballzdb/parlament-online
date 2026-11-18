@@ -58,6 +58,22 @@
     </section>
   {% endif %}
 
+  <section style="margin-bottom:2rem;">
+    <h2>Найближчі події</h2>
+    <div class="grid">
+      {% for event in events %}
+        <article class="card">
+          <h3>{{ event.title }}</h3>
+          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} о {{ event.starts_at|date:'H:i' }}</div>
+          {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
+          {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
+        </article>
+      {% empty %}
+        <p>Найближчих подій поки немає.</p>
+      {% endfor %}
+    </div>
+  </section>
+
   <section class="grid">
     <div>
       <h2>Останні ідеї</h2>
