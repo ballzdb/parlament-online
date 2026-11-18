@@ -42,6 +42,7 @@ class User(AbstractUser):
     anon_key = models.CharField(max_length=48, unique=True, null=True, blank=True)
     last_seen_at = models.DateTimeField(null=True, blank=True)
     must_change_password = models.BooleanField(default=False)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 
@@ -226,3 +227,16 @@ def get_public_social_links():
         if validate_site_url(value):
             links.append({'key': key, 'label': label, 'url': value})
     return links
+
+
+
+class EmailVerification(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification')
+    code_hash = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    attempts_used = models.PositiveSmallIntegerField(default=0)
+    last_sent_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'Email verification for {self.user.email}'
