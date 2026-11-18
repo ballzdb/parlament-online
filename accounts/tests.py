@@ -274,3 +274,47 @@ class RoleManagementTests(TestCase):
         self.assertFalse(user.must_change_password)
         self.assertTrue(user.check_password('Permanent123!'))
         self.assertEqual(str(response.context['user']), str(user))
+
+
+
+class RoleManagementTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            email='ye74@khul.ukr.education',
+            password='Password123',
+            is_active=True,
+        )
+        self.student = User.objects.create_user(
+            email='student@khul.ukr.education',
+            password='Password123',
+            display_name='Учень',
+            is_active=True,
+        )
+
+    def test_only_primary_admin_can_open_role_management(self):
+        self.client.force_login(self.student)
+        response = self.client.get('/accounts/roles/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_primary_admin_can_assign_parliamentarian_role(self):
+        self.client.force_login(self.admin)
+        response = self.client.post('/accounts/roles/', {
+            'user_id': self.student.pk,
+            'role': User.Role.MEMBER,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.role, User.Role.MEMBER)
+        self.assertFalse(self.student.is_staff)
+        self.assertFalse(self.student.is_superuser)
+        self.assertTrue(AuditLog.objects.filter(action='role_changed', user=self.student).exists())
+
+    def test_primary_admin_cannot_change_own_role(self):
+        self.client.force_login(self.admin)
+        response = self.client.post('/accounts/roles/', {
+            'user_id': self.admin.pk,
+            'role': User.Role.STUDENT,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.role, User.Role.SECRETARY)
