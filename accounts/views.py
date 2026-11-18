@@ -286,7 +286,11 @@ def role_management(request):
         raise PermissionDenied
 
     if request.method == 'POST':
-        target = User.objects.filter(pk=request.POST.get('user_id'), is_active=True).first()
+        try:
+            target_id = int(request.POST.get('user_id', ''))
+        except (TypeError, ValueError):
+            target_id = None
+        target = User.objects.filter(pk=target_id, is_active=True).first() if target_id else None
         role = request.POST.get('role')
         allowed_roles = {User.Role.STUDENT, User.Role.MEMBER}
         if target is None:
