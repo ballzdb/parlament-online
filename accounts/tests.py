@@ -28,7 +28,7 @@ class AccountFlowTests(TestCase):
         self.assertIn('accounts_emailverification', tables)
         self.assertIn('email_verified_at', {field.name for field in User._meta.get_fields()})
 
-    def test_registration_allowed_domain_and_active_account(self):
+    def test_registration_sends_verification_and_keeps_account_inactive(self):
         payload = {
             'email': 'student@khul.ukr.education',
             display_key: 'Student',
@@ -119,7 +119,7 @@ class AccountFlowTests(TestCase):
         )
         blocked = self.client.post('/accounts/login/', {username_key: 'student@khul.ukr.education', pw_key: 'Password123'})
         self.assertEqual(blocked.status_code, 200)
-        code = re.search(r'(?<!\\d)\\d{6}(?!\\d)', mail.outbox[-1].body).group(0)
+        code = re.search(r'[0-9]{6}', mail.outbox[-1].body).group(0)
         verified = self.client.post('/accounts/verify/', {'code': code})
         self.assertEqual(verified.status_code, 302)
         user = User.objects.get(email='student@khul.ukr.education')
