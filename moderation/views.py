@@ -9,6 +9,6 @@ from .models import ModerationEntry
 
 
 @login_required
-@requires_roles(User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
+@requires_roles(User.Role.SECRETARY)
 def moderation_queue(request):
     return render(request, 'moderation/queue.html', {'entries': ModerationEntry.objects.all()})
