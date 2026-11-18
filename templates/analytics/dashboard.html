@@ -4,15 +4,15 @@
 <style>
 .analytics-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
 .analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin:1rem 0 1.5rem}
-.metric{background:#fff;border:1px solid #dfe7f1;border-radius:12px;padding:1rem}
-.metric small{display:block;color:#5a6473;margin-bottom:.45rem}
+.metric{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:15px;padding:1rem;box-shadow:var(--shadow)}
+.metric small{display:block;color:var(--muted);margin-bottom:.45rem}
 .metric strong{font-size:1.8rem}
 .section{margin:1.5rem 0}.section h2{font-size:1.25rem}
-.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
-.data-table th,.data-table td{text-align:left;padding:.7rem;border-bottom:1px solid #e5eaf1}
+.data-table{width:100%;border-collapse:collapse;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.data-table th,.data-table td{text-align:left;padding:.8rem;border-bottom:1px solid var(--border)}.data-table th{background:var(--soft)}
 .bar-row{display:grid;grid-template-columns:70px 1fr 45px;gap:.7rem;align-items:center;margin:.55rem 0}
-.bar{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:#2866b2}
-.note{color:#5a6473;font-size:.9rem}
+.bar{height:10px;background:var(--soft);border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent);border-radius:inherit}
+.note{color:var(--muted);font-size:.9rem}
 </style>
 <div class="analytics-head">
   <div><h1>Аналітика дослідження</h1><p class="note">Дані сайту «Парламент.Online» · оновлено {{ generated_at|date:'d.m.Y H:i' }}</p></div>
