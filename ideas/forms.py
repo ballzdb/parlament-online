@@ -3,7 +3,9 @@ from __future__ import annotations
 from django import forms
 
 from accounts.models import Commission
-from .models import Idea
+from django.utils import timezone
+
+from .models import Event, Idea
 
 
 class IdeaForm(forms.ModelForm):
@@ -32,3 +34,30 @@ class IdeaStatusForm(forms.ModelForm):
             'status_reason': 'Причина',
             'completion_report': 'Публікаційний звіт',
         }
+
+
+class EventCreateForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['title', 'description', 'starts_at']
+        labels = {
+            'title': 'Назва події',
+            'description': 'Опис події',
+            'starts_at': 'Дата та час проведення',
+        }
+        widgets = {
+            'starts_at': forms.DateTimeInput(
+                format='%Y-%m-%dT%H:%M',
+                attrs={'type': 'datetime-local'},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['starts_at'].input_formats = ['%Y-%m-%dT%H:%M']
+
+    def clean_starts_at(self):
+        value = self.cleaned_data['starts_at']
+        if value <= timezone.now():
+            raise forms.ValidationError('Дата та час події мають бути в майбутньому.')
+        return value
