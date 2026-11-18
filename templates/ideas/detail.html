@@ -3,15 +3,16 @@
 {% block title %}{{ idea.title }}{% endblock %}
 
 {% block content %}
-  <div class="card" style="margin-bottom: 1.5rem;">
+  <article class="card detail-card">
     <h1>{{ idea.title }}</h1>
-    <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
     <p>{{ idea.body }}</p>
-    <div class="meta">Комісія: {{ idea.commission|default:'—' }} · Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
+    <div class="meta detail-meta">Комісія: {{ idea.commission|default:'—' }} · Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
     {% if idea.completion_report %}
       <h3>Публічний звіт</h3>
       <p>{{ idea.completion_report }}</p>
     {% endif %}
+    <div class="detail-actions">
     {% if user.is_member %}
       <p style="margin-top:1rem;"><a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити ідею на подію</a></p>
     {% endif %}
@@ -28,9 +29,10 @@
         <button type="submit" class="btn">Підтримати</button>
       </form>
     {% else %}
-      <p>Ви вже підтримали цю ідею.</p>
+      <p class="meta">Ви вже підтримали цю ідею.</p>
     {% endif %}
-  </div>
+    </div>
+  </article>
 
   {% if status_form %}
     <div class="card">
