@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 
 from accounts.models import Commission, User
-from ideas.models import Idea, IdeaVote
+from ideas.models import Event, Idea, IdeaVote
 
 
 class IdeaVoteTests(TestCase):
@@ -31,3 +34,49 @@ class IdeaVoteTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.idea.refresh_from_db()
         self.assertEqual(self.idea.status, Idea.Status.IN_PROGRESS)
+
+
+
+class ParliamentEventTests(TestCase):
+    def setUp(self):
+        self.student = User.objects.create_user(
+            email='student@khul.ukr.education',
+            password='Password123',
+            display_name='Учень',
+            is_active=True,
+        )
+        self.member = User.objects.create_user(
+            email='member@khul.ukr.education',
+            password='Password123',
+            display_name='Парламентарій',
+            role=User.Role.MEMBER,
+            is_active=True,
+        )
+        self.idea = Idea.objects.create(
+            title='Шкільний кіновечір',
+            body='Організувати кіновечір для учнів.',
+            author=self.student,
+        )
+
+    def test_student_cannot_create_event_from_idea(self):
+        self.client.force_login(self.student)
+        response = self.client.get(f'/ideas/{self.idea.pk}/event/')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Event.objects.count(), 0)
+
+    def test_parliamentarian_can_create_future_event(self):
+        self.client.force_login(self.member)
+        starts_at = (timezone.localtime(timezone.now() + timedelta(days=2))).strftime('%Y-%m-%dT%H:%M')
+        response = self.client.post(
+            f'/ideas/{self.idea.pk}/event/',
+            {
+                'title': 'Шкільний кіновечір',
+                'description': 'Перегляд фільму.',
+                'starts_at': starts_at,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        event = Event.objects.get()
+        self.assertEqual(event.source_idea, self.idea)
+        self.assertEqual(event.created_by, self.member)
+        self.assertContains(self.client.get('/'), 'Шкільний кіновечір')
