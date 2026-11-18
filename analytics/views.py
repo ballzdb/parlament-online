@@ -41,6 +41,8 @@ def dashboard(request):
             'visitors': day_views.values('visitor_key').distinct().count(),
         })
 
+    max_daily_views = max((item['views'] for item in daily), default=0)
+
     top_pages = list(
         recent_views.values('path').annotate(total=Count('id')).order_by('-total')[:10]
     )
@@ -73,6 +75,7 @@ def dashboard(request):
         'anonymous_browsers_30d': recent_views.filter(user__isnull=True).values('visitor_key').distinct().count(),
         'top_pages': top_pages,
         'daily': daily,
+        'max_daily_views': max_daily_views,
         'grade_stats': grade_stats,
         'idea_total': Idea.objects.count(),
         'idea_votes': IdeaVote.objects.count(),
