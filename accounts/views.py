@@ -277,3 +277,46 @@ def profile_view(request):
         messages.success(request, 'Пароль успішно змінено.')
         return redirect('accounts:profile')
     return render(request, 'accounts/profile.html', {'user': request.user, 'form': form})
+
+
+@login_required
+def role_management(request):
+    if request.user.email.casefold() != PRIMARY_ADMIN_EMAIL:
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        target = User.objects.filter(pk=request.POST.get('user_id'), is_active=True).first()
+        role = request.POST.get('role')
+        allowed_roles = {User.Role.STUDENT, User.Role.MEMBER}
+        if target is None:
+            messages.error(request, 'Активного користувача не знайдено.')
+        elif target.email.casefold() == PRIMARY_ADMIN_EMAIL:
+            messages.error(request, 'Роль адміністратора змінювати не можна.')
+        elif role not in allowed_roles:
+            messages.error(request, 'Недопустима роль.')
+        else:
+            previous_role = target.role
+            target.role = role
+            target.is_staff = False
+            target.is_superuser = False
+            target.save(update_fields=['role', 'is_staff', 'is_superuser'])
+            AuditLog.objects.create(
+                action='role_changed',
+                email=target.email,
+                user=target,
+                details=f'{previous_role} -> {role}; changed_by={request.user.email}',
+            )
+            messages.success(request, f'Роль користувача {target.email} оновлено.')
+        return redirect('accounts:role_management')
+
+    users = User.objects.filter(is_active=True).exclude(
+        email__iexact=PRIMARY_ADMIN_EMAIL
+    ).order_by('grade', 'class_letter', 'email')
+    return render(request, 'accounts/role_management.html', {
+        'users': users,
+        'role_choices': [
+            (User.Role.STUDENT, 'Учень'),
+            (User.Role.MEMBER, 'Парламентарій'),
+        ],
+    })
