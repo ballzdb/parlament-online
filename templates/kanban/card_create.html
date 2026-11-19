@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Нове завдання | Парламент.Online{% endblock %}
+{% block content %}
+  <div class="card form-card">
+    <p class="eyebrow">ДОШКА ЗАВДАНЬ</p><h1>Створити завдання</h1>
+    <p class="meta">Опишіть конкретну справу, оберіть комісію та за потреби призначте відповідального.</p>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {% for field in form %}
+        <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="meta">{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
+      {% endfor %}
+      <div class="detail-actions"><button type="submit" class="btn">Створити завдання</button><a href="{% url 'kanban:board' %}">Скасувати</a></div>
+    </form>
+  </div>
+{% endblock %}
