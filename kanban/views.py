@@ -14,6 +14,8 @@ from .models import KanbanCard
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
 
 
+@login_required
+@requires_roles(*PARLIAMENT_ROLES)
 def board_list(request, slug=None):
     commission = None
     if slug:
@@ -58,6 +60,7 @@ def card_create(request):
 
 
 @login_required
+@requires_roles(*PARLIAMENT_ROLES)
 def card_detail(request, pk):
     card = get_object_or_404(
         KanbanCard.objects.select_related('commission', 'assignee', 'created_by').prefetch_related('comments__author'),
