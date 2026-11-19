@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import Commission, User
@@ -21,15 +22,19 @@ def board_list(request, slug=None):
     else:
         cards = KanbanCard.objects.filter(commission__is_hidden=False)
 
-    cards = cards.select_related('commission', 'assignee', 'created_by').prefetch_related('comments').order_by('commission__sort_order', 'position', 'created_at')
-    commissions = Commission.objects.filter(is_hidden=False).order_by('sort_order', 'name')
+    cards = list(cards.select_related('commission', 'assignee', 'created_by').prefetch_related('comments').order_by('commission__sort_order', 'position', 'created_at'))
     status_columns = [
         ('todo', 'До виконання'),
         ('in_progress', 'У роботі'),
         ('done', 'Виконано'),
     ]
+    grouped_cards = {
+        key: [card for card in cards if card.status == key]
+        for key, _label in status_columns
+    }
+    commissions = Commission.objects.filter(is_hidden=False).order_by('sort_order', 'name')
     return render(request, 'kanban/board.html', {
-        'cards': cards,
+        'grouped_cards': grouped_cards,
         'commission': commission,
         'commissions': commissions,
         'status_columns': status_columns,
@@ -66,7 +71,6 @@ def card_detail(request, pk):
     can_manage_tasks = request.user.has_role(*PARLIAMENT_ROLES)
     if request.method == 'POST':
         if not can_manage_tasks:
-            from django.core.exceptions import PermissionDenied
             raise PermissionDenied
         form = TaskCommentForm(request.POST)
         if form.is_valid():
