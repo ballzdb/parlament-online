@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ card.title }} | Дошка завдань{% endblock %}
+{% block content %}
+  <article class="card detail-card task-detail">
+    <p class="eyebrow">ЗАВДАННЯ · {{ card.commission.name }}</p>
+    <h1>{{ card.title }}</h1>
+    <div class="task-facts">
+      <div><span>Статус</span><strong>{{ card.get_status_display }}</strong></div>
+      <div><span>Відповідальний</span><strong>{{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</strong></div>
+      <div><span>Термін</span><strong>{% if card.due_date %}{{ card.due_date|date:'d.m.Y' }}{% else %}Не встановлено{% endif %}</strong></div>
+      <div><span>Створено</span><strong>{{ card.created_at|date:'d.m.Y H:i' }}</strong></div>
+    </div>
+    <div class="task-description">{{ card.description|default:'Опис завдання не додано.'|linebreaks }}</div>
+    {% if can_manage_tasks %}<div class="detail-actions"><a class="btn" href="{% url 'kanban:card_edit' card.pk %}">Оновити статус або відповідального</a></div>{% endif %}
+  </article>
+  <section class="card task-discussion">
+    <h2>Обговорення та звіт про виконання</h2>
+    <p class="meta">Залишайте оновлення: що зроблено, які наступні кроки та чи виникли труднощі.</p>
+    {% if can_manage_tasks %}
+      <form method="post" class="form-grid comment-form">{% csrf_token %}
+        <label for="{{ comment_form.body.id_for_label }}">{{ comment_form.body.label }}</label>
+        {{ comment_form.body }}
+        {% if comment_form.body.errors %}<div class="errorlist">{{ comment_form.body.errors }}</div>{% endif %}
+        <button class="btn" type="submit">Додати коментар</button>
+      </form>
+    {% else %}
+      <p class="empty-state">Коментувати завдання можуть члени парламенту.</p>
+    {% endif %}
+    <div class="comment-list">
+      {% for comment in card.comments.all %}
+        <article class="task-comment">
+          <div class="comment-heading"><strong>{{ comment.author.display_name|default:comment.author.email }}</strong><time>{{ comment.created_at|date:'d.m.Y H:i' }}</time></div>
+          <p>{{ comment.body|linebreaksbr }}</p>
+        </article>
+      {% empty %}<p class="empty-state">Оновлень поки немає. Додайте перший коментар після початку роботи.</p>{% endfor %}
+    </div>
+  </section>
+  <style>
+    .task-detail h1{margin:.3rem 0 1rem}.task-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.8rem;margin:1.2rem 0}.task-facts div{padding:.85rem;background:var(--soft);border:1px solid var(--border);border-radius:12px}.task-facts span,.task-facts strong{display:block}.task-facts span{font-size:.78rem;color:var(--muted);margin-bottom:.25rem}.task-facts strong{overflow-wrap:anywhere}.task-description{line-height:1.7}.task-discussion{margin-top:1rem;padding:clamp(1rem,3vw,1.5rem)}.task-discussion h2{margin-top:0}.comment-form{margin:1rem 0 1.4rem}.comment-list{display:grid;gap:.7rem}.task-comment{padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--soft)}.comment-heading{display:flex;justify-content:space-between;gap:.7rem;flex-wrap:wrap}.comment-heading time{font-size:.8rem;color:var(--muted)}.task-comment p{margin:.6rem 0 0;line-height:1.6;overflow-wrap:anywhere}
+  </style>
+{% endblock %}
