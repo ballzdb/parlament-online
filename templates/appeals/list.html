@@ -1,29 +1,20 @@
 {% extends 'base.html' %}
-
 {% block title %}Відгуки та пропозиції{% endblock %}
-
 {% block content %}
-  <h1>Відгуки та пропозиції</h1>
-  {% if user.is_authenticated %}
-    <p><a class="btn" href="{% url 'appeals:create' %}">Нове звернення</a></p>
-  {% endif %}
+  <div class="page-heading"><div><p class="eyebrow">ЗВОРОТНИЙ ЗВ’ЯЗОК</p><h1>Відгуки та пропозиції</h1><p class="meta">Поділіться думкою про роботу парламенту або повідомте про проблему.</p></div>{% if user.is_authenticated %}<a class="btn" href="{% url 'appeals:create' %}">Нове звернення</a>{% endif %}</div>
   <div class="record-list">
-  {% for appeal in appeals %}
-    <article class="card record-card">
-      <h3>{{ appeal.subject }}</h3>
-      <div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div>
-      <p>{{ appeal.body }}</p>
-      {% if user.is_authenticated and not user.is_student %}
-        <div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>
-      {% else %}
-        <div class="meta">Авторство приховане</div>
-      {% endif %}
-      {% if appeal.public_answer %}
-        <p><strong>Відповідь парламенту:</strong> {{ appeal.public_answer }}</p>
-      {% endif %}
-    </article>
-  {% empty %}
-    <div class="empty-state">Поки немає звернень.</div>
-  {% endfor %}
+    {% for appeal in appeals %}
+      <article class="card record-card appeal-card">
+        <div class="appeal-heading"><h3>{{ appeal.subject }}</h3><span class="appeal-status">{{ appeal.get_status_display }}</span></div>
+        <div class="meta">{{ appeal.get_kind_display }}</div>
+        <p>{{ appeal.body }}</p>
+        {% if user.is_authenticated and not user.is_student %}<div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>{% else %}<div class="meta">Авторство приховане</div>{% endif %}
+        {% if appeal.public_answer %}<div class="appeal-answer"><strong>Відповідь парламенту</strong><p>{{ appeal.public_answer }}</p></div>{% endif %}
+      </article>
+    {% empty %}<div class="empty-state">Поки немає звернень.</div>{% endfor %}
   </div>
+  <style>
+    .appeal-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.appeal-heading h3{min-width:0}.appeal-status{flex:0 0 auto;padding:.28rem .65rem;border-radius:999px;background:var(--soft);font-size:.78rem;font-weight:700}.appeal-answer{margin-top:1rem;padding:.9rem 1rem;border-left:3px solid var(--accent);background:var(--soft);border-radius:0 10px 10px 0}.appeal-answer p{margin:.35rem 0 0;white-space:pre-line}
+    @media(max-width:480px){.appeal-heading{display:block}.appeal-status{display:inline-block;margin:.3rem 0}}
+  </style>
 {% endblock %}
