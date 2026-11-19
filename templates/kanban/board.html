@@ -7,7 +7,7 @@
   <div class="grid kanban-grid">
     {% for status_key,status_label in status_columns %}
       <section class="card kanban-column" aria-label="{{ status_label }}">
-        <div class="kanban-column-heading"><h3>{{ status_label }}</h3><span class="kanban-count">{% with count=0 %}{{ count }}{% endwith %}</span></div>
+        <div class="kanban-column-heading"><h3>{{ status_label }}</h3></div>
         {% for card in cards %}{% if card.status == status_key %}
           <article class="kanban-card"><strong>{{ card.title }}</strong><div class="meta">Відповідальний: {{ card.assignee|default:'Не призначено' }}</div><p>{{ card.description|default:'Опис відсутній' }}</p>{% if user.is_authenticated and user.is_member %}<a href="{% url 'kanban:card_edit' card.pk %}">Редагувати завдання</a>{% endif %}</article>
         {% endif %}{% endfor %}
