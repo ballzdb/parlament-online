@@ -177,6 +177,33 @@
       footer a { color: white !important; }
       html[data-theme="usa"] footer { border-top: 3px solid #b22234; }
       html[data-theme="gta"] footer { border-top: 3px solid #ff9b72; }
+      /* Shared page components */
+      :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 72%, white); outline-offset: 3px; }
+      button, input, select, textarea { accent-color: var(--accent); }
+      button:disabled, input:disabled, select:disabled, textarea:disabled { opacity: .62; cursor: not-allowed; }
+      .page-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.35rem; }
+      .page-heading h1 { margin:0; }
+      .record-list { display:grid; gap:1rem; }
+      .record-card { padding:clamp(1rem,2.5vw,1.4rem); }
+      .record-card h3 { margin:.1rem 0 .45rem; font-size:1.15rem; }
+      .record-card p { margin:.8rem 0; overflow-wrap:anywhere; }
+      .detail-card { padding:clamp(1.2rem,3vw,2rem); }
+      .detail-card h1 { overflow-wrap:anywhere; }
+      .detail-meta { line-height:1.8; }
+      .detail-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; margin-top:1.2rem; }
+      .detail-actions form, .detail-actions p { margin:0 !important; }
+      .btn-danger { background:#b42318; color:#fff; }
+      .btn-danger:hover { background:#8f1c13; color:#fff; }
+      .empty-state { padding:1.4rem; border:1px dashed var(--border); border-radius:14px; color:var(--muted); text-align:center; background:color-mix(in srgb,var(--panel) 82%,var(--soft)); }
+      .form-grid label, form label { display:block; margin-bottom:.35rem; font-weight:650; }
+      .form-grid .helptext, form .helptext { display:block; color:var(--muted); font-size:.86rem; margin-top:.3rem; }
+      table { max-width:100%; }
+      img, svg, video { max-width:100%; }
+      p, li { overflow-wrap:anywhere; }
+      .message { box-shadow:0 4px 14px rgba(0,0,0,.04); }
+      @media (hover:hover) and (prefers-reduced-motion:no-preference) {
+        .record-card:hover { transform:translateY(-2px); }
+      }
       @media (max-width: 680px) {
         nav { padding: .85rem 1rem; }
         .nav-inner { align-items: flex-start; }
