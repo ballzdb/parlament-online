@@ -23,21 +23,16 @@ def board_list(request, slug=None):
         cards = KanbanCard.objects.filter(commission__is_hidden=False)
 
     cards = list(cards.select_related('commission', 'assignee', 'created_by').prefetch_related('comments').order_by('commission__sort_order', 'position', 'created_at'))
-    status_columns = [
-        ('todo', 'До виконання'),
-        ('in_progress', 'У роботі'),
-        ('done', 'Виконано'),
+    status_columns = [('todo', 'До виконання'), ('in_progress', 'У роботі'), ('done', 'Виконано')]
+    columns = [
+        {'key': key, 'label': label, 'cards': [card for card in cards if card.status == key]}
+        for key, label in status_columns
     ]
-    grouped_cards = {
-        key: [card for card in cards if card.status == key]
-        for key, _label in status_columns
-    }
     commissions = Commission.objects.filter(is_hidden=False).order_by('sort_order', 'name')
     return render(request, 'kanban/board.html', {
-        'grouped_cards': grouped_cards,
+        'columns': columns,
         'commission': commission,
         'commissions': commissions,
-        'status_columns': status_columns,
         'can_manage_tasks': request.user.is_authenticated and request.user.has_role(*PARLIAMENT_ROLES),
     })
 
