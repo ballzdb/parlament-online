@@ -1,28 +1,36 @@
 {% extends 'base.html' %}
-
 {% block title %}Профіль{% endblock %}
-
 {% block content %}
-  <div class="card form-card">
-    <h1>Профіль</h1>
-    <p><strong>Електронна пошта:</strong> {{ user.email }}</p>
-    <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
-    <p><strong>Ім’я:</strong> {{ user.display_name }}</p>
-    <p><strong>Клас:</strong> {{ user.grade|default:'—' }}</p>
-  </div>
-
-  <div class="card">
+  <div class="page-heading"><div><p class="eyebrow">ОСОБИСТИЙ КАБІНЕТ</p><h1>Профіль</h1><p class="meta">Ваші облікові дані та налаштування безпеки.</p></div></div>
+  <section class="card profile-summary">
+    <div class="profile-avatar" aria-hidden="true">{{ user.display_name|default:user.email|slice:":1"|upper }}</div>
+    <div class="profile-details">
+      <h2>{{ user.display_name|default:'Користувач' }}</h2>
+      <p class="meta">{{ user.get_role_display }}</p>
+      <dl class="profile-facts">
+        <div><dt>Електронна пошта</dt><dd>{{ user.email }}</dd></div>
+        <div><dt>Клас</dt><dd>{{ user.grade|default:'—' }}{% if user.class_letter %} {{ user.class_letter }}{% endif %}</dd></div>
+      </dl>
+    </div>
+  </section>
+  <section class="card profile-password">
     <h2>Зміна пароля</h2>
+    <p class="meta">Використовуйте унікальний пароль, який не застосовуєте на інших сайтах.</p>
     <form method="post" class="form-grid">
       {% csrf_token %}
+      {{ form.non_field_errors }}
       {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-        </div>
+        <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
       {% endfor %}
-      <button type="submit" class="btn">Змінити пароль</button>
+      <button type="submit" class="btn">Зберегти новий пароль</button>
     </form>
-  </div>
+  </section>
+  <style>
+    .profile-summary{display:flex;align-items:center;gap:1.2rem;padding:clamp(1.2rem,3vw,2rem);margin-bottom:1.2rem}
+    .profile-avatar{width:68px;height:68px;flex:0 0 68px;border-radius:20px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-size:1.8rem;font-weight:800}
+    .profile-details{min-width:0;flex:1}.profile-details h2{margin:0}.profile-details>p{margin:.25rem 0 1rem}
+    .profile-facts{display:flex;flex-wrap:wrap;gap:.8rem 2rem;margin:0}.profile-facts div{min-width:0}.profile-facts dt{font-size:.8rem;color:var(--muted)}.profile-facts dd{margin:.15rem 0 0;font-weight:650;overflow-wrap:anywhere}
+    .profile-password{padding:clamp(1.2rem,3vw,2rem)}.profile-password h2{margin-top:0}
+    @media(max-width:520px){.profile-summary{align-items:flex-start;gap:.8rem}.profile-avatar{width:52px;height:52px;flex-basis:52px;border-radius:15px}.profile-facts{display:grid;gap:.6rem}}
+  </style>
 {% endblock %}
