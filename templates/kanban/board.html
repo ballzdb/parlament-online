@@ -6,25 +6,23 @@
     {% if can_manage_tasks %}<a class="btn" href="{% url 'kanban:card_create' %}{% if commission %}?commission={{ commission.slug }}{% endif %}">＋ Створити завдання</a>{% endif %}
   </div>
   <nav class="commission-nav" aria-label="Фільтр за комісіями">
-    <a href="{% url 'kanban:board' %}" class="btn secondary {% if not commission %}active{% endif %}" {% if not commission %}aria-current="page"{% endif %}>Усі комісії</a>
-    {% for item in commissions %}<a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary {% if commission and commission.pk == item.pk %}active{% endif %}" {% if commission and commission.pk == item.pk %}aria-current="page"{% endif %}>{{ item.name }}</a>{% endfor %}
+    <a href="{% url 'kanban:board' %}" class="btn secondary {% if not commission %}active{% endif %}">Усі комісії</a>
+    {% for item in commissions %}<a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary {% if commission and commission.pk == item.pk %}active{% endif %}">{{ item.name }}</a>{% endfor %}
   </nav>
   {% if commission %}<h2 class="kanban-title">{{ commission.name }}</h2>{% endif %}
   <div class="grid kanban-grid">
-    {% for status_key,status_label in status_columns %}
-      <section class="card kanban-column" aria-label="{{ status_label }}">
-        <div class="kanban-column-heading"><h3>{{ status_label }}</h3><span class="kanban-count">{{ grouped_cards|get_item:status_key|length }}</span></div>
-        {% with column_cards=grouped_cards|get_item:status_key %}
-          {% for card in column_cards %}
-            <article class="kanban-card">
-              <a class="task-title" href="{% url 'kanban:card_detail' card.pk %}">{{ card.title }}</a>
-              <p>{{ card.description|default:'Опис поки не додано'|truncatechars:150 }}</p>
-              <div class="task-meta"><span>Комісія: {{ card.commission.name }}</span><span>Відповідальний: {{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</span>{% if card.due_date %}<span>До: {{ card.due_date|date:'d.m.Y' }}</span>{% endif %}</div>
-              <div class="task-footer"><span>{{ card.comments.count }} коментар(ів)</span>{% if card.created_by %}<span>Створив: {{ card.created_by.display_name|default:card.created_by.email }}</span>{% endif %}</div>
-              {% if can_manage_tasks %}<a class="task-edit" href="{% url 'kanban:card_edit' card.pk %}">Змінити завдання</a>{% endif %}
-            </article>
-          {% empty %}<p class="empty-state">У цій колонці поки немає завдань.</p>{% endfor %}
-        {% endwith %}
+    {% for column in columns %}
+      <section class="card kanban-column" aria-label="{{ column.label }}">
+        <div class="kanban-column-heading"><h3>{{ column.label }}</h3><span class="kanban-count">{{ column.cards|length }}</span></div>
+        {% for card in column.cards %}
+          <article class="kanban-card">
+            <a class="task-title" href="{% url 'kanban:card_detail' card.pk %}">{{ card.title }}</a>
+            <p>{{ card.description|default:'Опис поки не додано'|truncatechars:150 }}</p>
+            <div class="task-meta"><span>Комісія: {{ card.commission.name }}</span><span>Відповідальний: {{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</span>{% if card.due_date %}<span>До: {{ card.due_date|date:'d.m.Y' }}</span>{% endif %}</div>
+            <div class="task-footer"><span>{{ card.comments.count }} коментар(ів)</span>{% if card.created_by %}<span>Створив: {{ card.created_by.display_name|default:card.created_by.email }}</span>{% endif %}</div>
+            {% if can_manage_tasks %}<a class="task-edit" href="{% url 'kanban:card_edit' card.pk %}">Змінити завдання</a>{% endif %}
+          </article>
+        {% empty %}<p class="empty-state">У цій колонці поки немає завдань.</p>{% endfor %}
       </section>
     {% endfor %}
   </div>
