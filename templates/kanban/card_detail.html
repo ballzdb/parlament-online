@@ -9,6 +9,7 @@
       <div><span>Відповідальний</span><strong>{{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</strong></div>
       <div><span>Термін</span><strong>{% if card.due_date %}{{ card.due_date|date:'d.m.Y' }}{% else %}Не встановлено{% endif %}</strong></div>
       <div><span>Створено</span><strong>{{ card.created_at|date:'d.m.Y H:i' }}</strong></div>
+      <div><span>Картку оновлено</span><strong>{{ card.updated_at|date:'d.m.Y H:i' }}</strong></div>
     </div>
     <div class="task-description">{{ card.description|default:'Опис завдання не додано.'|linebreaks }}</div>
     {% if can_manage_tasks %}<div class="detail-actions"><a class="btn" href="{% url 'kanban:card_edit' card.pk %}">Оновити статус або відповідального</a></div>{% endif %}
