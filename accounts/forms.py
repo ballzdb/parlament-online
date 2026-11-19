@@ -12,7 +12,14 @@ from .utils import is_allowed_email, normalize_email
 
 class RegistrationForm(forms.Form):
     email = forms.EmailField(label='Електронна пошта')
-    password = forms.CharField(widget=forms.PasswordInput, min_length=8, label='Пароль')
+    # Keep the entered password when the bound registration form is re-rendered
+    # with validation errors. The password is not stored in the session or database
+    # until the registration view successfully processes the form.
+    password = forms.CharField(
+        widget=forms.PasswordInput(render_value=True),
+        min_length=8,
+        label='Пароль',
+    )
     display_name = forms.CharField(max_length=120, label='Ім’я')
     school_class = forms.CharField(max_length=12, label='Клас', help_text='Наприклад, 9-А')
 
