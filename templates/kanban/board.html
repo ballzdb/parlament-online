@@ -1,34 +1,23 @@
 {% extends 'base.html' %}
-
 {% block title %}Канбан{% endblock %}
-
 {% block content %}
-  <h1>Канбан</h1>
-  <div style="margin-bottom:1rem;">
-    {% for item in commissions %}
-      <a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary" style="margin-right:0.5rem; margin-bottom:0.5rem;">{{ item.name }}</a>
-    {% endfor %}
-  </div>
-  {% if commission %}
-    <h2>{{ commission.name }}</h2>
-  {% endif %}
+  <div class="page-heading"><div><p class="eyebrow">РОБОЧИЙ ПРОЦЕС</p><h1>Канбан</h1><p class="meta">Стан виконання завдань у комісіях парламенту.</p></div></div>
+  <nav class="commission-nav" aria-label="Комісії">{% for item in commissions %}<a href="{% url 'kanban:commission_board' item.slug %}" class="btn secondary {% if commission.slug == item.slug %}active{% endif %}" {% if commission.slug == item.slug %}aria-current="page"{% endif %}>{{ item.name }}</a>{% endfor %}</nav>
+  {% if commission %}<h2 class="kanban-title">{{ commission.name }}</h2>{% endif %}
   <div class="grid kanban-grid">
-    {% for status_key, status_label in status_columns %}
-      <div class="card">
-        <h3>{{ status_label }}</h3>
-        {% for card in cards %}
-          {% if card.status == status_key %}
-            <div class="kanban-card">
-              <strong>{{ card.title }}</strong>
-              <div class="meta">{{ card.assignee|default:'Без відповідального' }}</div>
-              <p>{{ card.description|default:'Опис відсутній' }}</p>
-              {% if user.is_authenticated and user.is_member %}
-                <a href="{% url 'kanban:card_edit' card.pk %}">Редагувати</a>
-              {% endif %}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
+    {% for status_key,status_label in status_columns %}
+      <section class="card kanban-column" aria-label="{{ status_label }}">
+        <div class="kanban-column-heading"><h3>{{ status_label }}</h3><span class="kanban-count">{% with count=0 %}{{ count }}{% endwith %}</span></div>
+        {% for card in cards %}{% if card.status == status_key %}
+          <article class="kanban-card"><strong>{{ card.title }}</strong><div class="meta">Відповідальний: {{ card.assignee|default:'Не призначено' }}</div><p>{{ card.description|default:'Опис відсутній' }}</p>{% if user.is_authenticated and user.is_member %}<a href="{% url 'kanban:card_edit' card.pk %}">Редагувати завдання</a>{% endif %}</article>
+        {% endif %}{% endfor %}
+      </section>
     {% endfor %}
   </div>
+  <style>
+    .commission-nav{display:flex;flex-wrap:wrap;gap:.55rem;margin:0 0 1.2rem}.commission-nav .btn{margin:0}.commission-nav .active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .kanban-title{margin:1rem 0}.kanban-grid{align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:1rem}
+    .kanban-column{padding:1rem;min-width:0;background:var(--soft)}.kanban-column-heading{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);margin-bottom:.8rem}.kanban-column-heading h3{margin:0}.kanban-count{font-size:.8rem;color:var(--muted)}
+    .kanban-card{padding:.9rem;margin:.65rem 0;background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.035)}.kanban-card strong{display:block;overflow-wrap:anywhere}.kanban-card .meta{margin:.35rem 0}.kanban-card p{font-size:.92rem;line-height:1.55;white-space:pre-line}.kanban-card a{font-weight:700}
+  </style>
 {% endblock %}
