@@ -1,39 +1,27 @@
-﻿{% extends 'base.html' %}
-
+{% extends 'base.html' %}
 {% block title %}Вхід{% endblock %}
-
 {% block content %}
-  <div class="card form-card">
-    <h1>Вхід</h1>
-    {% if login_error_reason %}
-      <div class="message">{{ login_error_reason }}</div>
-    {% endif %}
+  <div class="auth-wrap"><section class="card auth-card">
+    <div class="auth-heading"><span class="auth-mark" aria-hidden="true">P.</span><div><p class="eyebrow">ПАРЛАМЕНТ.ONLINE</p><h1>Вхід до кабінету</h1><p class="meta">Увійдіть, використовуючи шкільну електронну пошту.</p></div></div>
+    {% if login_error_reason %}<div class="message" role="alert">{{ login_error_reason }}</div>{% endif %}
     <form method="post" class="form-grid">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      {% for field in form %}
-        {% if field.name != 'remember_me' %}
-          <div>
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-          </div>
-        {% endif %}
-      {% endfor %}
-      <div>
-        <label><input type="checkbox" name="remember_me" value="1"> Запам’ятати мене на 30 днів</label>
-      </div>
+      {% csrf_token %}{{ form.non_field_errors }}
+      {% for field in form %}{% if field.name != 'remember_me' %}<div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>{% endif %}{% endfor %}
+      <label class="remember-option"><input type="checkbox" name="remember_me" value="1"> Запам’ятати мене на 30 днів</label>
       <button type="submit" class="btn">Увійти</button>
-      <button type="button" class="btn secondary" onclick="togglePasswordVisibility()">Показати пароль</button>
-      <p>Якщо ви забули пароль, зверніться до секретаря парламенту.</p>
+      <button type="button" class="btn secondary" data-password-toggle>Показати пароль</button>
     </form>
-  </div>
+    <p class="auth-help">Якщо ви забули пароль, зверніться до секретаря парламенту.</p>
+  </section></div>
+  <style>
+    .auth-wrap{max-width:490px;margin:clamp(1rem,5vh,3.5rem) auto}.auth-card{padding:clamp(1.3rem,4vw,2.2rem)}
+    .auth-heading{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}.auth-heading h1{margin:.1rem 0}.auth-heading .meta{margin:.35rem 0 0}
+    .auth-mark{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:16px;background:var(--soft);color:var(--accent);font-size:1.35rem;font-weight:900}
+    .remember-option{display:flex;align-items:center;gap:.55rem;font-weight:500!important}.remember-option input{width:18px;height:18px}
+    .auth-help{margin:1.2rem 0 0;color:var(--muted);font-size:.9rem}
+    .auth-card form>.btn{width:100%}
+  </style>
   <script>
-    function togglePasswordVisibility() {
-      const field = document.querySelector('input[name="password"]');
-      if (field) {
-        field.type = field.type === 'password' ? 'text' : 'password';
-      }
-    }
+    document.querySelectorAll('[data-password-toggle]').forEach(function(button){button.addEventListener('click',function(){const field=document.querySelector('input[name="password"]');if(!field)return;field.type=field.type==='password'?'text':'password';button.textContent=field.type==='password'?'Показати пароль':'Приховати пароль';});});
   </script>
 {% endblock %}
