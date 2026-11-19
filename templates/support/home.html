@@ -1,17 +1,12 @@
 {% extends 'base.html' %}
-
 {% block title %}Підтримка{% endblock %}
-
 {% block content %}
-  <h1>Підтримка</h1>
-  <div class="record-list">
-  {% for faq in faqs %}
-    <article class="card record-card">
-      <h3>{{ faq.question }}</h3>
-      <p>{{ faq.answer }}</p>
-    </article>
-  {% empty %}
-    <div class="empty-state">Питань поки не додано.</div>
-  {% endfor %}
+  <div class="page-heading"><div><p class="eyebrow">ДОПОМОГА</p><h1>Підтримка</h1><p class="meta">Відповіді на поширені запитання про користування платформою.</p></div></div>
+  <div class="record-list faq-list">
+    {% for faq in faqs %}<article class="card record-card faq-card"><span class="faq-mark" aria-hidden="true">?</span><div><h3>{{ faq.question }}</h3><p>{{ faq.answer }}</p></div></article>
+    {% empty %}<div class="empty-state">Питань поки не додано.</div>{% endfor %}
   </div>
+  <style>
+    .faq-card{display:grid;grid-template-columns:38px minmax(0,1fr);gap:.9rem;align-items:start}.faq-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:var(--soft);color:var(--accent);font-weight:850;font-size:1.15rem}.faq-card h3{margin:.15rem 0 .4rem}.faq-card p{margin:0;line-height:1.65;white-space:pre-line}
+  </style>
 {% endblock %}
