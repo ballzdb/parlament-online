@@ -1,20 +1,15 @@
 {% extends 'base.html' %}
-
-{% block title %}Редагування картки{% endblock %}
-
+{% block title %}Редагування завдання{% endblock %}
 {% block content %}
   <div class="card form-card">
-    <h1>Редагування картки</h1>
+    <p class="eyebrow">ДОШКА ЗАВДАНЬ</p><h1>Оновити завдання</h1>
+    <p class="meta">{{ card.title }}</p>
     <form method="post" class="form-grid">
       {% csrf_token %}
       {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-        </div>
+        <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
       {% endfor %}
-      <button type="submit" class="btn">Зберегти</button>
+      <div class="detail-actions"><button type="submit" class="btn">Зберегти зміни</button><a href="{% url 'kanban:card_detail' card.pk %}">Скасувати</a></div>
     </form>
   </div>
 {% endblock %}
