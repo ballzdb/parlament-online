@@ -1,28 +1,25 @@
 {% extends 'base.html' %}
-
 {% block title %}Керування ролями | Парламент.Online{% endblock %}
-
 {% block content %}
-  <h1>Керування ролями</h1>
-  <p class="meta">Призначати ролі може лише адміністратор. Адміністратор має незмінний доступ і не відображається серед користувачів.</p>
-  <div class="card role-list">
-    {% for person in users %}
-      <form method="post" class="role-row">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" value="{{ person.pk }}">
-        <div>
-          <strong>{{ person.display_name|default:person.email }}</strong>
-          <div class="meta">{{ person.email }}{% if person.grade %} · {{ person.grade }}{{ person.class_letter }} клас{% endif %}</div>
-        </div>
-        <select name="role" aria-label="Роль користувача">
-          {% for value, label in role_choices %}
-            <option value="{{ value }}" {% if person.role == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-        <button class="btn" type="submit">Зберегти</button>
-      </form>
-    {% empty %}
-      <p>Поки немає зареєстрованих користувачів.</p>
-    {% endfor %}
-  </div>
+  <div class="page-heading"><div><p class="eyebrow">АДМІНІСТРУВАННЯ</p><h1>Керування ролями</h1><p class="meta">Призначати ролі може лише адміністратор. Обліковий запис адміністратора захищений від змін.</p></div></div>
+  <section class="card role-panel">
+    <div class="role-panel-heading"><div><h2>Облікові записи</h2><p class="meta">Зміни застосовуються після натискання кнопки збереження.</p></div><span class="role-count">{{ users|length }}</span></div>
+    <div class="role-list">
+      {% for person in users %}
+        <form method="post" class="role-row">
+          {% csrf_token %}<input type="hidden" name="user_id" value="{{ person.pk }}">
+          <div class="role-person"><span class="role-avatar" aria-hidden="true">{{ person.display_name|default:person.email|slice:":1"|upper }}</span><div class="role-person-text"><strong>{{ person.display_name|default:person.email }}</strong><div class="meta">{{ person.email }}{% if person.grade %} · {{ person.grade }}{{ person.class_letter }} клас{% endif %}</div></div></div>
+          <label class="role-select-label"><span class="meta">Роль</span><select name="role" aria-label="Роль користувача">{% for value,label in role_choices %}<option value="{{ value }}" {% if person.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+          <button class="btn" type="submit">Зберегти</button>
+        </form>
+      {% empty %}<div class="empty-state">Поки немає зареєстрованих користувачів.</div>{% endfor %}
+    </div>
+  </section>
+  <style>
+    .role-panel{padding:clamp(1rem,3vw,1.5rem)}.role-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.8rem}.role-panel-heading h2{margin:0}.role-panel-heading p{margin:.25rem 0}.role-count{min-width:38px;height:38px;padding:0 .6rem;display:grid;place-items:center;border-radius:12px;background:var(--soft);font-weight:750}
+    .role-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,210px) auto;align-items:center;gap:1rem;padding:1rem 0;border-top:1px solid var(--border)}
+    .role-person{display:flex;align-items:center;gap:.75rem;min-width:0}.role-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:13px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-weight:800}.role-person-text{min-width:0}.role-person-text strong,.role-person-text .meta{display:block;overflow-wrap:anywhere}.role-select-label{display:grid;gap:.25rem}.role-select-label select{width:100%}
+    @media(max-width:650px){.role-row{grid-template-columns:minmax(0,1fr) auto}.role-person{grid-column:1/-1}.role-select-label{min-width:0}.role-row>.btn{align-self:end}}
+    @media(max-width:390px){.role-row{grid-template-columns:1fr}.role-person{grid-column:auto}.role-row>.btn{width:100%}}
+  </style>
 {% endblock %}
