@@ -232,7 +232,10 @@
           <a href="{% url 'ideas:list' %}">Ідеї</a>
           <a href="{% url 'appeals:list' %}">Відгуки</a>
           <a href="{% url 'support:home' %}">Підтримка</a>
-          <a href="{% url 'kanban:board' %}">Дошка завдань</a>
+          {% if user.is_authenticated and user.has_role %}{% endif %}
+          {% if user.is_authenticated and user.role in "member commission_head secretary" %}
+            <a href="{% url 'kanban:board' %}">Дошка завдань</a>
+          {% endif %}
           {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
             <a href="{% url 'analytics:dashboard' %}">Аналітика</a>
             <a href="{% url 'accounts:role_management' %}">Керування ролями</a>
