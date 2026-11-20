@@ -242,6 +242,8 @@
           {% if user.is_authenticated %}
             <a href="{% url 'accounts:profile' %}">{{ user.email }}</a>
             {% if user.role == 'secretary' %}
+              <a href="{% url 'moderation:queue' %}">Модерація</a>
+              <a href="{% url 'ideas:event_archive' %}">Архів заходів</a>
               <a href="{% url 'accounts:reset_request' %}">Скинути пароль учня</a>
             {% endif %}
             <a href="{% url 'accounts:logout' %}">Вийти</a>
