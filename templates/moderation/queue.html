@@ -1,15 +1,18 @@
 {% extends 'base.html' %}
-
-{% block title %}Черга модерації{% endblock %}
-
+{% block title %}Черга модерації | Парламент.Online{% endblock %}
 {% block content %}
-  <h1>Черга модерації</h1>
-  {% for entry in entries %}
-    <div class="card" style="margin-bottom: 1rem;">
-      <div class="meta">{{ entry.target_type }} #{{ entry.target_id }}</div>
-      <pre>{{ entry.verdict|safe }}</pre>
-    </div>
-  {% empty %}
-    <p>Пунктів на перевірку немає.</p>
-  {% endfor %}
+<h1>Черга модерації</h1>
+<p class="meta">Нові пропозиції не публікуються, доки секретар не перевірить їх.</p>
+<div class="record-list">
+{% for idea in ideas %}
+<article class="card record-card"><h2>{{ idea.title }}</h2>
+<div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.commission|default:'Без комісії' }}</div>
+<p style="white-space:pre-line">{{ idea.body }}</p>
+<form method="post" action="{% url 'moderation:review_idea' idea.pk %}" class="form-grid" style="max-width:100%;">
+{% csrf_token %}<label for="reason-{{ idea.pk }}">Причина відхилення (обов’язкова лише при відхиленні)</label>
+<textarea id="reason-{{ idea.pk }}" name="reason" rows="2" placeholder="Пояснення для автора"></textarea>
+<div class="detail-actions"><button class="btn" name="action" value="approve">Схвалити й опублікувати</button><button class="btn btn-danger" name="action" value="reject">Відхилити</button></div>
+</form></article>
+{% empty %}<div class="empty-state">Немає пропозицій на перевірці.</div>{% endfor %}
+</div>
 {% endblock %}
