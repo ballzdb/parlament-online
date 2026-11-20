@@ -12,6 +12,8 @@
     <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
     <p>{{ idea.body }}</p>
     <div class="idea-facts"><div><span>Комісія</span><strong>{{ idea.commission|default:'—' }}</strong></div><div><span>Поточний статус</span><strong>{{ idea.get_status_display }}</strong></div><div><span>Підтримка учнів</span><strong>{{ idea.vote_count }}</strong></div></div>
+    {% if not is_public %}<p class="meta">Пропозиція ще проходить перевірку. Її бачите ви та уповноважені представники парламенту.</p>{% endif %}
+    {% if idea.status_reason %}<p><strong>Пояснення:</strong> {{ idea.status_reason }}</p>{% endif %}
     {% if idea.completion_report %}
       <h3>Публічний звіт</h3>
       <p>{{ idea.completion_report }}</p>
@@ -26,13 +28,13 @@
         <button type="submit" class="btn btn-danger">Видалити ідею</button>
       </form>
     {% endif %}
-    {% if not has_voted %}
+    {% if is_public and not has_voted %}
       <form method="post" style="margin-top:1rem;">
         {% csrf_token %}
         <input type="hidden" name="vote" value="1">
         <button type="submit" class="btn">Підтримати</button>
       </form>
-    {% else %}
+    {% elif is_public %}
       <p class="meta">Ви вже підтримали цю ідею.</p>
     {% endif %}
     </div>
