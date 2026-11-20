@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
+import django.utils.timezone
 
 
 class Migration(migrations.Migration):
@@ -56,7 +57,7 @@ class Migration(migrations.Migration):
         migrations.AddField(model_name='event', name='participating_classes', field=models.CharField(blank=True, help_text='Наприклад: 8-А, 9-Б, 10-А', max_length=240)),
         migrations.AddField(model_name='event', name='participant_count', field=models.PositiveIntegerField(blank=True, null=True)),
         migrations.AddField(model_name='event', name='outcome', field=models.TextField(blank=True, help_text='Підсумок або короткий звіт після проведення події')),
-        migrations.AddField(model_name='event', name='updated_at', field=models.DateTimeField(auto_now=True)),
+        migrations.AddField(model_name='event', name='updated_at', field=models.DateTimeField(auto_now=True, default=django.utils.timezone.now), preserve_default=False),
         migrations.AddField(model_name='event', name='reference_url', field=models.URLField(blank=True)),
         migrations.AddField(model_name='event', name='image_url', field=models.URLField(blank=True)),
     ]
