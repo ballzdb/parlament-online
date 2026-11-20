@@ -182,9 +182,9 @@ class CommissionAndSettingsTests(TestCase):
         self.assertEqual(list(Commission.objects.values_list('name', flat=True)[:3]), ['Навчання', 'Порядок', 'Дозвілля'])
 
     def test_site_settings_hide_empty_and_validate_links(self):
-        SiteSettings.objects.create(key='instagram_url', value='https://instagram.com/parlament')
-        SiteSettings.objects.create(key='telegram_url', value='http://bad.example')
-        SiteSettings.objects.create(key='contact_email', value='parlament@school.example')
+        SiteSettings.objects.update_or_create(key='instagram_url', defaults={'value': 'https://instagram.com/parlament'})
+        SiteSettings.objects.update_or_create(key='telegram_url', defaults={'value': 'http://bad.example'})
+        SiteSettings.objects.update_or_create(key='contact_email', defaults={'value': 'parlament@school.example'})
         links = get_public_social_links()
         self.assertEqual([item['key'] for item in links], ['instagram_url'])
         self.assertEqual(self.client.get('/').status_code, 200)
