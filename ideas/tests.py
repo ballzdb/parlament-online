@@ -56,6 +56,7 @@ class ParliamentEventTests(TestCase):
             title='Шкільний кіновечір',
             body='Організувати кіновечір для учнів.',
             author=self.student,
+            moderation_status=Idea.ModerationStatus.APPROVED,
         )
 
     def test_student_cannot_create_event_from_idea(self):
