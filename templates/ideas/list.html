@@ -10,6 +10,7 @@
 {% block content %}
   <div class="page-heading">
     <h1 style="margin:0;">Ідеї</h1>
+    {% if user.is_authenticated %}<a href="{% url 'ideas:my_submissions' %}" class="btn secondary">Мої пропозиції</a>{% endif %}
     {% if user.is_authenticated %}
       <a href="{% url 'ideas:create' %}" class="btn">Подати ідею</a>
     {% endif %}
