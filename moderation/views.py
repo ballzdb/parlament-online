@@ -11,6 +11,7 @@ from accounts.models import AuditLog, User
 from app.permissions import requires_roles
 from ideas.models import Idea
 from .models import ModerationEntry
+from .forms import TemporaryRestrictionForm
 
 
 MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD)
@@ -82,3 +83,57 @@ def moderate_idea(request, pk):
         messages.error(request, 'Невідома дія модерації.')
 
     return redirect('moderation:queue')
+
+
+@login_required
+@requires_roles(User.Role.SECRETARY)
+def sanctions(request):
+    if request.method == 'POST':
+        form = TemporaryRestrictionForm(request.POST)
+        if form.is_valid():
+            student = form.cleaned_data['user']
+            student.restricted_until = form.cleaned_data['restricted_until']
+            student.restriction_reason = form.cleaned_data['reason']
+            student.restricted_by = request.user
+            student.save(update_fields=['restricted_until', 'restriction_reason', 'restricted_by'])
+            AuditLog.objects.create(
+                action='student_temporarily_restricted',
+                user=request.user,
+                email=request.user.email,
+                details=f'{student.email} restricted until {student.restricted_until.isoformat()}: {student.restriction_reason}',
+            )
+            messages.success(request, 'Тимчасове обмеження застосовано.')
+            return redirect('moderation:sanctions')
+    else:
+        form = TemporaryRestrictionForm()
+
+    active_restrictions = User.objects.filter(
+        restricted_until__gt=timezone.now()
+    ).select_related('restricted_by').order_by('restricted_until')
+    return render(request, 'moderation/sanctions.html', {
+        'form': form,
+        'active_restrictions': active_restrictions,
+    })
+
+
+@login_required
+@require_POST
+@requires_roles(User.Role.SECRETARY)
+def clear_sanction(request, pk):
+    student = get_object_or_404(User, pk=pk)
+    student.restricted_until = None
+    student.restriction_reason = ''
+    student.restricted_by = None
+    student.save(update_fields=['restricted_until', 'restriction_reason', 'restricted_by'])
+    AuditLog.objects.create(
+        action='student_temporary_restriction_cleared',
+        user=request.user,
+        email=request.user.email,
+        details=f'Temporary restriction cleared for {student.email}',
+    )
+    messages.success(request, 'Обмеження достроково знято.')
+    return redirect('moderation:sanctions')
+
+
+def moderation_rules(request):
+    return render(request, 'moderation/rules.html')
