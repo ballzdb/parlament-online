@@ -6,7 +6,7 @@ from kanban.models import KanbanCard, TaskComment
 
 class KanbanAccessTests(TestCase):
     def setUp(self):
-        self.commission = Commission.objects.create(name='Навчання', slug='navchannia')
+        self.commission = Commission.objects.get_or_create(slug='navchannia', defaults={'name': 'Навчання'})
         self.card = KanbanCard.objects.create(
             commission=self.commission,
             title='Підготувати опитування',
