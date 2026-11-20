@@ -60,6 +60,8 @@ class Event(models.Model):
     participating_classes = models.CharField(max_length=240, blank=True, help_text='Наприклад: 8-А, 9-Б, 10-А')
     participant_count = models.PositiveIntegerField(null=True, blank=True)
     outcome = models.TextField(blank=True, help_text='Підсумок або короткий звіт після проведення події')
+    reference_url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True)
     source_idea = models.ForeignKey(Idea, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='created_events')
     created_at = models.DateTimeField(auto_now_add=True)
