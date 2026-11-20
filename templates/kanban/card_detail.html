@@ -11,6 +11,8 @@
       <div><span>Створено</span><strong>{{ card.created_at|date:'d.m.Y H:i' }}</strong></div>
       <div><span>Картку оновлено</span><strong>{{ card.updated_at|date:'d.m.Y H:i' }}</strong></div>
     </div>
+    {% if card.image_url %}<img src="{{ card.image_url }}" alt="Зображення до завдання: {{ card.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:360px;object-fit:cover;border-radius:14px;margin:1rem 0;">{% endif %}
+    {% if card.reference_url %}<p><a href="{{ card.reference_url }}" target="_blank" rel="noopener noreferrer">Відкрити матеріали до завдання ↗</a></p>{% endif %}
     <div class="task-description">{{ card.description|default:'Опис завдання не додано.'|linebreaks }}</div>
     {% if can_manage_tasks %}<div class="detail-actions"><a class="btn" href="{% url 'kanban:card_edit' card.pk %}">Оновити статус або відповідального</a></div>{% endif %}
   </article>
