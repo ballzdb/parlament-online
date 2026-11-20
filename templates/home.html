@@ -47,7 +47,7 @@
     <div class="hero-mark" aria-hidden="true"><span>PO</span></div>
   </section>
   <section class="home-stats">
-    <div class="card stat-card"><div class="meta">Ідей від учнів</div><strong>{{ stats.idea_count }}</strong></div>
+    <div class="card stat-card"><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong></div>
     <div class="card stat-card"><div class="meta">Звернень і відгуків</div><strong>{{ stats.appeal_count }}</strong></div>
     <div class="card stat-card"><div class="meta">Для кожного учня</div><strong>Відкрито</strong></div>
   </section>
@@ -73,12 +73,12 @@
     </section>
   {% endif %}
   <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2></div>
+    <div class="home-section-heading"><h2>Найближчі події</h2><a href="{% url 'ideas:events' %}">Усі події та архів →</a></div>
     <div class="grid">
       {% for event in events %}
         <article class="card">
           <div class="meta" style="font-weight:700;color:var(--accent);">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3>{{ event.title }}</h3>
+          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
           {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
           {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
         </article>
