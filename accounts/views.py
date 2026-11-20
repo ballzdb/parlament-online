@@ -2,6 +2,7 @@
 
 import re
 import secrets
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -20,6 +21,8 @@ from app.permissions import requires_roles
 from .forms import EmailAuthenticationForm, PasswordChangeForm, RegistrationForm
 from .models import AuditLog, EmailVerification, PRIMARY_ADMIN_EMAIL, User
 from .utils import normalize_email
+
+logger = logging.getLogger(__name__)
 
 
 def get_lockout_key(email: str, ip: str) -> str:
@@ -92,6 +95,7 @@ def _send_verification_code(user):
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
     except Exception:
+        logger.exception('Email verification email delivery failed (user_id=%s)', user.pk)
         verification.delete()
         return False, 'Не вдалося надіслати лист. Спробуйте пізніше або повідомте адміністратора сайту.'
     return True, 'Код підтвердження надіслано на вашу електронну пошту.'
