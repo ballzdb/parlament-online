@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Події та архів | Парламент.Online{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">ЖИТТЯ ЛІЦЕЮ</p><h1>Події та архів</h1><p class="meta">Майбутні заходи й результати вже проведених ініціатив.</p></div>
+  </div>
+  <section class="home-section">
+    <div class="home-section-heading"><h2>Найближчі події</h2></div>
+    <div class="record-list">
+      {% for event in upcoming_events %}
+        <article class="card record-card">
+          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+          <p>{{ event.description|truncatewords:35 }}</p>
+          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}</div>
+        </article>
+      {% empty %}<div class="empty-state">Запланованих подій поки немає.</div>{% endfor %}
+    </div>
+  </section>
+  <section class="home-section">
+    <div class="home-section-heading"><h2>Архів проведених заходів</h2></div>
+    <div class="record-list">
+      {% for event in past_events %}
+        <article class="card record-card">
+          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}{% if event.participant_count != None %} · Учасників: {{ event.participant_count }}{% endif %}</div>
+          <p>{{ event.outcome|default:event.description|truncatewords:45 }}</p>
+        </article>
+      {% empty %}<div class="empty-state">Проведених заходів поки немає. Після перших подій вони з’являться тут.</div>{% endfor %}
+    </div>
+  </section>
+{% endblock %}
