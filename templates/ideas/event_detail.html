@@ -12,6 +12,8 @@
       <div><span>Створив запис</span><strong>{{ event.created_by.display_name|default:event.created_by.email }}</strong></div>
       {% if event.source_idea %}<div><span>Пов’язана ідея</span><strong><a href="{% url 'ideas:detail' event.source_idea.pk %}">{{ event.source_idea.title }}</a></strong></div>{% endif %}
     </div>
+    {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px;margin:1rem 0;">{% endif %}
+    {% if event.reference_url %}<p><a href="{{ event.reference_url }}" target="_blank" rel="noopener noreferrer">Деталі або реєстрація ↗</a></p>{% endif %}
     {% if event.description %}<h2>Опис</h2><p style="white-space:pre-line;">{{ event.description }}</p>{% endif %}
     <h2>Результат / короткий звіт</h2>
     {% if event.outcome %}<p style="white-space:pre-line;">{{ event.outcome }}</p>{% else %}<p class="meta">Підсумок ще не додано. Організатори можуть доповнити запис після проведення заходу.</p>{% endif %}
