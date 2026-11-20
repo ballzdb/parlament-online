@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import base64
 import os
+from email.mime.base import MIMEBase
 
 import requests
 from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail.message import SafeMIMEText
 
 
 class ResendAPIError(Exception):
@@ -104,7 +104,3 @@ class ResendEmailBackend(BaseEmailBackend):
                 f"Resend API returned HTTP {response.status_code}: {detail}"
             )
         return response.json()
-
-
-# Imported here to keep the standard-library email dependency explicit.
-from email.mime.base import MIMEBase
