@@ -10,7 +10,7 @@ from ideas.models import Event, Idea, IdeaVote
 
 class IdeaVoteTests(TestCase):
     def setUp(self):
-        self.commission = Commission.objects.create(name='Навчання', slug='navchannia')
+        self.commission = Commission.objects.get_or_create(slug='navchannia', defaults={'name': 'Навчання'})
         self.user = User.objects.create_user(email='user@example.com', password='Password123', display_name='Користувач', is_active=True)
         self.idea = Idea.objects.create(
             title='Відкрити асинхронний клуб',
