@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django import forms
+from django.core.validators import URLValidator
 
 from accounts.models import Commission, User
 from .models import KanbanCard, TaskComment
@@ -9,10 +10,12 @@ from .models import KanbanCard, TaskComment
 class KanbanCardForm(forms.ModelForm):
     class Meta:
         model = KanbanCard
-        fields = ['title', 'description', 'assignee', 'due_date', 'status']
+        fields = ['title', 'description', 'reference_url', 'image_url', 'assignee', 'due_date', 'status']
         labels = {
             'title': 'Назва завдання',
             'description': 'Що потрібно зробити',
+            'reference_url': 'Посилання на матеріали або документ',
+            'image_url': 'Посилання на зображення (HTTPS)',
             'assignee': 'Відповідальний',
             'due_date': 'Термін виконання',
             'status': 'Статус',
@@ -26,11 +29,13 @@ class KanbanCardForm(forms.ModelForm):
             is_active=True,
         ).order_by('display_name', 'email')
         self.fields['assignee'].required = False
+        self.fields['reference_url'] = forms.URLField(required=False, label='Посилання на матеріали або документ', validators=[URLValidator(schemes=['https'])], widget=forms.URLInput(attrs={'placeholder': 'https://...'}))
+        self.fields['image_url'] = forms.URLField(required=False, label='Посилання на зображення (HTTPS)', validators=[URLValidator(schemes=['https'])], widget=forms.URLInput(attrs={'placeholder': 'https://...'}))
 
 
 class TaskCreateForm(KanbanCardForm):
     class Meta(KanbanCardForm.Meta):
-        fields = ['commission', 'title', 'description', 'assignee', 'due_date']
+        fields = ['commission', 'title', 'description', 'reference_url', 'image_url', 'assignee', 'due_date']
         labels = {**KanbanCardForm.Meta.labels, 'commission': 'Комісія'}
 
     def __init__(self, *args, **kwargs):
