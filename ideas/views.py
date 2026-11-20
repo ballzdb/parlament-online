@@ -15,7 +15,7 @@ from .models import Event, Idea, IdeaVote
 
 
 def home(request):
-    public_statuses = [Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE, Idea.Status.REJECTED]
+    public_statuses = [Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE]
     ideas = Idea.objects.filter(status__in=public_statuses).select_related('commission', 'author').order_by('-created_at')[:6]
     appeals = Appeal.objects.order_by('-created_at')[:5]
     events = Event.objects.filter(starts_at__gte=timezone.now()).select_related('created_by', 'source_idea')[:6]
@@ -65,7 +65,7 @@ def event_archive(request):
 @login_required
 def idea_detail(request, pk):
     idea = get_object_or_404(Idea, pk=pk)
-    is_public = idea.status != Idea.Status.SUBMITTED
+    is_public = idea.status in (Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE)
     if not is_public and idea.author_id != request.user.id and request.user.role != User.Role.SECRETARY:
         raise Http404
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
