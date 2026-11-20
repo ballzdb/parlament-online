@@ -5,7 +5,7 @@
 {% block content %}
   <div class="page-heading">
     <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки відповідальний модератор не перевірить їх.</p></div>
-    <span class="badge">{{ ideas|length }} очікують</span>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>{% if user.role == 'secretary' %}<a class="btn secondary" href="{% url 'moderation:sanctions' %}">Тимчасові обмеження</a>{% endif %}<span class="meta">{{ ideas|length }} очікують</span></div>
   </div>
 
   <div class="record-list">
