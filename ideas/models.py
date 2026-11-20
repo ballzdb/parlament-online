@@ -6,8 +6,8 @@ from django.db import models
 
 class Idea(models.Model):
     class Status(models.TextChoices):
-        SUBMITTED = 'submitted', 'Подано'
-        UNDER_REVIEW = 'under_review', 'На розгляді'
+        SUBMITTED = 'submitted', 'На перевірці'
+        UNDER_REVIEW = 'under_review', 'Ідея допущена'
         IN_PROGRESS = 'in_progress', 'В роботі'
         DONE = 'done', 'Виконано'
         REJECTED = 'rejected', 'Відхилено'
@@ -46,6 +46,9 @@ class Event(models.Model):
     title = models.CharField(max_length=160)
     description = models.TextField(max_length=3000, blank=True)
     starts_at = models.DateTimeField()
+    organiser = models.CharField(max_length=160, blank=True, verbose_name='Організатор')
+    participating_classes = models.CharField(max_length=300, blank=True, verbose_name='Залучені класи')
+    outcome = models.TextField(max_length=2000, blank=True, verbose_name='Результат заходу')
     source_idea = models.ForeignKey(Idea, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='created_events')
     created_at = models.DateTimeField(auto_now_add=True)
