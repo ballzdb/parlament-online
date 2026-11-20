@@ -136,7 +136,7 @@ def event_create(request, pk):
 def event_list(request):
     now = timezone.now()
     upcoming = Event.objects.filter(starts_at__gte=now).select_related('created_by', 'source_idea')
-    past = Event.objects.filter(starts_at__lt=now).select_related('created_by', 'source_idea')
+    past = Event.objects.filter(starts_at__lt=now).select_related('created_by', 'source_idea').order_by('-starts_at')
     return render(request, 'ideas/events.html', {'upcoming_events': upcoming, 'past_events': past})
 
 
