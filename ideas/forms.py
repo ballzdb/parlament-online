@@ -28,7 +28,7 @@ class IdeaForm(forms.ModelForm):
 class IdeaStatusForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['status'].choices = [choice for choice in Idea.Status.choices if choice[0] != Idea.Status.SUBMITTED]
+        self.fields['status'].choices = [choice for choice in Idea.Status.choices if choice[0] in (Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE)]
 
     class Meta:
         model = Idea
