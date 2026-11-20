@@ -72,7 +72,7 @@ def idea_detail(request, pk):
 
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
     status_form = None
-    if is_parliamentarian:
+    if is_parliamentarian and idea.moderation_status == Idea.ModerationStatus.APPROVED:
         if request.method == 'POST' and 'status' in request.POST:
             status_form = IdeaStatusForm(request.POST, instance=idea)
             if status_form.is_valid():
