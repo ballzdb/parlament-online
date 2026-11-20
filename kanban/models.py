@@ -13,6 +13,8 @@ class KanbanCard(models.Model):
     commission = models.ForeignKey('accounts.Commission', on_delete=models.CASCADE, related_name='cards')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    reference_url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True)
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_cards')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_kanban_cards')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)
