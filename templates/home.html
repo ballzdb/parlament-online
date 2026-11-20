@@ -73,7 +73,7 @@
     </section>
   {% endif %}
   <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2></div>
+    <div class="home-section-heading"><h2>Найближчі події</h2><a href="{% url 'ideas:event_archive' %}">Архів заходів →</a></div>
     <div class="grid">
       {% for event in events %}
         <article class="card">
