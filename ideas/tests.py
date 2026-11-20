@@ -17,6 +17,7 @@ class IdeaVoteTests(TestCase):
             body='Мета — зібрати учнів...',
             author=self.user,
             commission=self.commission,
+            moderation_status=Idea.ModerationStatus.APPROVED,
         )
 
     def test_vote_uniqueness(self):
