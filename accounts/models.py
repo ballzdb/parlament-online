@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 from .managers import UserManager
 
@@ -43,11 +44,18 @@ class User(AbstractUser):
     last_seen_at = models.DateTimeField(null=True, blank=True)
     must_change_password = models.BooleanField(default=False)
     email_verified_at = models.DateTimeField(null=True, blank=True)
+    restricted_until = models.DateTimeField(null=True, blank=True)
+    restriction_reason = models.TextField(blank=True)
+    restricted_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='issued_restrictions')
 
     objects = UserManager()
 
     def __str__(self) -> str:
         return self.email
+
+    @property
+    def is_temporarily_restricted(self) -> bool:
+        return bool(self.restricted_until and self.restricted_until > timezone.now())
 
     @property
     def is_student(self) -> bool:
