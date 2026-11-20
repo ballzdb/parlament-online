@@ -1,54 +1,42 @@
 {% extends 'base.html' %}
-
-{% block title %}{{ idea.title }}<style>
-.idea-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1.25rem 0;padding:1rem;background:var(--soft);border:1px solid var(--border);border-radius:14px}.idea-facts div{min-width:0}.idea-facts span{display:block;color:var(--muted);font-size:.82rem;margin-bottom:.2rem}.idea-facts strong{display:block;overflow-wrap:anywhere}@media(max-width:560px){.idea-facts{grid-template-columns:1fr 1fr}.idea-facts div:last-child{grid-column:1/-1}}
-.detail-card>p{white-space:pre-line;overflow-wrap:anywhere}
-</style>
-{% endblock %}
-
+{% block title %}{{ idea.title }} | Парламент.Online{% endblock %}
 {% block content %}
   <article class="card detail-card">
     <h1>{{ idea.title }}</h1>
     <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
-    <p>{{ idea.body }}</p>
-    <div class="idea-facts"><div><span>Комісія</span><strong>{{ idea.commission|default:'—' }}</strong></div><div><span>Поточний статус</span><strong>{{ idea.get_status_display }}</strong></div><div><span>Підтримка учнів</span><strong>{{ idea.vote_count }}</strong></div></div>
-    {% if idea.completion_report %}
-      <h3>Публічний звіт</h3>
-      <p>{{ idea.completion_report }}</p>
+    {% if idea.moderation_status == 'pending' %}
+      <div class="message">Ця ідея ще проходить модерацію. Її бачить автор і уповноважені представники самоврядування.</div>
+    {% elif idea.moderation_status == 'rejected' %}
+      <div class="message">Ідею не допущено до публікації. Причина: {{ idea.moderation_reason|default:'Не вказана' }}</div>
     {% endif %}
+    <p style="white-space:pre-line;">{{ idea.body }}</p>
+    <div class="idea-facts">
+      <div><span>Комісія</span><strong>{{ idea.commission|default:'—' }}</strong></div>
+      <div><span>Поточний статус</span><strong>{{ idea.get_status_display }}</strong></div>
+      <div><span>Підтримка учнів</span><strong>{{ idea.vote_count }}</strong></div>
+    </div>
+    {% if idea.completion_report %}<h3>Публічний звіт</h3><p>{{ idea.completion_report }}</p>{% endif %}
     <div class="detail-actions">
-    {% if user.is_member %}
-      <p style="margin-top:1rem;"><a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити ідею на подію</a></p>
-    {% endif %}
-    {% if user.is_authenticated and user.is_member %}
-      <form method="post" action="{% url 'ideas:delete' idea.pk %}" style="margin-top:1rem;" onsubmit="return confirm('Ви впевнені, що хочете остаточно видалити цю ідею?');">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Видалити ідею</button>
-      </form>
-    {% endif %}
-    {% if not has_voted %}
-      <form method="post" style="margin-top:1rem;">
-        {% csrf_token %}
-        <input type="hidden" name="vote" value="1">
-        <button type="submit" class="btn">Підтримати</button>
-      </form>
-    {% else %}
-      <p class="meta">Ви вже підтримали цю ідею.</p>
-    {% endif %}
+      {% if user.is_member and idea.moderation_status == 'approved' %}
+        <a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити ідею на подію</a>
+        <form method="post" action="{% url 'ideas:delete' idea.pk %}" onsubmit="return confirm('Ви впевнені, що хочете остаточно видалити цю ідею?');">
+          {% csrf_token %}<button type="submit" class="btn btn-danger">Видалити ідею</button>
+        </form>
+      {% endif %}
+      {% if idea.moderation_status == 'approved' %}
+        {% if not has_voted %}
+          <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати</button></form>
+        {% else %}<p class="meta">Ви вже підтримали цю ідею.</p>{% endif %}
+      {% endif %}
     </div>
   </article>
-
   {% if status_form %}
     <div class="card">
-      <h2>Змінити статус</h2>
+      <h2>Змінити статус виконання</h2>
       <form method="post" class="form-grid">
         {% csrf_token %}
         {% for field in status_form %}
-          <div>
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-          </div>
+          <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
         {% endfor %}
         <button type="submit" class="btn">Зберегти</button>
       </form>

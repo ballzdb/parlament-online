@@ -13,6 +13,7 @@
         <div>
           <label for="{{ field.id_for_label }}">{{ field.label }}</label>
           {{ field }}
+          {% if field.help_text %}<small class="meta">{{ field.help_text }}</small>{% endif %}
           {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
         </div>
       {% endfor %}

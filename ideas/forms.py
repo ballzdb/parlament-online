@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from django import forms
-
-from accounts.models import Commission
+from django.core.validators import URLValidator
 from django.utils import timezone
 
+from accounts.models import Commission
 from .models import Event, Idea
 
 
@@ -39,25 +39,41 @@ class IdeaStatusForm(forms.ModelForm):
 class EventCreateForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'description', 'starts_at']
+        fields = [
+            'title', 'description', 'starts_at', 'organiser',
+            'participating_classes', 'participant_count', 'outcome', 'reference_url', 'image_url',
+        ]
         labels = {
             'title': 'Назва події',
             'description': 'Опис події',
             'starts_at': 'Дата та час проведення',
+            'organiser': 'Організатор',
+            'participating_classes': 'Класи, які беруть участь',
+            'participant_count': 'Кількість учасників (якщо відома)',
+            'outcome': 'Результат / короткий опис (можна заповнити після події)',
+            'reference_url': 'Посилання на деталі або реєстрацію',
+            'image_url': 'Посилання на зображення (HTTPS)',
         }
         widgets = {
             'starts_at': forms.DateTimeInput(
                 format='%Y-%m-%dT%H:%M',
                 attrs={'type': 'datetime-local'},
             ),
+            'outcome': forms.Textarea(attrs={'rows': 3}),
+            'description': forms.Textarea(attrs={'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['starts_at'].input_formats = ['%Y-%m-%dT%H:%M']
+        self.fields['participant_count'].required = False
+        self.fields['participating_classes'].required = False
+        self.fields['outcome'].required = False
+        self.fields['reference_url'] = forms.URLField(required=False, label='Посилання на деталі або реєстрацію', validators=[URLValidator(schemes=['https'])], widget=forms.URLInput(attrs={'placeholder': 'https://...'}))
+        self.fields['image_url'] = forms.URLField(required=False, label='Посилання на зображення (HTTPS)', validators=[URLValidator(schemes=['https'])], widget=forms.URLInput(attrs={'placeholder': 'https://...'}))
 
     def clean_starts_at(self):
         value = self.cleaned_data['starts_at']
-        if value <= timezone.now():
-            raise forms.ValidationError('Дата та час події мають бути в майбутньому.')
+        if not self.instance.pk and value <= timezone.now():
+            raise forms.ValidationError('Дата та час нової події мають бути в майбутньому.')
         return value

@@ -230,10 +230,18 @@
         <div class="nav-links">
           <a href="{% url 'home' %}">Головна</a>
           <a href="{% url 'ideas:list' %}">Ідеї</a>
+          <a href="{% url 'ideas:events' %}">Події та архів</a>
+          <a href="{% url 'moderation:rules' %}">Правила</a>
           <a href="{% url 'appeals:list' %}">Відгуки</a>
           <a href="{% url 'support:home' %}">Підтримка</a>
           {% if user.is_authenticated and user.role == 'member' or user.is_authenticated and user.role == 'commission_head' or user.is_authenticated and user.role == 'secretary' %}
             <a href="{% url 'kanban:board' %}">Дошка завдань</a>
+          {% endif %}
+          {% if user.is_authenticated and user.role == 'secretary' or user.is_authenticated and user.role == 'commission_head' %}
+            <a href="{% url 'moderation:queue' %}">Модерація</a>
+          {% endif %}
+          {% if user.is_authenticated and user.role == 'secretary' %}
+            <a href="{% url 'moderation:sanctions' %}">Обмеження</a>
           {% endif %}
           {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
             <a href="{% url 'analytics:dashboard' %}">Аналітика</a>

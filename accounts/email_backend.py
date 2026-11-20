@@ -55,7 +55,7 @@ class ResendEmailBackend(BaseEmailBackend):
             payload["reply_to"] = list(message.reply_to)
 
         html_body = None
-        for alternative, mimetype in (message.alternatives or []):
+        for alternative, mimetype in (getattr(message, 'alternatives', None) or []):
             if mimetype == "text/html":
                 html_body = alternative
                 break

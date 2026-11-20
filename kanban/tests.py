@@ -6,7 +6,7 @@ from kanban.models import KanbanCard, TaskComment
 
 class KanbanAccessTests(TestCase):
     def setUp(self):
-        self.commission = Commission.objects.create(name='Навчання', slug='navchannia')
+        self.commission, _ = Commission.objects.get_or_create(slug='navchannia', defaults={'name': 'Навчання'})
         self.card = KanbanCard.objects.create(
             commission=self.commission,
             title='Підготувати опитування',
@@ -14,15 +14,11 @@ class KanbanAccessTests(TestCase):
             status='todo',
         )
 
-    def test_student_can_view_board_and_task_but_cannot_manage(self):
+    def test_student_cannot_view_parliament_task_board(self):
         student = User.objects.create_user(email='student@example.com', password='Password123', role=User.Role.STUDENT, is_active=True)
         self.client.force_login(student)
-        response = self.client.get('/kanban/navchannia/')
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'Створити завдання')
-        detail = self.client.get(f'/kanban/card/{self.card.pk}/')
-        self.assertEqual(detail.status_code, 200)
-        self.assertNotContains(detail, 'Додати коментар')
+        self.assertEqual(self.client.get('/kanban/navchannia/').status_code, 403)
+        self.assertEqual(self.client.get(f'/kanban/card/{self.card.pk}/').status_code, 403)
 
     def test_member_can_edit_card_status(self):
         member = User.objects.create_user(email='member@example.com', password='Password123', role=User.Role.MEMBER, is_active=True)

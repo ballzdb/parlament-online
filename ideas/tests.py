@@ -10,13 +10,14 @@ from ideas.models import Event, Idea, IdeaVote
 
 class IdeaVoteTests(TestCase):
     def setUp(self):
-        self.commission = Commission.objects.create(name='Навчання', slug='navchannia')
+        self.commission, _ = Commission.objects.get_or_create(slug='navchannia', defaults={'name': 'Навчання'})
         self.user = User.objects.create_user(email='user@example.com', password='Password123', display_name='Користувач', is_active=True)
         self.idea = Idea.objects.create(
             title='Відкрити асинхронний клуб',
             body='Мета — зібрати учнів...',
             author=self.user,
             commission=self.commission,
+            moderation_status=Idea.ModerationStatus.APPROVED,
         )
 
     def test_vote_uniqueness(self):
@@ -56,6 +57,7 @@ class ParliamentEventTests(TestCase):
             title='Шкільний кіновечір',
             body='Організувати кіновечір для учнів.',
             author=self.student,
+            moderation_status=Idea.ModerationStatus.APPROVED,
         )
 
     def test_student_cannot_create_event_from_idea(self):

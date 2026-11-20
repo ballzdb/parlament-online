@@ -17,7 +17,9 @@
         {% for card in column.cards %}
           <article class="kanban-card">
             <a class="task-title" href="{% url 'kanban:card_detail' card.pk %}">{{ card.title }}</a>
+            {% if card.image_url %}<img src="{{ card.image_url }}" alt="Зображення до завдання: {{ card.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:130px;object-fit:cover;border-radius:9px;">{% endif %}
             <p>{{ card.description|default:'Опис поки не додано'|truncatechars:150 }}</p>
+            {% if card.reference_url %}<a href="{{ card.reference_url }}" target="_blank" rel="noopener noreferrer">Матеріали ↗</a>{% endif %}
             <div class="task-meta"><span>Комісія: {{ card.commission.name }}</span><span>Відповідальний: {{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</span>{% if card.due_date %}<span>До: {{ card.due_date|date:'d.m.Y' }}</span>{% endif %}</div>
             <div class="task-footer"><span>{{ card.comments.count }} коментар(ів)</span>{% if card.created_by %}<span>Створив: {{ card.created_by.display_name|default:card.created_by.email }}</span>{% endif %}</div>
             {% if can_manage_tasks %}<a class="task-edit" href="{% url 'kanban:card_edit' card.pk %}">Змінити завдання</a>{% endif %}

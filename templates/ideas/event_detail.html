@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} | Парламент.Online{% endblock %}
+{% block content %}
+  <article class="card detail-card">
+    <p class="eyebrow">ПОДІЯ · {{ event.starts_at|date:'d.m.Y' }}</p>
+    <h1>{{ event.title }}</h1>
+    <div class="idea-facts">
+      <div><span>Дата та час</span><strong>{{ event.starts_at|date:'d.m.Y H:i' }}</strong></div>
+      <div><span>Організатор</span><strong>{{ event.organiser|default:'Не вказано' }}</strong></div>
+      <div><span>Кількість учасників</span><strong>{% if event.participant_count != None %}{{ event.participant_count }}{% else %}Не зазначено{% endif %}</strong></div>
+      <div><span>Класи</span><strong>{{ event.participating_classes|default:'Не зазначено' }}</strong></div>
+      <div><span>Створив запис</span><strong>{{ event.created_by.display_name|default:event.created_by.email }}</strong></div>
+      {% if event.source_idea %}<div><span>Пов’язана ідея</span><strong><a href="{% url 'ideas:detail' event.source_idea.pk %}">{{ event.source_idea.title }}</a></strong></div>{% endif %}
+    </div>
+    {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px;margin:1rem 0;">{% endif %}
+    {% if event.reference_url %}<p><a href="{{ event.reference_url }}" target="_blank" rel="noopener noreferrer">Деталі або реєстрація ↗</a></p>{% endif %}
+    {% if event.description %}<h2>Опис</h2><p style="white-space:pre-line;">{{ event.description }}</p>{% endif %}
+    <h2>Результат / короткий звіт</h2>
+    {% if event.outcome %}<p style="white-space:pre-line;">{{ event.outcome }}</p>{% else %}<p class="meta">Підсумок ще не додано. Організатори можуть доповнити запис після проведення заходу.</p>{% endif %}
+    {% if user.is_authenticated and user.is_member %}<a class="btn" href="{% url 'ideas:event_edit' event.pk %}">Оновити запис події</a>{% endif %}
+    <p style="margin-top:1rem;"><a href="{% url 'ideas:events' %}">← До всіх подій та архіву</a></p>
+  </article>
+{% endblock %}

@@ -1,14 +1,139 @@
 from __future__ import annotations
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
-from accounts.models import User
+from accounts.models import AuditLog, User
 from app.permissions import requires_roles
+from ideas.models import Idea
 from .models import ModerationEntry
+from .forms import TemporaryRestrictionForm
+
+
+MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD)
+
+
+@login_required
+@requires_roles(*MODERATOR_ROLES)
+def moderation_queue(request):
+    pending_ideas = Idea.objects.filter(
+        moderation_status=Idea.ModerationStatus.PENDING
+    ).select_related('author', 'commission', 'assigned_moderator').order_by('created_at')
+    moderators = User.objects.filter(
+        is_active=True, role__in=MODERATOR_ROLES
+    ).order_by('display_name', 'email')
+    return render(request, 'moderation/queue.html', {
+        'ideas': pending_ideas,
+        'moderators': moderators,
+    })
+
+
+@login_required
+@require_POST
+@requires_roles(*MODERATOR_ROLES)
+def moderate_idea(request, pk):
+    idea = get_object_or_404(Idea, pk=pk, moderation_status=Idea.ModerationStatus.PENDING)
+    action = request.POST.get('action', '').strip()
+    is_secretary = request.user.role == User.Role.SECRETARY
+
+    if action == 'assign':
+        if not is_secretary:
+            raise PermissionDenied
+        moderator_id = request.POST.get('moderator')
+        moderator = get_object_or_404(User, pk=moderator_id, is_active=True, role__in=MODERATOR_ROLES)
+        idea.assigned_moderator = moderator
+        idea.save(update_fields=['assigned_moderator', 'updated_at'])
+        AuditLog.objects.create(
+            action='idea_moderator_assigned', user=request.user, email=request.user.email,
+            details=f'Idea #{idea.pk} assigned to {moderator.email}',
+        )
+        messages.success(request, 'Відповідального модератора призначено.')
+    elif action in {'approve', 'reject'}:
+        if not is_secretary and idea.assigned_moderator_id != request.user.pk:
+            raise PermissionDenied
+        reason = request.POST.get('reason', '').strip()
+        if action == 'reject' and not reason:
+            messages.error(request, 'Для відхилення обов’язково вкажіть причину.')
+            return redirect('moderation:queue')
+        idea.moderation_status = (
+            Idea.ModerationStatus.APPROVED if action == 'approve'
+            else Idea.ModerationStatus.REJECTED
+        )
+        idea.moderation_reason = reason
+        idea.moderated_by = request.user
+        idea.moderated_at = timezone.now()
+        if action == 'approve':
+            idea.status = Idea.Status.SUBMITTED
+        else:
+            idea.status = Idea.Status.REJECTED
+        idea.save(update_fields=[
+            'moderation_status', 'moderation_reason', 'moderated_by',
+            'moderated_at', 'status', 'updated_at',
+        ])
+        AuditLog.objects.create(
+            action=f'idea_moderation_{action}', user=request.user, email=request.user.email,
+            details=f'Idea #{idea.pk}: {action}; reason={reason}',
+        )
+        messages.success(request, 'Ідею опубліковано.' if action == 'approve' else 'Ідею відхилено.')
+    else:
+        messages.error(request, 'Невідома дія модерації.')
+
+    return redirect('moderation:queue')
 
 
 @login_required
 @requires_roles(User.Role.SECRETARY)
-def moderation_queue(request):
-    return render(request, 'moderation/queue.html', {'entries': ModerationEntry.objects.all()})
+def sanctions(request):
+    if request.method == 'POST':
+        form = TemporaryRestrictionForm(request.POST)
+        if form.is_valid():
+            student = form.cleaned_data['user']
+            student.restricted_until = form.cleaned_data['restricted_until']
+            student.restriction_reason = form.cleaned_data['reason']
+            student.restricted_by = request.user
+            student.save(update_fields=['restricted_until', 'restriction_reason', 'restricted_by'])
+            AuditLog.objects.create(
+                action='student_temporarily_restricted',
+                user=request.user,
+                email=request.user.email,
+                details=f'{student.email} restricted until {student.restricted_until.isoformat()}: {student.restriction_reason}',
+            )
+            messages.success(request, 'Тимчасове обмеження застосовано.')
+            return redirect('moderation:sanctions')
+    else:
+        form = TemporaryRestrictionForm()
+
+    active_restrictions = User.objects.filter(
+        restricted_until__gt=timezone.now()
+    ).select_related('restricted_by').order_by('restricted_until')
+    return render(request, 'moderation/sanctions.html', {
+        'form': form,
+        'active_restrictions': active_restrictions,
+    })
+
+
+@login_required
+@require_POST
+@requires_roles(User.Role.SECRETARY)
+def clear_sanction(request, pk):
+    student = get_object_or_404(User, pk=pk)
+    student.restricted_until = None
+    student.restriction_reason = ''
+    student.restricted_by = None
+    student.save(update_fields=['restricted_until', 'restriction_reason', 'restricted_by'])
+    AuditLog.objects.create(
+        action='student_temporary_restriction_cleared',
+        user=request.user,
+        email=request.user.email,
+        details=f'Temporary restriction cleared for {student.email}',
+    )
+    messages.success(request, 'Обмеження достроково знято.')
+    return redirect('moderation:sanctions')
+
+
+def moderation_rules(request):
+    return render(request, 'moderation/rules.html')
