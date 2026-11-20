@@ -1,15 +1,50 @@
 {% extends 'base.html' %}
 
-{% block title %}Черга модерації{% endblock %}
+{% block title %}Модерація ідей | Парламент.Online{% endblock %}
 
 {% block content %}
-  <h1>Черга модерації</h1>
-  {% for entry in entries %}
-    <div class="card" style="margin-bottom: 1rem;">
-      <div class="meta">{{ entry.target_type }} #{{ entry.target_id }}</div>
-      <pre>{{ entry.verdict|safe }}</pre>
-    </div>
-  {% empty %}
-    <p>Пунктів на перевірку немає.</p>
-  {% endfor %}
+  <div class="page-heading">
+    <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки відповідальний модератор не перевірить їх.</p></div>
+    <span class="badge">{{ ideas|length }} очікують</span>
+  </div>
+
+  <div class="record-list">
+    {% for idea in ideas %}
+      <article class="card record-card">
+        <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
+        <h2 style="margin:.5rem 0;">{{ idea.title }}</h2>
+        <p style="white-space:pre-line;">{{ idea.body }}</p>
+        <div class="meta">Відповідальний: {{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email|default:'Не призначено' }}</div>
+
+        {% if user.role == 'secretary' %}
+          <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign">
+            <label for="moderator-{{ idea.pk }}">Призначити модератора</label>
+            <select id="moderator-{{ idea.pk }}" name="moderator" required>
+              <option value="">Оберіть відповідального</option>
+              {% for moderator in moderators %}
+                <option value="{{ moderator.pk }}" {% if idea.assigned_moderator_id == moderator.pk %}selected{% endif %}>{{ moderator.display_name|default:moderator.email }} — {{ moderator.get_role_display }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn secondary" type="submit">Призначити</button>
+          </form>
+        {% endif %}
+
+        {% if user.role == 'secretary' or idea.assigned_moderator_id == user.pk %}
+          <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
+            {% csrf_token %}
+            <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
+            <textarea id="reason-{{ idea.pk }}" name="reason" rows="2" placeholder="Пояснення рішення для автора"></textarea>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+              <button class="btn" name="action" value="approve" type="submit">Допустити до публікації</button>
+              <button class="btn btn-danger" name="action" value="reject" type="submit">Відхилити</button>
+            </div>
+          </form>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state">Усі ідеї перевірено. Нових заявок немає.</div>
+    {% endfor %}
+  </div>
 {% endblock %}
