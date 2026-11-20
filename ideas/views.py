@@ -70,7 +70,7 @@ def idea_detail(request, pk):
         raise Http404
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
     status_form = None
-    if request.user.has_role(request.user.Role.MEMBER, request.user.Role.COMMISSION_HEAD, request.user.Role.SECRETARY):
+    if is_public and request.user.has_role(request.user.Role.MEMBER, request.user.Role.COMMISSION_HEAD, request.user.Role.SECRETARY):
         if request.method == 'POST':
             status_form = IdeaStatusForm(request.POST, instance=idea)
             if status_form.is_valid():
