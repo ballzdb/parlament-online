@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from accounts.models import User
-from ideas.models import Event, Idea
+from ideas.models import Event, Idea, IdeaVote
 
 
 class IdeaModerationWorkflowTests(TestCase):
@@ -99,3 +99,42 @@ class EventArchiveTests(TestCase):
         self.assertEqual(self.client.get(f'/ideas/events/{self.event.pk}/edit/').status_code, 302)
         self.client.force_login(self.member)
         self.assertEqual(self.client.get(f'/ideas/events/{self.event.pk}/edit/').status_code, 200)
+
+
+class TemporaryRestrictionTests(TestCase):
+    def setUp(self):
+        self.student = User.objects.create_user(
+            email='restricted@khul.ukr.education', password='Password123',
+            display_name='Учень', is_active=True,
+            restricted_until=timezone.now() + timedelta(days=2),
+            restriction_reason='Повторний спам у пропозиціях.',
+        )
+        self.member = User.objects.create_user(
+            email='member@khul.ukr.education', password='Password123',
+            role=User.Role.MEMBER, is_active=True,
+        )
+        self.idea = Idea.objects.create(
+            title='Опублікована ідея', body='Опис',
+            author=self.member,
+            moderation_status=Idea.ModerationStatus.APPROVED,
+        )
+
+    def test_restricted_student_cannot_submit_idea(self):
+        self.client.force_login(self.student)
+        response = self.client.post('/ideas/create/', {
+            'title': 'Нова ідея',
+            'body': 'Хочу запропонувати нову ініціативу.',
+            'commission': '',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Idea.objects.filter(title='Нова ідея').exists())
+
+    def test_restricted_student_cannot_vote(self):
+        self.client.force_login(self.student)
+        response = self.client.post(f'/ideas/{self.idea.pk}/', {'vote': '1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(IdeaVote.objects.filter(idea=self.idea, user=self.student).exists())
+
+    def test_restriction_does_not_hide_public_ideas(self):
+        self.client.force_login(self.student)
+        self.assertContains(self.client.get('/ideas/'), 'Опублікована ідея')
