@@ -5,6 +5,7 @@ from . import views
 app_name = 'ideas'
 
 urlpatterns = [
+    path('feedback/', views.research_feedback, name='research_feedback'),
     path('', views.idea_list, name='list'),
     path('create/', views.idea_create, name='create'),
     path('events/', views.event_list, name='events'),
