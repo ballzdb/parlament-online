@@ -15,7 +15,8 @@ from .models import Event, Idea, IdeaVote
 
 
 def home(request):
-    ideas = Idea.objects.select_related('commission', 'author').order_by('-created_at')[:6]
+    public_statuses = [Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE, Idea.Status.REJECTED]
+    ideas = Idea.objects.filter(status__in=public_statuses).select_related('commission', 'author').order_by('-created_at')[:6]
     appeals = Appeal.objects.order_by('-created_at')[:5]
     events = Event.objects.filter(starts_at__gte=timezone.now()).select_related('created_by', 'source_idea')[:6]
     context = {
@@ -23,7 +24,7 @@ def home(request):
         'appeals': appeals,
         'events': events,
         'stats': {
-            'idea_count': Idea.objects.count(),
+            'idea_count': Idea.objects.filter(status__in=public_statuses).count(),
             'appeal_count': Appeal.objects.count(),
         },
     }
@@ -31,7 +32,8 @@ def home(request):
 
 
 def idea_list(request):
-    ideas = Idea.objects.select_related('commission', 'author').order_by('-vote_count', '-created_at')
+    public_statuses = [Idea.Status.UNDER_REVIEW, Idea.Status.IN_PROGRESS, Idea.Status.DONE, Idea.Status.REJECTED]
+    ideas = Idea.objects.filter(status__in=public_statuses).select_related('commission', 'author').order_by('-vote_count', '-created_at')
     return render(request, 'ideas/list.html', {'ideas': ideas})
 
 
@@ -42,17 +44,30 @@ def idea_create(request):
         if form.is_valid():
             idea = form.save(commit=False)
             idea.author = request.user
+            idea.status = Idea.Status.SUBMITTED
             idea.save()
-            messages.success(request, 'Ідея успішно подана й відправлена на розгляд.')
-            return redirect('ideas:list')
+            messages.success(request, 'Ідею надіслано на перевірку. Після схвалення вона з’явиться на загальній дошці.')
+            return redirect('ideas:my_submissions')
     else:
         form = IdeaForm()
     return render(request, 'ideas/create.html', {'form': form})
 
 
 @login_required
+def my_submissions(request):
+    return render(request, 'ideas/my_submissions.html', {'ideas': Idea.objects.filter(author=request.user)})
+
+
+def event_archive(request):
+    return render(request, 'ideas/event_archive.html', {'events': Event.objects.filter(starts_at__lt=timezone.now()).order_by('-starts_at')})
+
+
+@login_required
 def idea_detail(request, pk):
     idea = get_object_or_404(Idea, pk=pk)
+    is_public = idea.status != Idea.Status.SUBMITTED
+    if not is_public and idea.author_id != request.user.id and not request.user.is_member:
+        raise Http404
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
     status_form = None
     if request.user.has_role(request.user.Role.MEMBER, request.user.Role.COMMISSION_HEAD, request.user.Role.SECRETARY):
@@ -65,7 +80,7 @@ def idea_detail(request, pk):
         else:
             status_form = IdeaStatusForm(instance=idea)
 
-    if request.method == 'POST' and 'vote' in request.POST and not has_voted:
+    if is_public and request.method == 'POST' and 'vote' in request.POST and not has_voted:
         try:
             with transaction.atomic():
                 IdeaVote.objects.create(idea=idea, user=request.user)
@@ -75,7 +90,7 @@ def idea_detail(request, pk):
             messages.error(request, 'Ви вже голосували за цю ідею.')
         return redirect('ideas:detail', pk=idea.pk)
 
-    return render(request, 'ideas/detail.html', {'idea': idea, 'has_voted': has_voted, 'status_form': status_form})
+    return render(request, 'ideas/detail.html', {'idea': idea, 'has_voted': has_voted, 'status_form': status_form, 'is_public': is_public})
 
 
 
