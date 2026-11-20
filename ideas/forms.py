@@ -26,6 +26,10 @@ class IdeaForm(forms.ModelForm):
 
 
 class IdeaStatusForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [choice for choice in Idea.Status.choices if choice[0] != Idea.Status.SUBMITTED]
+
     class Meta:
         model = Idea
         fields = ['status', 'status_reason', 'completion_report']
@@ -39,11 +43,13 @@ class IdeaStatusForm(forms.ModelForm):
 class EventCreateForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'description', 'starts_at']
+        fields = ['title', 'description', 'starts_at', 'organiser', 'participating_classes']
         labels = {
             'title': 'Назва події',
             'description': 'Опис події',
             'starts_at': 'Дата та час проведення',
+            'organiser': 'Організатор',
+            'participating_classes': 'Залучені класи',
         }
         widgets = {
             'starts_at': forms.DateTimeInput(
@@ -55,6 +61,8 @@ class EventCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['starts_at'].input_formats = ['%Y-%m-%dT%H:%M']
+        self.fields['organiser'].required = False
+        self.fields['participating_classes'].required = False
 
     def clean_starts_at(self):
         value = self.cleaned_data['starts_at']
