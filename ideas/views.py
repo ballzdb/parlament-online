@@ -48,6 +48,9 @@ def idea_list(request):
 
 @login_required
 def idea_create(request):
+    if request.user.is_temporarily_restricted:
+        messages.error(request, f'Подання нових ідей тимчасово обмежено до {timezone.localtime(request.user.restricted_until):%d.%m.%Y %H:%M}. Причина: {request.user.restriction_reason}')
+        return redirect('home')
     if request.method == 'POST':
         form = IdeaForm(request.POST)
         if form.is_valid():
@@ -83,7 +86,9 @@ def idea_detail(request, pk):
             status_form = IdeaStatusForm(instance=idea)
 
     if request.method == 'POST' and 'vote' in request.POST:
-        if idea.moderation_status != Idea.ModerationStatus.APPROVED:
+        if request.user.is_temporarily_restricted:
+            messages.error(request, f'Голосування тимчасово обмежено до {timezone.localtime(request.user.restricted_until):%d.%m.%Y %H:%M}. Причина: {request.user.restriction_reason}')
+        elif idea.moderation_status != Idea.ModerationStatus.APPROVED:
             messages.error(request, 'Голосування за ідею ще не відкрите.')
         elif has_voted:
             messages.error(request, 'Ви вже голосували за цю ідею.')
