@@ -66,7 +66,7 @@ def event_archive(request):
 def idea_detail(request, pk):
     idea = get_object_or_404(Idea, pk=pk)
     is_public = idea.status != Idea.Status.SUBMITTED
-    if not is_public and idea.author_id != request.user.id and not request.user.is_member:
+    if not is_public and idea.author_id != request.user.id and request.user.role != User.Role.SECRETARY:
         raise Http404
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
     status_form = None
