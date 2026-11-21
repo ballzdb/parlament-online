@@ -131,14 +131,64 @@
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
       }
+
+      /* 2026 interface refresh */
+      :root {
+        --bg:#f5f7fb; --panel:#fff; --accent:#245da8; --accent-strong:#17477f;
+        --muted:#66758b; --text:#14243a; --border:#e1e8f1; --nav:#102b4c;
+        --soft:#edf3fb; --shadow:0 12px 34px rgba(16,43,76,.07);
+      }
+      html { scroll-behavior:smooth; }
+      body { background:radial-gradient(ellipse at 12% 0%,rgba(36,93,168,.07),transparent 34rem),var(--bg); }
+      nav { position:sticky; top:0; z-index:50; padding:.7rem clamp(1rem,4vw,2.5rem); background:rgba(16,43,76,.96); backdrop-filter:blur(16px); }
+      .nav-inner { max-width:1240px; gap:1.25rem; flex-wrap:nowrap; }
+      .brand { display:inline-flex; align-items:center; gap:.7rem; font-size:1.08rem; letter-spacing:-.04em; }
+      .brand::before { content:"P"; display:grid; place-items:center; width:2.15rem; height:2.15rem; border-radius:10px; background:linear-gradient(145deg,#7db7ff,#3976c2); color:#102b4c; font-weight:950; box-shadow:inset 0 1px 0 rgba(255,255,255,.45); }
+      .nav-links { gap:.25rem; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:.15rem 0; }
+      .nav-links::-webkit-scrollbar { display:none; }
+      .nav-links a { white-space:nowrap; padding:.52rem .68rem; border-radius:9px; font-size:.86rem; transition:background .18s ease,opacity .18s ease; }
+      .nav-links a:hover { background:rgba(255,255,255,.12); }
+      .container { max-width:1240px; padding:clamp(1.4rem,3vw,2.8rem) clamp(1rem,3vw,1.5rem) 4rem; }
+      h1,h2,h3 { color:var(--text); letter-spacing:-.035em; }
+      h1 { font-weight:850; }
+      .card { border-radius:18px; border-color:rgba(214,225,239,.9); box-shadow:var(--shadow); }
+      .card:hover { transform:translateY(-3px); box-shadow:0 18px 42px rgba(16,43,76,.11); }
+      .btn { border-radius:11px; padding:.78rem 1.12rem; box-shadow:0 5px 14px rgba(36,93,168,.16); }
+      .btn.secondary { box-shadow:none; }
+      .page-heading { margin-bottom:1.7rem; }
+      .page-heading h1 { font-size:clamp(1.9rem,4vw,2.7rem); }
+      .meta { color:var(--muted); }
+      .empty-state { border-radius:16px; padding:2rem 1.25rem; }
+      .message { border-radius:12px; }
+      footer { margin-top:3rem; background:#102b4c !important; }
+      footer .container { max-width:1240px; }
+      input,select,textarea { border-radius:11px; min-height:46px; }
+      textarea { min-height:130px; }
+      a,button { -webkit-tap-highlight-color:transparent; }
+      @media(max-width:900px) {
+        .nav-inner { align-items:flex-start; flex-direction:column; gap:.45rem; }
+        .nav-links { width:100%; padding:.3rem 0 .1rem; }
+      }
+      @media(max-width:560px) {
+        nav { padding:.7rem .9rem; }
+        .nav-inner { gap:.35rem; }
+        .nav-links { gap:.15rem; margin-inline:-.15rem; }
+        .nav-links a { padding:.48rem .58rem; font-size:.82rem; }
+        .container { padding-top:1.25rem; }
+        .card { border-radius:15px; }
+        .page-heading { align-items:flex-start; }
+        .page-heading .btn { width:100%; text-align:center; }
+      }
+      @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+
     </style>
   </head>
   <body>
     <nav>
       <div class="nav-inner">
-        <div class="brand">Парламент.Online</div>
+        <a class="brand" href="{% url 'home' %}" style="color:white;text-decoration:none;">Парламент.Online</a>
 <div class="nav-links">
-          <a href="{% url 'home' %}">Головна</a>
+          <a href="{% url 'home' %}" aria-label="Головна сторінка">Головна</a>
           <a href="{% url 'ideas:list' %}">Ідеї</a>
           <a href="{% url 'ideas:events' %}">Події та архів</a>
           <a href="{% url 'ideas:research_feedback' %}">Опитування</a>
