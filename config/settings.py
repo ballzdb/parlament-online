@@ -4,12 +4,18 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-me')
 DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes'}
+SECRET_KEY = os.getenv('SECRET_KEY', '').strip()
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'development-only-insecure-key-do-not-use-in-production'
+    else:
+        raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG is disabled.')
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
 
 INSTALLED_APPS = [
@@ -102,6 +108,15 @@ STORAGES = {
 ALLOWED_EMAIL_DOMAIN = os.getenv('ALLOWED_EMAIL_DOMAIN', 'khul.ukr.education')
 ENV = os.getenv('ENV', 'dev').strip().lower()
 TOTAL_STUDENTS = int(os.getenv('TOTAL_STUDENTS', '0'))
+
+if ENV == 'prod' and not DEBUG:
+    # Render terminates TLS at its proxy; SECURE_PROXY_SSL_HEADER below lets
+    # Django recognise the original HTTPS request before redirecting.
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31_536_000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
