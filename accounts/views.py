@@ -201,7 +201,7 @@ def role_management(request):
         except (TypeError, ValueError):
             target_id = None
         target = User.objects.filter(pk=target_id, is_active=True).first() if target_id else None
-        selected_roles = list(dict.fromkeys(request.POST.getlist('roles')))
+        selected_roles = list(dict.fromkeys(request.POST.getlist('roles') or [request.POST.get('role', '')]))
         allowed_roles = {choice.value for choice in User.Role}
         if target is None:
             messages.error(request, 'Активного користувача не знайдено.')
