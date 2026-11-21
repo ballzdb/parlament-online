@@ -296,7 +296,7 @@ def role_management(request):
             target_id = None
         target = User.objects.filter(pk=target_id, is_active=True).first() if target_id else None
         role = request.POST.get('role')
-        allowed_roles = {User.Role.STUDENT, User.Role.MEMBER}
+        allowed_roles = {User.Role.STUDENT, User.Role.MEMBER, User.Role.MODERATOR}
         if target is None:
             messages.error(request, 'Активного користувача не знайдено.')
         elif target.email.casefold() == PRIMARY_ADMIN_EMAIL:
@@ -326,5 +326,6 @@ def role_management(request):
         'role_choices': [
             (User.Role.STUDENT, 'Учень'),
             (User.Role.MEMBER, 'Парламентарій'),
+            (User.Role.MODERATOR, 'Модератор'),
         ],
     })
