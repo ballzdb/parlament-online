@@ -4,7 +4,7 @@
 
 {% block content %}
   <div class="page-heading">
-    <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки відповідальний модератор не перевірить їх.</p></div>
+    <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки модератор не схвалить їх.</p></div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>{% if user.is_secretary %}<a class="btn secondary" href="{% url 'moderation:sanctions' %}">Тимчасові обмеження</a>{% endif %}<span class="meta">{{ ideas|length }} очікують</span></div>
   </div>
 
@@ -16,7 +16,7 @@
         <p style="white-space:pre-line;">{{ idea.body }}</p>
         <div class="meta">Відповідальний: {% if idea.assigned_moderator %}{{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email }}{% else %}Не призначено{% endif %}</div>
 
-        {% if user.role == 'secretary' %}
+        {% if user.is_secretary %}
           <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
             {% csrf_token %}
             <input type="hidden" name="action" value="assign">
@@ -31,7 +31,7 @@
           </form>
         {% endif %}
 
-        {% if user.role == 'secretary' or idea.assigned_moderator_id == user.pk %}
+        {% if user.is_moderator or user.is_secretary or user.is_commission_head %}
           <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
             {% csrf_token %}
             <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
