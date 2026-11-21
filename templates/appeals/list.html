@@ -10,7 +10,7 @@
         {% if appeal.related_idea %}<div class="meta">Щодо ідеї: <a href="{% url 'ideas:detail' appeal.related_idea.pk %}">{{ appeal.related_idea.title }}</a></div>{% endif %}
         <p>{{ appeal.body }}</p>
         {% if user.is_authenticated and not user.is_student %}<div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>{% else %}<div class="meta">Авторство приховане</div>{% endif %}
-        {% if user.is_authenticated and user.role == 'secretary' %}<p><a class="btn secondary" href="{% url 'appeals:manage' appeal.pk %}">Опрацювати звернення</a></p>{% endif %}
+        {% if user.is_authenticated and user.is_secretary %}<p><a class="btn secondary" href="{% url 'appeals:manage' appeal.pk %}">Опрацювати звернення</a></p>{% endif %}
         {% if appeal.public_answer %}<div class="appeal-answer"><strong>Відповідь парламенту</strong><p>{{ appeal.public_answer }}</p></div>{% endif %}
       </article>
     {% empty %}<div class="empty-state">Поки немає звернень.</div>{% endfor %}
