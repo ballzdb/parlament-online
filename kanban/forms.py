@@ -24,9 +24,12 @@ class KanbanCardForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        parliamentarians = [
+            user.pk for user in User.objects.filter(is_active=True)
+            if user.has_role(User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
+        ]
         self.fields['assignee'].queryset = User.objects.filter(
-            role__in=[User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY],
-            is_active=True,
+            pk__in=parliamentarians
         ).order_by('display_name', 'email')
         self.fields['assignee'].required = False
         self.fields['reference_url'] = forms.URLField(required=False, label='Посилання на матеріали або документ', validators=[URLValidator(schemes=['https'])], widget=forms.URLInput(attrs={'placeholder': 'https://...'}))
