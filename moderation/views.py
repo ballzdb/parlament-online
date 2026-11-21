@@ -43,9 +43,10 @@ def moderation_queue(request):
     pending_ideas = Idea.objects.filter(
         moderation_status=Idea.ModerationStatus.PENDING
     ).select_related('author', 'commission', 'assigned_moderator').order_by('created_at')
-    moderators = User.objects.filter(
-        is_active=True, role__in=MODERATOR_ROLES
-    ).order_by('display_name', 'email')
+    moderators = [
+        user for user in User.objects.filter(is_active=True).order_by('display_name', 'email')
+        if user.has_role(*MODERATOR_ROLES)
+    ]
     return render(request, 'moderation/queue.html', {
         'ideas': pending_ideas,
         'moderators': moderators,
@@ -58,13 +59,15 @@ def moderation_queue(request):
 def moderate_idea(request, pk):
     idea = get_object_or_404(Idea, pk=pk, moderation_status=Idea.ModerationStatus.PENDING)
     action = request.POST.get('action', '').strip()
-    is_secretary = request.user.role == User.Role.SECRETARY
+    is_secretary = request.user.has_role(User.Role.SECRETARY)
 
     if action == 'assign':
         if not is_secretary:
             raise PermissionDenied
         moderator_id = request.POST.get('moderator')
-        moderator = get_object_or_404(User, pk=moderator_id, is_active=True, role__in=MODERATOR_ROLES)
+        moderator = get_object_or_404(User, pk=moderator_id, is_active=True)
+        if not moderator.has_role(*MODERATOR_ROLES):
+            raise PermissionDenied
         idea.assigned_moderator = moderator
         idea.save(update_fields=['assigned_moderator', 'updated_at'])
         record_moderation_event(idea, request.user, 'assigned', assigned_moderator=moderator)
@@ -74,7 +77,7 @@ def moderate_idea(request, pk):
         )
         messages.success(request, 'Відповідального модератора призначено.')
     elif action in {'approve', 'reject'}:
-        if not is_secretary and idea.assigned_moderator_id != request.user.pk:
+        if not is_secretary and not request.user.has_role(User.Role.MODERATOR) and idea.assigned_moderator_id != request.user.pk:
             raise PermissionDenied
         reason = request.POST.get('reason', '').strip()
         if action == 'reject' and not reason:

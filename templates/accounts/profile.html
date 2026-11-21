@@ -6,7 +6,7 @@
     <div class="profile-avatar" aria-hidden="true">{{ user.display_name|default:user.email|slice:":1"|upper }}</div>
     <div class="profile-details">
       <h2>{{ user.display_name|default:'Користувач' }}</h2>
-      <p class="meta">{{ user.get_role_display }}</p>
+      <p class="meta">{{ user.roles_display }}</p>
       <dl class="profile-facts">
         <div><dt>Електронна пошта</dt><dd>{{ user.email }}</dd></div>
         <div><dt>Клас</dt><dd>{{ user.grade|default:'—' }}{% if user.class_letter %} {{ user.class_letter }}{% endif %}</dd></div>

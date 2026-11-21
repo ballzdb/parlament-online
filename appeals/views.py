@@ -64,7 +64,7 @@ def appeal_create(request):
 
 @login_required
 def appeal_manage(request, pk):
-    if request.user.role != User.Role.SECRETARY:
+    if not request.user.has_role(User.Role.SECRETARY):
         raise PermissionDenied
 
     appeal = get_object_or_404(

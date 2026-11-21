@@ -29,7 +29,7 @@ class SiteSettingsAdminForm(forms.ModelForm):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'display_name', 'role', 'is_active', 'grade')
+    list_display = ('email', 'display_name', 'roles_display', 'is_active', 'grade')
     search_fields = ('email', 'display_name')
     list_filter = ('role', 'is_active')
 
