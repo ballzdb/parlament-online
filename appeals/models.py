@@ -8,6 +8,7 @@ class Appeal(models.Model):
     class Kind(models.TextChoices):
         REVIEW = 'review', 'Відгук'
         PROPOSAL = 'proposal', 'Пропозиція'
+        MODERATION = 'moderation', 'Оскарження рішення модерації'
 
     class Visibility(models.TextChoices):
         PUBLIC = 'public', 'Публічний'
@@ -20,6 +21,7 @@ class Appeal(models.Model):
         DECLINED = 'declined', 'Відхилено'
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appeals')
+    related_idea = models.ForeignKey('ideas.Idea', on_delete=models.SET_NULL, null=True, blank=True, related_name='appeals')
     kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.REVIEW)
     subject = models.CharField(max_length=200)
     body = models.TextField()
