@@ -78,7 +78,7 @@ python manage.py seed_commissions
 python manage.py runserver
 ```
 
-Без `DATABASE_URL` локальний запуск использует SQLite. Якщо `DATABASE_URL` задано, застосунок підключається до PostgreSQL.
+Без `DATABASE_URL` локальний запуск використовує SQLite. Якщо `DATABASE_URL` задано, застосунок підключається до PostgreSQL.
 
 ## Команди адміністрування
 
