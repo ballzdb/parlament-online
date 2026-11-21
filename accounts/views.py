@@ -127,6 +127,12 @@ def login_view(request):
                 user.save(update_fields=['last_seen_at'])
                 messages.success(request, 'Вітаємо! Ви увійшли в систему.')
                 return redirect('home')
+        # Record a failed authentication before adding form errors. Checking
+        # for an empty error list afterwards can never work because the error
+        # above has already been attached to the form.
+        if user is not None and user.is_active and password and not form.is_valid():
+            _record_login_failure(request, email)
+
         if settings.ENV == 'dev':
             if not login_error_reason:
                 login_error_reason = _get_login_error_reason(email, password, request)
@@ -137,15 +143,6 @@ def login_view(request):
                 form.add_error(None, login_error_reason)
             else:
                 form.add_error(None, 'Невірна пошта або пароль.')
-        attempts = _login_failed_attempts(request, email) if email else 0
-        if user is not None and password and not form.errors:
-            attempts = _record_login_failure(request, email)
-            if attempts >= 5:
-                login_error_reason = 'Невірна пошта або пароль. Обліковий запис заблоковано на 15 хвилин.'
-                form.add_error(None, login_error_reason)
-            else:
-                login_error_reason = 'Невірна пошта або пароль.'
-                form.add_error(None, login_error_reason)
     return render(request, 'accounts/login.html', {'form': form, 'login_error_reason': login_error_reason})
 
 
