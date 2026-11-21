@@ -78,6 +78,10 @@ class AccountFlowTests(TestCase):
         )
 
     def test_login_lockout_after_five_failed_attempts(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        self.addCleanup(cache.clear)
         User.objects.create_user(
             email='student@khul.ukr.education',
             **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True},
@@ -85,7 +89,11 @@ class AccountFlowTests(TestCase):
         for _ in range(5):
             response = self.client.post('/accounts/login/', {username_key: 'student@khul.ukr.education', pw_key: 'WrongPassword'})
             self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Невірна пошта або пароль.')
+        self.assertContains(response, 'заблоковано на 15 хвилин')
+
+        response = self.client.post('/accounts/login/', {username_key: 'student@khul.ukr.education', pw_key: 'Password123'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'заблоковано на 15 хвилин')
 
     def test_create_secretary_command(self):
         kw = {'email': 'secretary@example.com', pw_key: 'Secret123!', 'name': 'Secretary'}
