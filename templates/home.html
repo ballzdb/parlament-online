@@ -32,14 +32,59 @@
     .home-socials a { display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; min-height:42px; border:1px solid var(--border); border-radius:10px; background:var(--soft); font-weight:650; }
     .home-socials a:hover { text-decoration:none; border-color:var(--accent); }
     @media(max-width:650px) { .home-hero { min-height:unset; } .hero-mark { width:84px;height:84px;flex-basis:84px;border-radius:24px; } .hero-mark span {font-size:2rem;} .home-stats {grid-template-columns:1fr;} .stat-card {min-height:88px;} }
+
+    .home-hero { min-height:330px; padding:clamp(2rem,6vw,4.5rem); border:1px solid rgba(255,255,255,.12); border-radius:28px; background:radial-gradient(circle at 82% 25%,rgba(135,190,255,.25),transparent 18rem),linear-gradient(120deg,#102b4c 0%,#17477f 56%,#2869ad 100%); box-shadow:0 24px 60px rgba(16,43,76,.2); }
+    .home-hero::after { content:""; position:absolute; width:340px; height:340px; right:7%; bottom:-235px; border:1px solid rgba(255,255,255,.12); border-radius:50%; box-shadow:0 0 0 34px rgba(255,255,255,.035),0 0 0 68px rgba(255,255,255,.025); }
+    .home-hero h1 { font-size:clamp(2.6rem,6vw,4.8rem); line-height:1.02; }
+    .hero-mark { width:176px;height:176px;flex-basis:176px;border-radius:48px; transform:rotate(7deg); background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(255,255,255,.04)); backdrop-filter:blur(8px); }
+    .hero-mark span { font-size:4rem; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:.7rem; margin-top:1.55rem; }
+    .hero-actions a { display:inline-flex; justify-content:center; align-items:center; min-height:46px; padding:.7rem 1.05rem; border-radius:11px; font-weight:750; }
+    .hero-primary { background:#fff;color:#173b68; box-shadow:0 8px 20px rgba(0,0,0,.13); }
+    .hero-primary:hover { color:#173b68;text-decoration:none;transform:translateY(-2px); }
+    .hero-secondary { color:#fff;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08); }
+    .hero-secondary:hover { color:#fff;text-decoration:none;background:rgba(255,255,255,.16); }
+    .home-stats { gap:.85rem; margin-top:-.15rem; }
+    .home-stats .card { border-radius:17px; border-top:3px solid #3976c2; }
+    .stat-card { min-height:126px; padding:1.35rem; }
+    .stat-card strong { font-size:2.25rem; }
+    .home-section { margin:2.8rem 0; }
+    .home-section-heading { border-bottom:1px solid var(--border); padding-bottom:.85rem; margin-bottom:1.1rem; }
+    .home-section-heading h2 { font-size:1.45rem; }
+    .home-list .card { padding:1.1rem 1.2rem; }
+    .home-info { border-radius:20px; padding:1.5rem; }
+    .home-process { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin:2rem 0 2.6rem; }
+    .process-step { padding:1.05rem;border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.76); }
+    .process-step b { display:block;color:var(--accent);font-size:.78rem;letter-spacing:.1em;margin-bottom:.45rem; }
+    .process-step strong { display:block;font-size:1rem; }
+    .process-step span { display:block;color:var(--muted);font-size:.85rem;margin-top:.25rem; }
+    .home-list .card h3 a { color:var(--text); }
+    .home-list .card h3 a:hover { color:var(--accent); }
+    @media(max-width:700px) { .home-process {grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media(max-width:560px) { .home-hero {padding:1.55rem;min-height:unset;border-radius:21px;} .hero-mark {display:none;} .home-hero h1 {font-size:2.7rem;} .home-stats {grid-template-columns:1fr;} .stat-card {min-height:92px;} .hero-actions a {flex:1 1 100%;} .home-process {gap:.55rem;} .process-step {padding:.85rem;} }
+
   </style>
   <section class="home-hero">
     <div class="hero-copy">
       <div class="eyebrow">ШКІЛЬНЕ САМОВРЯДУВАННЯ · ОНЛАЙН</div>
       <h1>Парламент<span>.Online</span></h1>
       <p>Простір, де голос кожного учня може перетворитися на реальні зміни у житті ліцею.</p>
+      <div class="hero-actions">
+        <a class="hero-primary" href="{% url 'ideas:list' %}">Переглянути ідеї <span aria-hidden="true">&nbsp;→</span></a>
+        {% if user.is_authenticated %}
+          <a class="hero-secondary" href="{% url 'ideas:create' %}">Запропонувати зміни</a>
+        {% else %}
+          <a class="hero-secondary" href="{% url 'accounts:login' %}">Увійти до платформи</a>
+        {% endif %}
+      </div>
     </div>
     <div class="hero-mark" aria-hidden="true"><span>PO</span></div>
+  </section>
+  <section class="home-process" aria-label="Як працює платформа">
+    <div class="process-step"><b>01 / ПРОПОЗИЦІЯ</b><strong>Подай ідею</strong><span>Опиши, що варто змінити в ліцеї</span></div>
+    <div class="process-step"><b>02 / ПЕРЕВІРКА</b><strong>Модерація</strong><span>Парламент розгляне пропозицію</span></div>
+    <div class="process-step"><b>03 / УЧАСТЬ</b><strong>Голосування</strong><span>Підтримай важливі ініціативи</span></div>
+    <div class="process-step"><b>04 / РЕЗУЛЬТАТ</b><strong>Реалізація</strong><span>Стеж за перебігом виконання</span></div>
   </section>
   <section class="home-stats">
     <div class="card stat-card"><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong></div>

@@ -2,16 +2,16 @@
 {% block title %}Ідеї | Парламент.Online{% endblock %}
 {% block content %}
   <div class="page-heading">
-    <h1 style="margin:0;">Ідеї</h1>
+    <div><p class="eyebrow" style="color:var(--accent);opacity:1;">ГОЛОС УЧНІВ</p><h1 style="margin:0;">Ідеї та ініціативи</h1><p class="meta" style="margin:.55rem 0 0;">Переглядай пропозиції, підтримуй важливі зміни та стеж за їхнім статусом.</p></div>
     {% if user.is_authenticated %}<a href="{% url 'ideas:create' %}" class="btn">Подати ідею</a>{% endif %}
   </div>
-  <div class="record-list">
+  <div class="record-list ideas-feed">
   {% for idea in ideas %}
     <article class="card record-card">
       <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
       <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
       <p>{{ idea.body|truncatewords:55 }}</p>
-      <div class="idea-summary">
+      <div class="idea-summary" aria-label="Поточний стан ідеї">
         <span class="meta">Статус: <strong>{{ idea.get_status_display }}</strong></span>
         <span class="meta">Підтримка: <strong>{{ idea.vote_count }}</strong></span>
         {% if idea.moderation_status == 'pending' %}<span class="meta"><strong>Очікує перевірки</strong></span>{% elif idea.moderation_status == 'rejected' %}<span class="meta"><strong>Не опубліковано</strong></span>{% endif %}
