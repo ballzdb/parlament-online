@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Опрацювання звернення | Парламент.Online{% endblock %}
+{% block content %}
+  <div class="card form-card">
+    <p class="eyebrow">РОБОЧЕ МІСЦЕ СЕКРЕТАРЯ</p>
+    <h1>Опрацювання звернення</h1>
+    <h2>{{ appeal.subject }}</h2>
+    <p class="meta">{{ appeal.get_kind_display }} · {{ appeal.created_at|date:'d.m.Y H:i' }}</p>
+    {% if appeal.related_idea %}<p>Оскарження щодо: <a href="{% url 'ideas:detail' appeal.related_idea.pk %}">{{ appeal.related_idea.title }}</a></p>{% endif %}
+    <p style="white-space:pre-line;">{{ appeal.body }}</p>
+    <p class="meta">Автор: {{ appeal.author.display_name|default:appeal.author.email }}</p>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="btn" type="submit">Зберегти відповідь</button>
+      <a href="{% url 'appeals:list' %}">Скасувати</a>
+    </form>
+  </div>
+{% endblock %}

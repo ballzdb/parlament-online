@@ -8,6 +8,7 @@
       <div class="message">Ця ідея ще проходить модерацію. Її бачить автор і уповноважені представники самоврядування.</div>
     {% elif idea.moderation_status == 'rejected' %}
       <div class="message">Ідею не допущено до публікації. Причина: {{ idea.moderation_reason|default:'Не вказана' }}</div>
+      {% if user.pk == idea.author_id %}<p><a class="btn" href="{% url 'appeals:create' %}?idea={{ idea.pk }}">Оскаржити рішення</a></p>{% endif %}
     {% endif %}
     <p style="white-space:pre-line;">{{ idea.body }}</p>
     <div class="idea-facts">
