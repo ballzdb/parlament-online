@@ -77,6 +77,8 @@ def moderate_idea(request, pk):
         )
         messages.success(request, 'Відповідального модератора призначено.')
     elif action in {'approve', 'reject'}:
+        if not is_secretary and not request.user.has_role(User.Role.MODERATOR) and idea.assigned_moderator_id != request.user.pk:
+            raise PermissionDenied
         reason = request.POST.get('reason', '').strip()
         if action == 'reject' and not reason:
             messages.error(request, 'Для відхилення обов’язково вкажіть причину.')
