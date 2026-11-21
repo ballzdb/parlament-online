@@ -289,33 +289,35 @@ def role_management(request):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
 
+    role_choices = list(User.Role.choices)
     if request.method == 'POST':
         try:
             target_id = int(request.POST.get('user_id', ''))
         except (TypeError, ValueError):
             target_id = None
         target = User.objects.filter(pk=target_id, is_active=True).first() if target_id else None
-        role = request.POST.get('role')
-        allowed_roles = {User.Role.STUDENT, User.Role.MEMBER}
+        selected_roles = list(dict.fromkeys(request.POST.getlist('roles')))
+        allowed_roles = {choice.value for choice in User.Role}
         if target is None:
             messages.error(request, 'Активного користувача не знайдено.')
         elif target.email.casefold() == PRIMARY_ADMIN_EMAIL:
-            messages.error(request, 'Роль адміністратора змінювати не можна.')
-        elif role not in allowed_roles:
-            messages.error(request, 'Недопустима роль.')
+            messages.error(request, 'Ролі адміністратора змінювати не можна.')
+        elif not selected_roles or any(role not in allowed_roles for role in selected_roles):
+            messages.error(request, 'Оберіть щонайменше одну коректну роль.')
         else:
-            previous_role = target.role
-            target.role = role
-            target.is_staff = False
+            previous_roles = target.roles_display
+            target.role = selected_roles[0]
+            target.additional_roles = selected_roles[1:]
+            target.is_staff = target.has_role(User.Role.SECRETARY)
             target.is_superuser = False
-            target.save(update_fields=['role', 'is_staff', 'is_superuser'])
+            target.save(update_fields=['role', 'additional_roles', 'is_staff', 'is_superuser'])
             AuditLog.objects.create(
-                action='role_changed',
+                action='roles_changed',
                 email=target.email,
                 user=target,
-                details=f'{previous_role} -> {role}; changed_by={request.user.email}',
+                details=f'{previous_roles} -> {target.roles_display}; changed_by={request.user.email}',
             )
-            messages.success(request, f'Роль користувача {target.email} оновлено.')
+            messages.success(request, f'Ролі користувача {target.email} оновлено.')
         return redirect('accounts:role_management')
 
     users = User.objects.filter(is_active=True).exclude(
@@ -323,8 +325,5 @@ def role_management(request):
     ).order_by('grade', 'class_letter', 'email')
     return render(request, 'accounts/role_management.html', {
         'users': users,
-        'role_choices': [
-            (User.Role.STUDENT, 'Учень'),
-            (User.Role.MEMBER, 'Парламентарій'),
-        ],
+        'role_choices': role_choices,
     })
