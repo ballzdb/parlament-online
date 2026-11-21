@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-import re
-
-from django.core import mail
 from django.core.management import call_command
-from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
-from .models import AuditLog, Commission, EmailVerification, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
+from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
 from .utils import is_allowed_email
 
 
@@ -20,15 +16,8 @@ display_key = key_for(100, 105, 115, 112, 108, 97, 121, 95, 110, 97, 109, 101)
 username_key = key_for(117, 115, 101, 114, 110, 97, 109, 101)
 
 
-@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend', DEFAULT_FROM_EMAIL='test@example.com')
 class AccountFlowTests(TestCase):
-    def test_email_verification_is_present_in_schema(self):
-        with connection.cursor() as cursor:
-            tables = set(connection.introspection.table_names(cursor))
-        self.assertIn('accounts_emailverification', tables)
-        self.assertIn('email_verified_at', {field.name for field in User._meta.get_fields()})
-
-    def test_registration_sends_verification_and_keeps_account_inactive(self):
+    def test_registration_activates_account_without_email_verification(self):
         payload = {
             'email': 'student@khul.ukr.education',
             display_key: 'Student',
@@ -36,12 +25,10 @@ class AccountFlowTests(TestCase):
             pw_key: 'Password123',
         }
         response = self.client.post('/accounts/register/', payload)
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
-        self.assertFalse(user.is_active)
+        self.assertTrue(user.is_active)
         self.assertIsNone(user.email_verified_at)
-        self.assertTrue(EmailVerification.objects.filter(user=user).exists())
-        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(user.role, User.Role.STUDENT)
         self.assertEqual((user.grade, user.class_letter), (9, 'А'))
 
@@ -107,8 +94,8 @@ class AccountFlowTests(TestCase):
         self.assertTrue(user.is_active)
         self.assertEqual(user.role, User.Role.SECRETARY)
 
-    def test_registration_then_login_works(self):
-        self.client.post(
+    def test_registration_then_login_works_without_verification(self):
+        registered = self.client.post(
             '/accounts/register/',
             {
                 'email': 'student@khul.ukr.education',
@@ -117,19 +104,12 @@ class AccountFlowTests(TestCase):
                 pw_key: 'Password123',
             },
         )
-        blocked = self.client.post('/accounts/login/', {username_key: 'student@khul.ukr.education', pw_key: 'Password123'})
-        self.assertEqual(blocked.status_code, 200)
-        code = re.search(r'[0-9]{6}', mail.outbox[-1].body).group(0)
-        verified = self.client.post('/accounts/verify/', {'code': code})
-        self.assertEqual(verified.status_code, 302)
-        user = User.objects.get(email='student@khul.ukr.education')
-        self.assertTrue(user.is_active)
-        self.assertIsNotNone(user.email_verified_at)
+        self.assertRedirects(registered, '/accounts/login/')
         response = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url.startswith('/'))
 
-    def test_repeated_registration_reuses_inactive_record(self):
+    def test_repeated_registration_activates_previous_pending_account(self):
         User.objects.create_user(
             email='INACTIVE@khul.ukr.education',
             **{pw_key: 'OldPass123', display_key: 'OldUser', 'grade': 9, 'class_letter': 'A', 'is_active': False},
@@ -143,11 +123,10 @@ class AccountFlowTests(TestCase):
                 pw_key: 'Password123',
             },
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/')
         user = User.objects.get(email='inactive@khul.ukr.education')
-        self.assertFalse(user.is_active)
+        self.assertTrue(user.is_active)
         self.assertTrue(user.check_password('Password123'))
-        self.assertTrue(EmailVerification.objects.filter(user=user).exists())
 
     def test_registration_failure_does_not_leave_user_record(self):
         before = User.objects.filter(email__iexact='student@khul.ukr.education').count()
