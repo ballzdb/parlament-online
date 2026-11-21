@@ -1,38 +1,73 @@
 # Парламент.Online
 
-Парламент.Online — платформа для студентського парламенту Харківського університетського ліцею. Вона об’єднує ідеї, голосування, реалізацію рішень і звітність у одному місці.
+Парламент.Online — вебплатформа для учнівського парламенту Харківського університетського ліцею. Вона об’єднує шлях учнівської пропозиції від подання й модерації до голосування, організації виконання та звітування.
 
-## Stack
-- Python 3.12+
-- Django 6.1
-- SQLite
-- Django templates + HTML/CSS
-- Built-in auth and Django admin
+## Можливості
 
-## Quick start
+- реєстрація та вхід за електронною поштою;
+- подання учнівських ідей;
+- модерація ідей: схвалення або відхилення з фіксацією рішення;
+- голосування за опубліковані ідеї;
+- публікація заходів та архів подій;
+- організаційні завдання, відповідальні й історія змін;
+- звернення та апеляції;
+- статистика й аналітика для уповноважених користувачів;
+- підтримка кількох ролей одного користувача.
 
-### Windows
-1. Open PowerShell in the project folder.
-2. Create and activate a virtual environment.
-3. Install dependencies:
+## Технології
+
+- Python;
+- Django 6.1;
+- Django Templates, HTML і CSS;
+- SQLite для локального запуску;
+- PostgreSQL для production;
+- Gunicorn як WSGI-сервер;
+- WhiteNoise для статичних файлів;
+- Neon для керованої production-бази даних;
+- Render для розгортання вебзастосунку.
+
+## Ролі
+
+Користувач може мати одну або кілька ролей одночасно:
+
+- `student` — учень;
+- `member` — парламентарій;
+- `moderator` — модератор ідей;
+- `commission_head` — голова комісії;
+- `secretary` — секретар.
+
+Права перевіряються на сервері. Призначення службових ролей виконує адміністратор. Наявність кількох ролей не надає автоматично прав адміністратора.
+
+## Локальний запуск
+
+### Windows (PowerShell)
+
+1. Відкрийте PowerShell у папці проєкту.
+2. Створіть і активуйте віртуальне середовище.
+3. Встановіть залежності:
+
    ```powershell
-   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -r requirements.txt
    ```
-4. Create a `.env` file from `.env.example` and update values.
-5. Run migrations:
+
+4. Створіть файл `.env` на основі `.env.example` та налаштуйте локальні значення.
+5. Застосуйте міграції й додайте початкові комісії:
+
    ```powershell
-   .\.venv\Scripts\python.exe manage.py migrate
+   python manage.py migrate
+   python manage.py seed_commissions
    ```
-6. Seed commissions:
+
+6. Запустіть сервер:
+
    ```powershell
-   .\.venv\Scripts\python.exe manage.py seed_commissions
-   ```
-7. Start the local server:
-   ```powershell
-   .\.venv\Scripts\python.exe manage.py runserver
+   python manage.py runserver
    ```
 
 ### Linux / macOS
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -43,24 +78,44 @@ python manage.py seed_commissions
 python manage.py runserver
 ```
 
-## Roles
-- student
-- member
-- commission_head
-- secretary
+Без `DATABASE_URL` локальний запуск використовує SQLite. Якщо `DATABASE_URL` задано, застосунок підключається до PostgreSQL.
 
-## Admin commands
+## Команди адміністрування
+
 - `python manage.py create_secretary`
 - `python manage.py seed_commissions`
 - `python manage.py seed_demo_data`
 
-## Tests
+## Тестування
+
+Запуск усіх тестів Django:
+
 ```bash
 python manage.py test
 ```
 
-## Deployment notes
-This repository is for local development and open-source maintenance. Deploy only after a proper production review, environment configuration and secure settings are prepared.
+Під час останньої перевірки основної гілки було успішно виконано 66 автоматизованих тестів, системну перевірку Django та перевірку міграцій. Окремий регресійний тест перевіряє блокування входу після п'яти невдалих спроб на 15 хвилин.
 
-## Ukrainian note
-Ця платформа зроблена для того, щоб учні бачили дорогу від ідеї до результату: ідея → голосування → реалізація → звіт.
+## Production-розгортання
+
+Production-версія розгортається на Render і використовує PostgreSQL у Neon. Сервіс запускається командою:
+
+```bash
+gunicorn config.wsgi:application
+```
+
+Команда збірки:
+
+```bash
+bash build.sh
+```
+
+Сценарій збірки встановлює залежності, збирає статичні файли, застосовує міграції та створює початкові записи комісій.
+
+Для production потрібно налаштувати щонайменше `SECRET_KEY`, `DEBUG=False`, `ENV=prod`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` і `DATABASE_URL`. Секрети не можна зберігати в репозиторії або передавати в публічних повідомленнях.
+
+## Принцип проєкту
+
+Платформа допомагає учням бачити шлях від ідеї до результату:
+
+**ідея → модерація → голосування → реалізація → звіт.**
