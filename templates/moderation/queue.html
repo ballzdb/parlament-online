@@ -31,7 +31,7 @@
           </form>
         {% endif %}
 
-        {% if user.is_moderator or user.is_secretary or user.is_commission_head %}
+        {% if user.is_moderator or user.is_secretary or idea.assigned_moderator_id == user.pk %}
           <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
             {% csrf_token %}
             <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
