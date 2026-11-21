@@ -23,7 +23,7 @@
           <h3>{{ student.display_name|default:student.email }}</h3>
           <div class="meta">{{ student.email }} · До {{ student.restricted_until|date:'d.m.Y H:i' }}</div>
           <p>{{ student.restriction_reason }}</p>
-          <div class="meta">Рішення ухвалив: {{ student.restricted_by.display_name|default:student.restricted_by.email|default:'Не зазначено' }}</div>
+          <div class="meta">Рішення ухвалив: {% if student.restricted_by %}{{ student.restricted_by.display_name|default:student.restricted_by.email }}{% else %}Не зазначено{% endif %}</div>
           <form method="post" action="{% url 'moderation:clear_sanction' student.pk %}" onsubmit="return confirm('Достроково зняти обмеження?');" style="margin-top:.8rem;">
             {% csrf_token %}<button class="btn secondary" type="submit">Зняти обмеження</button>
           </form>

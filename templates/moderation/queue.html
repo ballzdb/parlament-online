@@ -14,7 +14,7 @@
         <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
         <h2 style="margin:.5rem 0;">{{ idea.title }}</h2>
         <p style="white-space:pre-line;">{{ idea.body }}</p>
-        <div class="meta">Відповідальний: {{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email|default:'Не призначено' }}</div>
+        <div class="meta">Відповідальний: {% if idea.assigned_moderator %}{{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email }}{% else %}Не призначено{% endif %}</div>
 
         {% if user.role == 'secretary' %}
           <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">

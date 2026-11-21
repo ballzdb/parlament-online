@@ -54,6 +54,14 @@ class IdeaModerationWorkflowTests(TestCase):
         self.assertContains(detail, 'Призначено модератора')
         self.assertContains(detail, 'Ідею допущено до публікації')
 
+    def test_moderation_queue_renders_ideas_without_assigned_moderator(self):
+        Idea.objects.create(title='Ідея без модератора', body='Опис', author=self.student)
+        self.client.force_login(self.secretary)
+        response = self.client.get('/moderation/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ідея без модератора')
+        self.assertContains(response, 'Не призначено')
+
     def test_unassigned_moderator_cannot_approve(self):
         idea = Idea.objects.create(title='Ініціатива', body='Опис', author=self.student)
         other = User.objects.create_user(
@@ -120,6 +128,10 @@ class TemporaryRestrictionTests(TestCase):
             email='member@khul.ukr.education', password='Password123',
             role=User.Role.MEMBER, is_active=True,
         )
+        self.secretary = User.objects.create_user(
+            email='sanctions-secretary@khul.ukr.education', password='Password123',
+            role=User.Role.SECRETARY, is_active=True,
+        )
         self.idea = Idea.objects.create(
             title='Опублікована ідея', body='Опис',
             author=self.member,
@@ -141,6 +153,12 @@ class TemporaryRestrictionTests(TestCase):
         response = self.client.post(f'/ideas/{self.idea.pk}/', {'vote': '1'})
         self.assertEqual(response.status_code, 302)
         self.assertFalse(IdeaVote.objects.filter(idea=self.idea, user=self.student).exists())
+
+    def test_sanctions_page_renders_restriction_without_actor(self):
+        self.client.force_login(self.secretary)
+        response = self.client.get('/moderation/sanctions/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Не зазначено')
 
     def test_restriction_does_not_hide_public_ideas(self):
         self.client.force_login(self.student)
