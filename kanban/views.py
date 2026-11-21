@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from accounts.models import Commission, User
 from app.permissions import requires_roles
 from .forms import KanbanCardForm, TaskCommentForm, TaskCreateForm
-from .models import KanbanCard
+from .models import KanbanCard, TaskActivity
 
 
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
@@ -52,6 +52,7 @@ def card_create(request):
             card = form.save(commit=False)
             card.created_by = request.user
             card.save()
+            TaskActivity.objects.create(card=card, actor=request.user, action=TaskActivity.Action.CREATED, description='Завдання створено.')
             messages.success(request, 'Завдання додано до дошки.')
             return redirect('kanban:card_detail', pk=card.pk)
     else:
@@ -63,7 +64,7 @@ def card_create(request):
 @requires_roles(*PARLIAMENT_ROLES)
 def card_detail(request, pk):
     card = get_object_or_404(
-        KanbanCard.objects.select_related('commission', 'assignee', 'created_by').prefetch_related('comments__author'),
+        KanbanCard.objects.select_related('commission', 'assignee', 'created_by').prefetch_related('comments__author', 'activities__actor'),
         pk=pk,
     )
     can_manage_tasks = request.user.has_role(*PARLIAMENT_ROLES)
@@ -76,6 +77,7 @@ def card_detail(request, pk):
             comment.card = card
             comment.author = request.user
             comment.save()
+            TaskActivity.objects.create(card=card, actor=request.user, action=TaskActivity.Action.COMMENTED, description='Додано коментар до завдання.')
             messages.success(request, 'Коментар додано.')
             return redirect('kanban:card_detail', pk=card.pk)
     else:
@@ -94,7 +96,15 @@ def card_edit(request, pk):
     if request.method == 'POST':
         form = KanbanCardForm(request.POST, instance=card)
         if form.is_valid():
+            changed_labels = [form.fields[name].label for name in form.changed_data]
             form.save()
+            if changed_labels:
+                TaskActivity.objects.create(
+                    card=card,
+                    actor=request.user,
+                    action=TaskActivity.Action.UPDATED,
+                    description='Змінено: ' + ', '.join(changed_labels),
+                )
             messages.success(request, 'Завдання оновлено.')
             return redirect('kanban:card_detail', pk=card.pk)
     else:
