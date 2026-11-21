@@ -14,7 +14,7 @@ from .models import ModerationEntry
 from .forms import TemporaryRestrictionForm
 
 
-MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD)
+MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD, User.Role.MODERATOR)
 
 
 def record_moderation_event(idea, actor, action, reason='', assigned_moderator=None):
