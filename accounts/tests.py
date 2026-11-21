@@ -320,3 +320,17 @@ class RoleManagementTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.role, User.Role.SECRETARY)
+
+    def test_primary_admin_can_assign_moderator_role(self):
+        self.client.force_login(self.admin)
+        response = self.client.post('/accounts/roles/', {
+            'user_id': self.student.pk,
+            'role': User.Role.MODERATOR,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.role, User.Role.MODERATOR)
+        self.assertTrue(self.student.is_moderator)
+        self.assertFalse(self.student.is_staff)
+        self.assertFalse(self.student.is_superuser)
+        self.assertTrue(AuditLog.objects.filter(action='role_changed', user=self.student).exists())
