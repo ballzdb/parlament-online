@@ -11,6 +11,16 @@ class TemporaryRestrictionForm(forms.Form):
         queryset=User.objects.filter(is_active=True, role=User.Role.STUDENT).order_by('grade', 'class_letter', 'display_name'),
         label='Обліковий запис учня',
     )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        student_ids = [
+            user.pk for user in User.objects.filter(is_active=True)
+            if user.is_student
+        ]
+        self.fields['user'].queryset = User.objects.filter(pk__in=student_ids).order_by(
+            'grade', 'class_letter', 'display_name'
+        )
+
     restricted_until = forms.DateTimeField(
         label='Обмежити до',
         input_formats=['%Y-%m-%dT%H:%M'],
