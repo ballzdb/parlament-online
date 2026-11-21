@@ -44,7 +44,7 @@
       {% for activity in card.activities.all %}
         <li>
           <div class="comment-heading">
-            <strong>{{ activity.actor.display_name|default:activity.actor.email|default:'Обліковий запис видалено' }}</strong>
+            <strong>{% if activity.actor %}{{ activity.actor.display_name|default:activity.actor.email }}{% else %}Обліковий запис видалено{% endif %}</strong>
             <time>{{ activity.created_at|date:'d.m.Y H:i' }}</time>
           </div>
           <p><strong>{{ activity.get_action_display }}</strong>{% if activity.description %} · {{ activity.description }}{% endif %}</p>
