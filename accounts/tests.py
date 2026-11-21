@@ -81,6 +81,7 @@ class AccountFlowTests(TestCase):
         from django.core.cache import cache
 
         cache.clear()
+        self.addCleanup(cache.clear)
         User.objects.create_user(
             email='student@khul.ukr.education',
             **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True},
