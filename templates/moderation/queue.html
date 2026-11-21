@@ -5,7 +5,7 @@
 {% block content %}
   <div class="page-heading">
     <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки відповідальний модератор не перевірить їх.</p></div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>{% if user.role == 'secretary' %}<a class="btn secondary" href="{% url 'moderation:sanctions' %}">Тимчасові обмеження</a>{% endif %}<span class="meta">{{ ideas|length }} очікують</span></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>{% if user.is_secretary %}<a class="btn secondary" href="{% url 'moderation:sanctions' %}">Тимчасові обмеження</a>{% endif %}<span class="meta">{{ ideas|length }} очікують</span></div>
   </div>
 
   <div class="record-list">
@@ -24,7 +24,7 @@
             <select id="moderator-{{ idea.pk }}" name="moderator" required>
               <option value="">Оберіть відповідального</option>
               {% for moderator in moderators %}
-                <option value="{{ moderator.pk }}" {% if idea.assigned_moderator_id == moderator.pk %}selected{% endif %}>{{ moderator.display_name|default:moderator.email }} — {{ moderator.get_role_display }}</option>
+                <option value="{{ moderator.pk }}" {% if idea.assigned_moderator_id == moderator.pk %}selected{% endif %}>{{ moderator.display_name|default:moderator.email }} — {{ moderator.roles_display }}</option>
               {% endfor %}
             </select>
             <button class="btn secondary" type="submit">Призначити</button>
