@@ -37,6 +37,7 @@ class User(AbstractUser):
         SECRETARY = 'secretary', 'Секретар'
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
+    additional_roles = models.JSONField(default=list, blank=True)
     display_name = models.CharField(max_length=120, default='')
     grade = models.PositiveSmallIntegerField(null=True, blank=True)
     class_letter = models.CharField(max_length=10, blank=True)
@@ -57,24 +58,38 @@ class User(AbstractUser):
     def is_temporarily_restricted(self) -> bool:
         return bool(self.restricted_until and self.restricted_until > timezone.now())
 
+    def has_role(self, *roles):
+        assigned = {self.role, *(self.additional_roles or [])}
+        return bool(assigned.intersection(roles))
+
+    @property
+    def roles_display(self) -> str:
+        labels = dict(self.Role.choices)
+        return ', '.join(labels[role] for role in [self.role, *(self.additional_roles or [])] if role in labels)
+
     @property
     def is_student(self) -> bool:
-        return self.role == self.Role.STUDENT
+        return self.has_role(self.Role.STUDENT)
 
     @property
     def is_member(self) -> bool:
-        return self.role in {self.Role.MEMBER, self.Role.COMMISSION_HEAD, self.Role.SECRETARY}
+        return self.has_role(self.Role.MEMBER, self.Role.COMMISSION_HEAD, self.Role.SECRETARY)
 
     @property
     def is_commission_head(self) -> bool:
-        return self.role in {self.Role.COMMISSION_HEAD, self.Role.SECRETARY}
+        return self.has_role(self.Role.COMMISSION_HEAD, self.Role.SECRETARY)
 
     @property
     def is_secretary(self) -> bool:
-        return self.role == self.Role.SECRETARY
+        return self.has_role(self.Role.SECRETARY)
 
-    def has_role(self, *roles):
-        return self.role in roles
+    @property
+    def is_moderator(self) -> bool:
+        return self.has_role(self.Role.MODERATOR)
+
+    @property
+    def is_parliamentarian(self) -> bool:
+        return self.has_role(self.Role.MEMBER, self.Role.COMMISSION_HEAD, self.Role.SECRETARY)
 
     def requires_roles(self, *roles):
         return self.has_role(*roles)
