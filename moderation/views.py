@@ -17,6 +17,26 @@ from .forms import TemporaryRestrictionForm
 MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD)
 
 
+def record_moderation_event(idea, actor, action, reason='', assigned_moderator=None):
+    """Keep a human-readable, append-only record of each moderation decision."""
+    verdict = {
+        'action': action,
+        'actor_id': actor.pk,
+        'actor_email': actor.email,
+        'actor_name': actor.display_name or actor.email,
+        'reason': reason,
+    }
+    if assigned_moderator is not None:
+        verdict['assigned_moderator_id'] = assigned_moderator.pk
+        verdict['assigned_moderator_email'] = assigned_moderator.email
+        verdict['assigned_moderator_name'] = assigned_moderator.display_name or assigned_moderator.email
+    ModerationEntry.objects.create(
+        target_type='idea',
+        target_id=idea.pk,
+        verdict=verdict,
+    )
+
+
 @login_required
 @requires_roles(*MODERATOR_ROLES)
 def moderation_queue(request):
@@ -47,6 +67,7 @@ def moderate_idea(request, pk):
         moderator = get_object_or_404(User, pk=moderator_id, is_active=True, role__in=MODERATOR_ROLES)
         idea.assigned_moderator = moderator
         idea.save(update_fields=['assigned_moderator', 'updated_at'])
+        record_moderation_event(idea, request.user, 'assigned', assigned_moderator=moderator)
         AuditLog.objects.create(
             action='idea_moderator_assigned', user=request.user, email=request.user.email,
             details=f'Idea #{idea.pk} assigned to {moderator.email}',
@@ -74,6 +95,7 @@ def moderate_idea(request, pk):
             'moderation_status', 'moderation_reason', 'moderated_by',
             'moderated_at', 'status', 'updated_at',
         ])
+        record_moderation_event(idea, request.user, action, reason=reason)
         AuditLog.objects.create(
             action=f'idea_moderation_{action}', user=request.user, email=request.user.email,
             details=f'Idea #{idea.pk}: {action}; reason={reason}',

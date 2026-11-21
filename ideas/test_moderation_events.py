@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from accounts.models import User
 from ideas.models import Event, Idea, IdeaVote
+from moderation.models import ModerationEntry
 
 
 class IdeaModerationWorkflowTests(TestCase):
@@ -46,6 +47,12 @@ class IdeaModerationWorkflowTests(TestCase):
         self.assertEqual(idea.moderation_status, Idea.ModerationStatus.APPROVED)
         self.assertEqual(idea.moderated_by, self.moderator)
         self.assertIsNotNone(idea.moderated_at)
+        self.assertEqual(ModerationEntry.objects.filter(target_type='idea', target_id=idea.pk).count(), 2)
+        self.client.force_login(self.student)
+        detail = self.client.get(f'/ideas/{idea.pk}/')
+        self.assertContains(detail, 'Історія модерації')
+        self.assertContains(detail, 'Призначено модератора')
+        self.assertContains(detail, 'Ідею допущено до публікації')
 
     def test_unassigned_moderator_cannot_approve(self):
         idea = Idea.objects.create(title='Ініціатива', body='Опис', author=self.student)

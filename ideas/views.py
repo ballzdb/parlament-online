@@ -12,6 +12,7 @@ from accounts.models import AuditLog, Commission, PRIMARY_ADMIN_EMAIL, User
 from appeals.models import Appeal
 from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
 from .models import Event, Idea, IdeaVote
+from moderation.models import ModerationEntry
 
 
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
@@ -74,6 +75,7 @@ def idea_detail(request, pk):
         raise Http404
 
     has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
+    moderation_history = ModerationEntry.objects.filter(target_type='idea', target_id=idea.pk).order_by('created_at')
     status_form = None
     if is_parliamentarian and idea.moderation_status == Idea.ModerationStatus.APPROVED:
         if request.method == 'POST' and 'status' in request.POST:
@@ -107,6 +109,7 @@ def idea_detail(request, pk):
         'has_voted': has_voted,
         'status_form': status_form,
         'is_parliamentarian': is_parliamentarian,
+        'moderation_history': moderation_history,
     })
 
 
