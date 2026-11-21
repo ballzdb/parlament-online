@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from accounts.models import Commission, User
-from kanban.models import KanbanCard, TaskComment
+from kanban.models import KanbanCard, TaskActivity, TaskComment
 
 
 class KanbanAccessTests(TestCase):
@@ -30,6 +30,9 @@ class KanbanAccessTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.card.refresh_from_db()
         self.assertEqual(self.card.status, 'in_progress')
+        activity = TaskActivity.objects.get(card=self.card, action=TaskActivity.Action.UPDATED)
+        self.assertEqual(activity.actor, member)
+        self.assertContains(self.client.get(f'/kanban/card/{self.card.pk}/'), 'Історія завдання')
 
     def test_member_can_create_task(self):
         member = User.objects.create_user(email='member@example.com', password='Password123', role=User.Role.MEMBER, is_active=True)
@@ -45,6 +48,8 @@ class KanbanAccessTests(TestCase):
         task = KanbanCard.objects.get(title='Організувати зустріч')
         self.assertEqual(task.created_by, member)
         self.assertEqual(task.commission, self.commission)
+        activity = TaskActivity.objects.get(card=task, action=TaskActivity.Action.CREATED)
+        self.assertEqual(activity.actor, member)
 
     def test_student_cannot_create_task_or_comment(self):
         student = User.objects.create_user(email='student@example.com', password='Password123', role=User.Role.STUDENT, is_active=True)
@@ -62,3 +67,5 @@ class KanbanAccessTests(TestCase):
         comment = TaskComment.objects.get(card=self.card)
         self.assertEqual(comment.author, member)
         self.assertEqual(comment.body, 'Почали готувати матеріали.')
+        activity = TaskActivity.objects.get(card=self.card, action=TaskActivity.Action.COMMENTED)
+        self.assertEqual(activity.actor, member)
