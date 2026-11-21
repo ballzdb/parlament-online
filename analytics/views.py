@@ -46,8 +46,11 @@ def dashboard(request):
     top_pages = list(
         recent_views.values('path').annotate(total=Count('id')).order_by('-total')[:10]
     )
+    student_ids = [
+        user.pk for user in User.objects.filter(is_active=True) if user.is_student
+    ]
     grade_stats = list(
-        User.objects.filter(is_active=True, role=User.Role.STUDENT)
+        User.objects.filter(pk__in=student_ids)
         .values('grade', 'class_letter').annotate(total=Count('id'))
         .order_by('grade', 'class_letter')
     )
@@ -68,7 +71,7 @@ def dashboard(request):
         'all_visitors': views.filter(user__isnull=False).values('user_id').distinct().count(),
         'week_views': views.filter(timestamp__gte=week_ago).count(),
         'week_visitors': views.filter(timestamp__gte=week_ago, user__isnull=False).values('user_id').distinct().count(),
-        'registered_students': User.objects.filter(is_active=True, role=User.Role.STUDENT).count(),
+        'registered_students': len(student_ids),
         'new_registrations': User.objects.filter(date_joined__gte=month_ago).count(),
         'active_accounts_30d': recent_views.filter(user__isnull=False).values('user_id').distinct().count(),
         'active_visitors_30d': recent_views.values('visitor_key').distinct().count(),
