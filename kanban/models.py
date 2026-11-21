@@ -41,3 +41,28 @@ class TaskComment(models.Model):
 
     def __str__(self) -> str:
         return f'Comment on {self.card_id} by {self.author_id}'
+
+
+class TaskActivity(models.Model):
+    class Action(models.TextChoices):
+        CREATED = 'created', 'Створено'
+        UPDATED = 'updated', 'Оновлено'
+        COMMENTED = 'commented', 'Додано коментар'
+
+    card = models.ForeignKey(KanbanCard, on_delete=models.CASCADE, related_name='activities')
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='task_activities',
+    )
+    action = models.CharField(max_length=20, choices=Action.choices)
+    description = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self) -> str:
+        return f'{self.get_action_display()} · task #{self.card_id}'

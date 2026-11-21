@@ -6,7 +6,7 @@
     <h1>{{ card.title }}</h1>
     <div class="task-facts">
       <div><span>Статус</span><strong>{{ card.get_status_display }}</strong></div>
-      <div><span>Відповідальний</span><strong>{{ card.assignee.display_name|default:card.assignee.email|default:'Не призначено' }}</strong></div>
+      <div><span>Відповідальний</span><strong>{% if card.assignee %}{{ card.assignee.display_name|default:card.assignee.email }}{% else %}Не призначено{% endif %}</strong></div>
       <div><span>Термін</span><strong>{% if card.due_date %}{{ card.due_date|date:'d.m.Y' }}{% else %}Не встановлено{% endif %}</strong></div>
       <div><span>Створено</span><strong>{{ card.created_at|date:'d.m.Y H:i' }}</strong></div>
       <div><span>Картку оновлено</span><strong>{{ card.updated_at|date:'d.m.Y H:i' }}</strong></div>
@@ -38,7 +38,24 @@
       {% empty %}<p class="empty-state">Оновлень поки немає. Додайте перший коментар після початку роботи.</p>{% endfor %}
     </div>
   </section>
+  <section class="card task-history">
+    <h2>Історія завдання</h2>
+    <ol class="task-history-list">
+      {% for activity in card.activities.all %}
+        <li>
+          <div class="comment-heading">
+            <strong>{% if activity.actor %}{{ activity.actor.display_name|default:activity.actor.email }}{% else %}Обліковий запис видалено{% endif %}</strong>
+            <time>{{ activity.created_at|date:'d.m.Y H:i' }}</time>
+          </div>
+          <p><strong>{{ activity.get_action_display }}</strong>{% if activity.description %} · {{ activity.description }}{% endif %}</p>
+        </li>
+      {% empty %}
+        <li class="empty-state">Історія змін почне формуватися після наступної дії із завданням.</li>
+      {% endfor %}
+    </ol>
+  </section>
   <style>
+    .task-history{margin-top:1rem;padding:clamp(1rem,3vw,1.5rem)}.task-history h2{margin-top:0}.task-history-list{display:grid;gap:.65rem;padding-left:1.25rem}.task-history-list li{padding:.8rem;border:1px solid var(--border);border-radius:10px;background:var(--soft)}.task-history-list p{margin:.4rem 0 0;line-height:1.5}
     .task-detail h1{margin:.3rem 0 1rem}.task-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.8rem;margin:1.2rem 0}.task-facts div{padding:.85rem;background:var(--soft);border:1px solid var(--border);border-radius:12px}.task-facts span,.task-facts strong{display:block}.task-facts span{font-size:.78rem;color:var(--muted);margin-bottom:.25rem}.task-facts strong{overflow-wrap:anywhere}.task-description{line-height:1.7}.task-discussion{margin-top:1rem;padding:clamp(1rem,3vw,1.5rem)}.task-discussion h2{margin-top:0}.comment-form{margin:1rem 0 1.4rem}.comment-list{display:grid;gap:.7rem}.task-comment{padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--soft)}.comment-heading{display:flex;justify-content:space-between;gap:.7rem;flex-wrap:wrap}.comment-heading time{font-size:.8rem;color:var(--muted)}.task-comment p{margin:.6rem 0 0;line-height:1.6;overflow-wrap:anywhere}
   </style>
 {% endblock %}
