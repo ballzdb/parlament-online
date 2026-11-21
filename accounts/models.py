@@ -33,6 +33,7 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         STUDENT = 'student', 'Студент'
         MEMBER = 'member', 'Парламентарій'
+        MODERATOR = 'moderator', 'Модератор'
         COMMISSION_HEAD = 'commission_head', 'Голова комісії'
         SECRETARY = 'secretary', 'Секретар'
 
@@ -72,6 +73,10 @@ class User(AbstractUser):
     @property
     def is_secretary(self) -> bool:
         return self.role == self.Role.SECRETARY
+
+    @property
+    def is_moderator(self) -> bool:
+        return self.role == self.Role.MODERATOR
 
     def has_role(self, *roles):
         return self.role in roles
@@ -244,6 +249,7 @@ class EmailVerification(models.Model):
     expires_at = models.DateTimeField()
     attempts_used = models.PositiveSmallIntegerField(default=0)
     last_sent_at = models.DateTimeField()
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
