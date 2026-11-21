@@ -71,7 +71,7 @@ def dashboard(request):
         'registered_students': User.objects.filter(is_active=True, role=User.Role.STUDENT).count(),
         'new_registrations': User.objects.filter(date_joined__gte=month_ago).count(),
         'active_accounts_30d': recent_views.filter(user__isnull=False).values('user_id').distinct().count(),
-        'active_visitors_30d': recent_views.filter(user__isnull=False).values('user_id').distinct().count(),
+        'active_visitors_30d': recent_views.values('visitor_key').distinct().count(),
         'anonymous_browsers_30d': recent_views.filter(user__isnull=True).values('visitor_key').distinct().count(),
         'top_pages': top_pages,
         'daily': daily,
