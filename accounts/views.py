@@ -217,7 +217,7 @@ def role_management(request):
             target.is_superuser = False
             target.save(update_fields=['role', 'additional_roles', 'is_staff', 'is_superuser'])
             AuditLog.objects.create(
-                action='roles_changed', email=target.email, user=target,
+                action='role_changed', email=target.email, user=target,
                 details=f'{previous_roles} -> {target.roles_display}; changed_by={request.user.email}',
             )
             messages.success(request, f'Ролі користувача {target.email} оновлено.')
