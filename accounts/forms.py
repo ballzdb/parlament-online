@@ -12,11 +12,8 @@ from .utils import is_allowed_email, normalize_email
 
 class RegistrationForm(forms.Form):
     email = forms.EmailField(label='Електронна пошта')
-    # Keep the entered password when the bound registration form is re-rendered
-    # with validation errors. The password is not stored in the session or database
-    # until the registration view successfully processes the form.
     password = forms.CharField(
-        widget=forms.PasswordInput(render_value=True),
+        widget=forms.PasswordInput(),
         min_length=8,
         label='Пароль',
     )
