@@ -20,6 +20,14 @@ class KanbanAccessTests(TestCase):
         self.assertEqual(self.client.get('/kanban/navchannia/').status_code, 403)
         self.assertEqual(self.client.get(f'/kanban/card/{self.card.pk}/').status_code, 403)
 
+    def test_member_can_view_board_with_unassigned_task(self):
+        member = User.objects.create_user(email='member@example.com', password='Password123', role=User.Role.MEMBER, is_active=True)
+        self.client.force_login(member)
+        response = self.client.get(f'/kanban/{self.commission.slug}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Підготувати опитування')
+        self.assertContains(response, 'Не призначено')
+
     def test_member_can_edit_card_status(self):
         member = User.objects.create_user(email='member@example.com', password='Password123', role=User.Role.MEMBER, is_active=True)
         self.client.force_login(member)
