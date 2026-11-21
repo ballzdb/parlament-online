@@ -21,8 +21,9 @@ class Command(BaseCommand):
 
         previous_role = user.role
         user.role = role
+        user.additional_roles = []
         user.is_staff = role == User.Role.SECRETARY
-        user.save(update_fields=['role', 'is_staff'])
+        user.save(update_fields=['role', 'additional_roles', 'is_staff'])
 
         AuditLog.objects.create(
             action='role_changed',
