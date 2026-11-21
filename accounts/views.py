@@ -78,6 +78,7 @@ def register_view(request):
                     return render(request, 'accounts/register.html', {'form': form})
                 user = existing or User(email=email)
                 user.role = User.Role.STUDENT
+                user.additional_roles = []
                 user.is_staff = False
                 user.is_superuser = False
                 user.display_name = form.cleaned_data['display_name'].strip()
