@@ -1,101 +1,156 @@
 {% extends 'base.html' %}
-
 {% block title %}Головна | Парламент.Online{% endblock %}
-
 {% block content %}
-  <style>
-    .home-hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:2rem; min-height:245px; padding:clamp(1.5rem,4vw,3rem); margin-bottom:1.4rem; border-radius:22px; color:#fff; background:linear-gradient(115deg,#173b68 0%,#245da8 68%,#477fc0 100%); box-shadow:0 18px 38px rgba(25,65,115,.2); }
-    .hero-copy { position:relative; z-index:1; max-width:700px; }
-    .eyebrow { font-size:.73rem; font-weight:800; letter-spacing:.16em; opacity:.78; margin-bottom:.8rem; }
-    .home-hero h1 { margin:0 0 .75rem; font-size:clamp(2.2rem,5vw,3.8rem); letter-spacing:-.055em; }
-    .home-hero h1 span { color:#cfe2ff; }
-    .home-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(1rem,2vw,1.15rem); }
-    .hero-mark { width:150px; height:150px; flex:0 0 150px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.25); border-radius:38px; transform:rotate(8deg); background:rgba(255,255,255,.1); box-shadow:inset 0 0 35px rgba(255,255,255,.08); }
-    .hero-mark span { font-size:3.2rem; font-weight:900; letter-spacing:-.1em; color:rgba(255,255,255,.9); transform:rotate(-8deg); }
-    .home-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-bottom:2.4rem; }
-    .stat-card { display:flex; flex-direction:column; justify-content:center; min-height:118px; }
-    .stat-card strong { display:block; font-size:2rem; line-height:1.2; letter-spacing:-.04em; color:var(--accent); }
-    .stat-card .meta { font-weight:650; }
-    .home-section { margin:2.2rem 0; }
-    .home-section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
-    .home-section-heading h2 { margin:0; }
-    .home-list { display:grid; gap:.85rem; }
-    .home-list .card { box-shadow:none; border-radius:14px; }
-    .home-list .card:hover { box-shadow:var(--shadow); }
-    .home-section-heading { padding-bottom:.65rem; border-bottom:1px solid var(--border); }
-    .home-section-heading a { font-weight:700; }
-    .home-list .card h3 { margin:.1rem 0 .45rem; }
-    .home-list .card p { line-height:1.65; }
-    .home-stats .card { border-radius:16px; }
-    .home-info { margin-bottom:2rem; }
-    .home-socials { display:flex; flex-wrap:wrap; gap:.65rem; }
-    .home-socials a { display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; min-height:42px; border:1px solid var(--border); border-radius:10px; background:var(--soft); font-weight:650; }
-    .home-socials a:hover { text-decoration:none; border-color:var(--accent); }
-    @media(max-width:650px) { .home-hero { min-height:unset; } .hero-mark { width:84px;height:84px;flex-basis:84px;border-radius:24px; } .hero-mark span {font-size:2rem;} .home-stats {grid-template-columns:1fr;} .stat-card {min-height:88px;} }
-  </style>
-  <section class="home-hero">
+<style>
+  .home-wrap { display:grid; gap:2rem; }
+  .hero {
+    position:relative; isolation:isolate; overflow:hidden; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(220px,.7fr);
+    align-items:center; gap:2rem; min-height:330px; padding:clamp(1.6rem,5vw,4rem);
+    color:white; border-radius:28px; background:linear-gradient(120deg,#10243d 0%,#17477f 58%,#3478bd 100%);
+    box-shadow:0 24px 55px rgba(18,54,95,.2);
+  }
+  .hero::before,.hero::after { content:""; position:absolute; z-index:-1; border:1px solid rgba(255,255,255,.13); border-radius:50%; }
+  .hero::before { width:440px;height:440px;right:-95px;top:-185px;box-shadow:0 0 0 38px rgba(255,255,255,.035),0 0 0 78px rgba(255,255,255,.025); }
+  .hero::after { width:230px;height:230px;right:90px;bottom:-170px; }
+  .hero-copy { max-width:690px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:.55rem; margin-bottom:1rem; color:#c6e0ff; font-size:.75rem; font-weight:850; letter-spacing:.15em; text-transform:uppercase; }
+  .eyebrow::before { content:""; width:24px;height:2px;background:#8fc2ff; }
+  .hero h1 { max-width:700px; margin:0 0 1rem; color:white; font-size:clamp(2.5rem,6vw,4.8rem); line-height:1.02; letter-spacing:-.065em; }
+  .hero h1 span { color:#a9d0ff; }
+  .hero p { max-width:610px; margin:0; color:rgba(255,255,255,.82); font-size:clamp(1rem,2vw,1.2rem); }
+  .hero-actions { display:flex; flex-wrap:wrap; gap:.7rem; margin-top:1.7rem; }
+  .hero .btn { min-height:49px; padding-inline:1.2rem; color:#10243d; background:white; border-color:white; }
+  .hero .btn:hover { background:#eaf3ff; }
+  .hero .btn.secondary { color:white; background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.3); }
+  .hero .btn.secondary:hover { background:rgba(255,255,255,.18); }
+  .hero-art { justify-self:center; width:min(100%,250px); aspect-ratio:1; display:grid; place-items:center; position:relative; }
+  .hero-emblem { width:75%; aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(255,255,255,.3); border-radius:34%; transform:rotate(-8deg); background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.04)); box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 24px 55px rgba(0,0,0,.12); }
+  .hero-emblem span { color:white; font-size:clamp(3rem,6vw,5.4rem); font-weight:900; letter-spacing:-.11em; transform:rotate(8deg); }
+  .hero-orbit { position:absolute; inset:0; border:1px solid rgba(255,255,255,.15); border-radius:50%; }
+  .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+  .stat { display:flex; align-items:center; gap:1rem; min-height:116px; }
+  .stat-icon { width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:14px;background:#edf4fd;color:#245da8;font-size:1.2rem;font-weight:850; }
+  .stat strong { display:block; font-size:1.8rem; line-height:1.15; letter-spacing:-.05em; color:var(--text); }
+  .stat .meta { font-weight:650; }
+  .section { display:grid; gap:1rem; }
+  .section-head { display:flex; align-items:end; justify-content:space-between; gap:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--line); }
+  .section-head h2 { margin:0; }
+  .section-head p { margin:.25rem 0 0; color:var(--muted); font-size:.92rem; }
+  .section-link { font-weight:750; white-space:nowrap; }
+  .feature-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.9rem; }
+  .feature { display:flex; flex-direction:column; min-height:175px; padding:1.2rem; border:1px solid var(--line); border-radius:17px; background:var(--surface); transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+  .feature:hover { transform:translateY(-3px); border-color:#b9cde4; box-shadow:var(--shadow); text-decoration:none; }
+  .feature-icon { display:grid; place-items:center; width:42px;height:42px;margin-bottom:1rem;border-radius:13px;background:#edf4fd;color:#245da8;font-size:1.15rem;font-weight:850; }
+  .feature strong { color:var(--text); font-size:1.02rem; }
+  .feature span:last-child { margin-top:.35rem; color:var(--muted); font-size:.88rem; line-height:1.5; }
+  .content-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:1.2rem; align-items:start; }
+  .feed { display:grid; gap:.75rem; }
+  .feed-item { padding:1rem 1.1rem; border:1px solid var(--line); border-radius:15px; background:white; }
+  .feed-item h3 { margin:.25rem 0 .35rem; font-size:1.05rem; }
+  .feed-item p { margin:.45rem 0; color:#43536a; font-size:.93rem; }
+  .feed-meta { color:var(--muted); font-size:.83rem; }
+  .feed-item:hover { border-color:#c4d5e8; }
+  .institution { display:flex; flex-wrap:wrap; gap:.6rem; }
+  .institution a { display:inline-flex; align-items:center; min-height:42px; padding:.55rem .85rem; border:1px solid var(--line); border-radius:11px; background:white; font-weight:680; }
+  .institution a:hover { background:#f0f6fd; text-decoration:none; }
+  .institution-card { padding:1.35rem; }
+  .institution-card h2 { margin:0 0 .9rem; }
+  .subtle-note { color:var(--muted); font-size:.9rem; }
+  @media(max-width:900px) { .hero { grid-template-columns:1fr; } .hero-art { display:none; } .feature-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:680px) {
+    .hero { min-height:unset; border-radius:21px; }
+    .stats { grid-template-columns:1fr; gap:.7rem; }
+    .stat { min-height:88px; }
+    .feature-grid,.content-grid { grid-template-columns:1fr; }
+    .section-head { align-items:start; }
+  }
+  @media(prefers-reduced-motion:reduce) { .feature:hover { transform:none; } }
+</style>
+
+<div class="home-wrap">
+  <section class="hero">
     <div class="hero-copy">
-      <div class="eyebrow">ШКІЛЬНЕ САМОВРЯДУВАННЯ · ОНЛАЙН</div>
-      <h1>Парламент<span>.Online</span></h1>
-      <p>Простір, де голос кожного учня може перетворитися на реальні зміни у житті ліцею.</p>
+      <div class="eyebrow">Учнівське самоврядування · цифровий простір</div>
+      <h1>Твоя ідея.<br><span>Спільні зміни.</span></h1>
+      <p>Парламент.Online об’єднує учнів, парламент і комісії в одному просторі — від першої пропозиції до її розгляду та втілення.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{% url 'ideas:list' %}">Переглянути ідеї <span aria-hidden="true">→</span></a>
+        {% if user.is_authenticated %}
+          <a class="btn secondary" href="{% url 'ideas:create' %}">Запропонувати ідею</a>
+        {% else %}
+          <a class="btn secondary" href="{% url 'accounts:register' %}">Долучитися до парламенту</a>
+        {% endif %}
+      </div>
     </div>
-    <div class="hero-mark" aria-hidden="true"><span>PO</span></div>
+    <div class="hero-art" aria-hidden="true"><div class="hero-orbit"></div><div class="hero-emblem"><span>PO</span></div></div>
   </section>
-  <section class="home-stats">
-    <div class="card stat-card"><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong></div>
-    <div class="card stat-card"><div class="meta">Звернень і відгуків</div><strong>{{ stats.appeal_count }}</strong></div>
-    <div class="card stat-card"><div class="meta">Для кожного учня</div><strong>Відкрито</strong></div>
+
+  <section class="stats" aria-label="Коротка статистика платформи">
+    <article class="card stat"><div class="stat-icon" aria-hidden="true">✦</div><div><strong>{{ stats.idea_count }}</strong><div class="meta">Опубліковані ідеї</div></div></article>
+    <article class="card stat"><div class="stat-icon" aria-hidden="true">↗</div><div><strong>{{ stats.appeal_count }}</strong><div class="meta">Звернення та відгуки</div></div></article>
+    <article class="card stat"><div class="stat-icon" aria-hidden="true">◎</div><div><strong>Для всіх</strong><div class="meta">Єдиний простір ліцею</div></div></article>
   </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>Що можна зробити на платформі</h2><p>Основні інструменти учнівського самоврядування — в одному місці.</p></div></div>
+    <div class="feature-grid">
+      <a class="feature" href="{% url 'ideas:list' %}"><span class="feature-icon" aria-hidden="true">✦</span><strong>Ідеї та голосування</strong><span>Пропонуй зміни, стеж за розглядом і підтримуй важливі ініціативи.</span></a>
+      <a class="feature" href="{% url 'ideas:events' %}"><span class="feature-icon" aria-hidden="true">▦</span><strong>Події та архів</strong><span>Дізнавайся про найближчі заходи й переглядай результати минулих.</span></a>
+      <a class="feature" href="{% url 'appeals:list' %}"><span class="feature-icon" aria-hidden="true">✉</span><strong>Звернення</strong><span>Поділися пропозицією, відгуком або питанням і відстежуй його статус.</span></a>
+      <a class="feature" href="{% url 'moderation:rules' %}"><span class="feature-icon" aria-hidden="true">✓</span><strong>Правила та прозорість</strong><span>Ознайомся з принципами роботи, модерацією та порядком ухвалення рішень.</span></a>
+    </div>
+  </section>
+
   {% if institution_links or social_links %}
-    <section class="card home-info">
-      <div class="home-section-heading"><h2>Ліцей і парламент онлайн</h2></div>
+    <section class="card institution-card">
+      <h2>Ліцей і парламент онлайн</h2>
       {% if institution_links %}
-        <div class="home-socials" style="margin-bottom:1rem;">
-          {% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}
-        </div>
-        <p class="meta">пр. Науки, 20, м. Харків, 61166</p>
+        <div class="institution">{% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}</div>
+        <p class="subtle-note">пр. Науки, 20, м. Харків, 61166</p>
       {% endif %}
       {% if social_links %}
-        <div class="home-socials">
-          {% for item in social_links %}
-            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">
-              {% if item.key == 'instagram_url' %}<span aria-hidden="true">◎</span>{% elif item.key == 'telegram_url' %}<span aria-hidden="true">➤</span>{% elif item.key == 'facebook_url' %}<span aria-hidden="true">f</span>{% elif item.key == 'tiktok_url' %}<span aria-hidden="true">♪</span>{% elif item.key == 'youtube_url' %}<span aria-hidden="true">▶</span>{% elif item.key == 'discord_url' %}<span aria-hidden="true">◈</span>{% endif %}
-              {{ item.label }} ↗
-            </a>
-          {% endfor %}
-        </div>
+        <div class="institution">{% for item in social_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">{{ item.label }} ↗</a>{% endfor %}</div>
       {% endif %}
     </section>
   {% endif %}
-  <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2><a href="{% url 'ideas:events' %}">Усі події та архів →</a></div>
+
+  <section class="section">
+    <div class="section-head"><div><h2>Найближчі події</h2><p>Не пропускай важливе в житті ліцею.</p></div><a class="section-link" href="{% url 'ideas:events' %}">Усі події →</a></div>
     <div class="grid">
       {% for event in events %}
         <article class="card">
-          <div class="meta" style="font-weight:700;color:var(--accent);">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>{% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;">{% endif %}
+          <div class="feed-meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin:.5rem 0;">{% endif %}
           {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
           {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
         </article>
       {% empty %}<div class="empty-state">Найближчих подій поки немає.</div>{% endfor %}
     </div>
   </section>
-  <section class="grid">
-    <div class="home-section">
-      <div class="home-section-heading"><h2>Останні ідеї</h2></div>
-      <div class="home-list">
+
+  <section class="content-grid">
+    <div class="section">
+      <div class="section-head"><div><h2>Останні ідеї</h2><p>Ініціативи, які рухають ліцей уперед.</p></div><a class="section-link" href="{% url 'ideas:list' %}">Усі ідеї →</a></div>
+      <div class="feed">
         {% for idea in ideas %}
-          <article class="card"><h3>{{ idea.title }}</h3><div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div><p>{{ idea.body|truncatewords:24 }}</p><div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div></article>
-        {% empty %}<div class="empty-state">Ідей ще немає.</div>{% endfor %}
+          <article class="feed-item">
+            <div class="feed-meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+            <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
+            <p>{{ idea.body|truncatewords:24 }}</p>
+            <div class="feed-meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div>
+          </article>
+        {% empty %}<div class="empty-state">Ідей ще немає. Можливо, саме твоя стане першою.</div>{% endfor %}
       </div>
     </div>
-    <div class="home-section">
-      <div class="home-section-heading"><h2>Відгуки</h2></div>
-      <div class="home-list">
+    <div class="section">
+      <div class="section-head"><div><h2>Останні відгуки</h2><p>Зворотний зв’язок допомагає ставати кращими.</p></div><a class="section-link" href="{% url 'appeals:list' %}">Усі звернення →</a></div>
+      <div class="feed">
         {% for appeal in appeals %}
-          <article class="card"><h3>{{ appeal.subject }}</h3><div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div><p>{{ appeal.body|truncatewords:20 }}</p></article>
+          <article class="feed-item"><div class="feed-meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div><h3>{{ appeal.subject }}</h3><p>{{ appeal.body|truncatewords:20 }}</p></article>
         {% empty %}<div class="empty-state">Відгуків поки немає.</div>{% endfor %}
       </div>
     </div>
   </section>
+</div>
 {% endblock %}

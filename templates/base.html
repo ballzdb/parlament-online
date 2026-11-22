@@ -1,222 +1,184 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Парламент.Online{% endblock %}</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #f3f6fb;
-        --panel: #ffffff;
-        --accent: #245da8;
-        --accent-strong: #17477f;
-        --muted: #64748b;
-        --text: #172235;
-        --border: #dce4ef;
-        --nav: #173b68;
-        --soft: #eaf1fb;
-        --shadow: 0 10px 28px rgba(22, 43, 73, .07);
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        transition: background .25s ease, color .25s ease;
-      }
-      a { color: var(--accent); text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      nav {
-        position: relative;
-        background: var(--nav);
-        color: white;
-        padding: .9rem 2rem;
-        box-shadow: 0 5px 22px rgba(12, 25, 48, .16);
-      }
-      .nav-inner {
-        max-width: 1160px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-      .brand { font-weight: 800; letter-spacing: -.03em; font-size: 1.12rem; white-space: nowrap; }
-      .nav-links { display: flex; gap: .85rem; flex-wrap: wrap; align-items: center; }
-      .nav-links a { color: white; opacity: .92; font-size: .94rem; }
-      .nav-links a:hover { opacity: 1; text-decoration: none; }
-      .container { max-width: 1160px; margin: 0 auto; padding: 2.2rem 1rem 3.5rem; }
-      h1, h2, h3 { line-height: 1.2; letter-spacing: -.025em; }
-      h1 { font-size: clamp(2rem, 4vw, 3rem); margin-top: 0; }
-      h2 { font-size: 1.55rem; margin-top: 0; }
-      .card {
-        background: var(--panel);
-        color: var(--text);
-        border: 1px solid var(--border);
-        padding: 1.2rem;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        transition: transform .18s ease, box-shadow .18s ease, background .25s ease;
-      }
-      .card:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(0,0,0,.10); }
-      .grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-      .meta { color: var(--muted); font-size: .9rem; }
-      .btn {
-        display: inline-block;
-        background: var(--accent);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: .72rem 1.05rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: filter .15s ease, transform .15s ease;
-      }
-      .btn:hover { color: white; filter: brightness(1.08); transform: translateY(-1px); text-decoration: none; }
-      .btn.secondary { background: var(--soft); color: var(--text); border: 1px solid var(--border); }
-      .form-grid { display: grid; gap: 1rem; max-width: 520px; }
-      input, select, textarea {
-        width: 100%;
-        padding: .78rem .85rem;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        font: inherit;
-        color: var(--text);
-        background: var(--panel);
-      }
-      input:focus, select:focus, textarea:focus { outline: 3px solid color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); }
-      .errorlist { color: #b42318; list-style: none; padding-left: 0; }
-      .message { padding: .8rem 1rem; background: var(--soft); color: var(--text); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; margin-bottom: 1rem; }
-      footer { background: var(--nav) !important; color: white; }
-      footer a { color: white !important; }
-      /* Shared page components */
-      :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 72%, white); outline-offset: 3px; }
-      button, input, select, textarea { accent-color: var(--accent); }
-      button:disabled, input:disabled, select:disabled, textarea:disabled { opacity: .62; cursor: not-allowed; }
-      .page-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.35rem; }
-      .page-heading h1 { margin:0; }
-      .record-list { display:grid; gap:1rem; }
-      .record-card { padding:clamp(1rem,2.5vw,1.4rem); }
-      .record-card h3 { margin:.1rem 0 .45rem; font-size:1.15rem; }
-      .record-card p { margin:.8rem 0; overflow-wrap:anywhere; }
-      .detail-card { padding:clamp(1.2rem,3vw,2rem); }
-      .detail-card h1 { overflow-wrap:anywhere; }
-      .detail-meta { line-height:1.8; }
-      .detail-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; margin-top:1.2rem; }
-      .detail-actions form, .detail-actions p { margin:0 !important; }
-      .btn-danger { background:#b42318; color:#fff; }
-      .btn-danger:hover { background:#8f1c13; color:#fff; }
-      .empty-state { padding:1.4rem; border:1px dashed var(--border); border-radius:14px; color:var(--muted); text-align:center; background:color-mix(in srgb,var(--panel) 82%,var(--soft)); }
-      .form-grid label, form label { display:block; margin-bottom:.35rem; font-weight:650; }
-      .form-grid .helptext, form .helptext { display:block; color:var(--muted); font-size:.86rem; margin-top:.3rem; }
-      table { max-width:100%; }
-      img, svg, video { max-width:100%; }
-      p, li { overflow-wrap:anywhere; }
-      .message { box-shadow:0 4px 14px rgba(0,0,0,.04); }
-      @media (hover:hover) and (prefers-reduced-motion:no-preference) {
-        .record-card:hover { transform:translateY(-2px); }
-      }
-      @media (max-width: 680px) {
-        nav { padding: .85rem 1rem; }
-        .nav-inner { align-items: flex-start; }
-        .nav-links { gap: .65rem .85rem; }
-        .container { padding-top: 1.5rem; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <div class="nav-inner">
-        <div class="brand">Парламент.Online</div>
-<div class="nav-links">
-          <a href="{% url 'home' %}">Головна</a>
-          <a href="{% url 'ideas:list' %}">Ідеї</a>
-          <a href="{% url 'ideas:events' %}">Події та архів</a>
-          <a href="{% url 'ideas:research_feedback' %}">Опитування</a>
-          <a href="{% url 'moderation:rules' %}">Правила</a>
-          <a href="{% url 'appeals:list' %}">Відгуки</a>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243d">
+  <meta name="description" content="Парламент.Online — цифровий простір учнівського самоврядування Харківського університетського ліцею.">
+  <title>{% block title %}Парламент.Online{% endblock %}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --surface: #fff;
+      --surface-soft: #f7f9fc;
+      --text: #14243a;
+      --muted: #65758b;
+      --line: #e2e9f1;
+      --brand: #245da8;
+      --brand-dark: #17477f;
+      --navy: #10243d;
+      --mint: #dff5ee;
+      --mint-ink: #12664e;
+      --amber: #fff1d8;
+      --shadow: 0 12px 36px rgba(16, 36, 61, .07);
+      --radius: 18px;
+      /* Compatibility aliases used by the existing page templates. */
+      --panel: var(--surface);
+      --soft: var(--surface-soft);
+      --accent: var(--brand);
+      --accent-strong: var(--brand-dark);
+      --border: var(--line);
+      --nav: var(--navy);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text); background: var(--bg); line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { color: var(--brand-dark); text-decoration: underline; text-underline-offset: 3px; }
+    button, input, select, textarea { font: inherit; accent-color: var(--brand); }
+    button:disabled, input:disabled, select:disabled, textarea:disabled { opacity: .6; cursor: not-allowed; }
+    :focus-visible { outline: 3px solid #77a9e8; outline-offset: 3px; }
+    .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 100; padding: .7rem 1rem; background: white; border-radius: 10px; }
+    .skip-link:focus { top: 1rem; }
+    .site-header { position: sticky; top: 0; z-index: 30; background: rgba(16,36,61,.97); color: #fff; box-shadow: 0 8px 28px rgba(10,25,45,.15); backdrop-filter: blur(14px); }
+    .nav-inner { max-width: 1240px; min-height: 76px; margin: 0 auto; padding: .7rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; }
+    .brand { display: inline-flex; align-items: center; gap: .75rem; color: white; font-weight: 850; letter-spacing: -.045em; font-size: 1.12rem; white-space: nowrap; }
+    .brand:hover { color: white; text-decoration: none; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: #fff; background: linear-gradient(145deg,#5e9ce5,#2b64ad); font-size: .83rem; letter-spacing: -.06em; box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+    .nav-links { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: .25rem; }
+    .nav-links a { display: inline-flex; align-items: center; min-height: 40px; padding: .48rem .65rem; color: rgba(255,255,255,.83); font-size: .86rem; font-weight: 620; border-radius: 9px; transition: background .18s ease,color .18s ease; }
+    .nav-links a:hover { color: white; background: rgba(255,255,255,.11); text-decoration: none; }
+    .nav-links a.nav-primary { color: #10243d; background: #fff; padding-inline: .9rem; }
+    .nav-links a.nav-primary:hover { background: #eaf2fc; color: #10243d; }
+    .mobile-menu { display: none; color: white; }
+    .mobile-menu summary { cursor: pointer; list-style: none; border: 1px solid rgba(255,255,255,.25); padding: .55rem .8rem; border-radius: 10px; font-weight: 700; }
+    .mobile-menu summary::-webkit-details-marker { display: none; }
+    .mobile-menu .nav-links { padding: .5rem 1rem 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; }
+    .container { width: min(1240px,100%); margin: 0 auto; padding: 2.1rem 1.4rem 4rem; flex: 1; }
+    h1,h2,h3,h4 { line-height: 1.2; letter-spacing: -.035em; color: var(--text); }
+    h1 { font-size: clamp(2rem,4vw,3.2rem); }
+    h2 { font-size: clamp(1.35rem,2.2vw,1.8rem); }
+    p { overflow-wrap: anywhere; }
+    .card { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .18s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 16px 38px rgba(16,36,61,.1); }
+    .grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr)); }
+    .meta { color: var(--muted); font-size: .9rem; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .7rem 1.05rem; color: white; background: var(--brand); border: 1px solid var(--brand); border-radius: 11px; font-weight: 750; cursor: pointer; transition: transform .16s ease,background .16s ease; }
+    .btn:hover { color: white; background: var(--brand-dark); text-decoration: none; transform: translateY(-1px); }
+    .btn.secondary { color: var(--text); background: white; border-color: var(--line); }
+    .btn.secondary:hover { background: var(--surface-soft); color: var(--brand-dark); }
+    .btn-danger { background: #b42318; border-color: #b42318; color: white; }
+    .form-grid { display: grid; gap: 1rem; max-width: 560px; }
+    input,select,textarea { width: 100%; padding: .78rem .9rem; color: var(--text); background: white; border: 1px solid #cfd9e5; border-radius: 10px; }
+    input:focus,select:focus,textarea:focus { outline: 3px solid rgba(36,93,168,.16); border-color: var(--brand); }
+    label { display: block; margin-bottom: .35rem; font-weight: 680; }
+    .helptext { display: block; margin-top: .3rem; color: var(--muted); font-size: .86rem; }
+    .errorlist { padding-left: 0; list-style: none; color: #b42318; }
+    .message { margin: 0 0 1rem; padding: .9rem 1rem; background: #edf5ff; color: #183e68; border: 1px solid #cfe1f7; border-left: 4px solid var(--brand); border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.035); }
+    .page-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.35rem; }
+    .page-heading h1 { margin:0; }
+    .record-list { display:grid; gap:1rem; }
+    .record-card { padding:clamp(1rem,2.5vw,1.5rem); }
+    .record-card h3 { margin:.1rem 0 .45rem; font-size:1.15rem; }
+    .record-card p { margin:.8rem 0; }
+    .detail-card { padding:clamp(1.2rem,3vw,2rem); }
+    .detail-card h1 { overflow-wrap:anywhere; }
+    .detail-meta { line-height:1.8; }
+    .detail-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; margin-top:1.2rem; }
+    .detail-actions form,.detail-actions p { margin:0 !important; }
+    .empty-state { padding:1.6rem; border:1px dashed #cbd7e5; border-radius:15px; color:var(--muted); text-align:center; background:var(--surface-soft); }
+    table { max-width:100%; border-collapse: collapse; }
+    img,svg,video { max-width:100%; }
+    footer.site-footer { margin-top: auto; background: var(--navy); color: rgba(255,255,255,.78); }
+    .footer-inner { width:min(1240px,100%); margin:0 auto; padding:1.8rem 1.4rem 2rem; }
+    .footer-links { display:flex; flex-wrap:wrap; gap:.45rem 1.2rem; align-items:center; }
+    .footer-links a { display:inline-flex; align-items:center; min-height:40px; color:#fff; font-weight:600; }
+    .footer-bottom { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem 1rem; padding-top:1rem; margin-top:1rem; border-top:1px solid rgba(255,255,255,.14); font-size:.88rem; color:rgba(255,255,255,.6); }
+    @media (max-width: 980px) {
+      .nav-inner { min-height:68px; }
+      .desktop-nav { display:none; }
+      .mobile-menu { display:block; }
+    }
+    @media (max-width: 620px) {
+      .container { padding:1.35rem 1rem 3rem; }
+      .nav-inner { padding:.65rem 1rem; }
+      .mobile-menu .nav-links { grid-template-columns:1fr; }
+      .mobile-menu .nav-links a { padding:.55rem .7rem; }
+      .card:hover { transform:none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="{% url 'home' %}"><span class="brand-mark" aria-hidden="true">PO</span><span>Парламент<span style="color:#9fc8ff">.Online</span></span></a>
+      <nav class="nav-links desktop-nav" aria-label="Головна навігація">
+        <a href="{% url 'home' %}">Головна</a>
+        <a href="{% url 'ideas:list' %}">Ідеї</a>
+        <a href="{% url 'ideas:events' %}">Події</a>
+        <a href="{% url 'ideas:research_feedback' %}">Опитування</a>
+        <a href="{% url 'moderation:rules' %}">Правила</a>
+        <a href="{% url 'appeals:list' %}">Звернення</a>
+        <a href="{% url 'support:home' %}">Підтримка</a>
+        {% if user.is_authenticated and user.is_member %}<a href="{% url 'kanban:board' %}">Завдання</a>{% endif %}
+        {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}<a href="{% url 'moderation:queue' %}">Модерація</a>{% endif %}
+        {% if user.is_authenticated and user.is_secretary %}<a href="{% url 'moderation:sanctions' %}">Обмеження</a>{% endif %}
+        {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
+          <a href="{% url 'analytics:dashboard' %}">Аналітика</a><a href="{% url 'accounts:role_management' %}">Ролі</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:profile' %}">Профіль</a>
+          {% if user.is_secretary %}<a href="{% url 'accounts:reset_request' %}">Скидання пароля</a>{% endif %}
+          <a href="{% url 'accounts:logout' %}">Вийти</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">Увійти</a>
+          <a class="nav-primary" href="{% url 'accounts:register' %}">Реєстрація</a>
+        {% endif %}
+      </nav>
+      <details class="mobile-menu">
+        <summary>Меню ☰</summary>
+        <nav class="nav-links" aria-label="Мобільна навігація">
+          <a href="{% url 'home' %}">Головна</a><a href="{% url 'ideas:list' %}">Ідеї</a>
+          <a href="{% url 'ideas:events' %}">Події та архів</a><a href="{% url 'ideas:research_feedback' %}">Опитування</a>
+          <a href="{% url 'moderation:rules' %}">Правила</a><a href="{% url 'appeals:list' %}">Звернення</a>
           <a href="{% url 'support:home' %}">Підтримка</a>
-          {% if user.is_authenticated and user.is_member %}
-            <a href="{% url 'kanban:board' %}">Дошка завдань</a>
-          {% endif %}
-          {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}
-            <a href="{% url 'moderation:queue' %}">Модерація</a>
-          {% endif %}
-          {% if user.is_authenticated and user.is_secretary %}
-            <a href="{% url 'moderation:sanctions' %}">Обмеження</a>
-          {% endif %}
-          {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
-            <a href="{% url 'analytics:dashboard' %}">Аналітика</a>
-            <a href="{% url 'accounts:role_management' %}">Керування ролями</a>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <a href="{% url 'accounts:profile' %}">{{ user.email }}</a>
-            {% if user.is_secretary %}
-              <a href="{% url 'accounts:reset_request' %}">Скинути пароль учня</a>
-            {% endif %}
-            <a href="{% url 'accounts:logout' %}">Вийти</a>
-          {% else %}
-            <a href="{% url 'accounts:login' %}">Увійти</a>
-            <a href="{% url 'accounts:register' %}">Реєстрація</a>
-          {% endif %}
-        </div>
+          {% if user.is_authenticated and user.is_member %}<a href="{% url 'kanban:board' %}">Дошка завдань</a>{% endif %}
+          {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}<a href="{% url 'moderation:queue' %}">Модерація</a>{% endif %}
+          {% if user.is_authenticated and user.is_secretary %}<a href="{% url 'moderation:sanctions' %}">Обмеження</a><a href="{% url 'accounts:reset_request' %}">Скидання пароля</a>{% endif %}
+          {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}<a href="{% url 'analytics:dashboard' %}">Аналітика</a><a href="{% url 'accounts:role_management' %}">Керування ролями</a>{% endif %}
+          {% if user.is_authenticated %}<a href="{% url 'accounts:profile' %}">Профіль</a><a href="{% url 'accounts:logout' %}">Вийти</a>{% else %}<a href="{% url 'accounts:login' %}">Увійти</a><a href="{% url 'accounts:register' %}">Реєстрація</a>{% endif %}
+        </nav>
+      </details>
+    </div>
+  </header>
+  <main class="container" id="main-content">
+    {% if messages %}{% for message in messages %}<div class="message" role="status">{{ message }}</div>{% endfor %}{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if institution_links or social_links or contact_email %}
+    <footer class="site-footer">
+      <div class="footer-inner">
+        {% if institution_links %}
+          <div class="footer-links">{% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}</div>
+        {% endif %}
+        {% if social_links %}
+          <div class="footer-links" style="margin-top:.45rem;">{% for item in social_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}</div>
+        {% endif %}
+        <div class="footer-bottom"><span>Парламент.Online · Простір учнівського голосу</span>{% if contact_email %}<a href="mailto:{{ contact_email }}" style="color:white">Зв’язатися: {{ contact_email }}</a>{% endif %}</div>
       </div>
-    </nav>
-    <main class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="message">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-      {% block content %}{% endblock %}
-    </main>
-
-    {% if institution_links or social_links %}
-      <footer style="background: #163a67; color: white; margin-top: 2rem;">
-        <div class="container" style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
-          {% if institution_links %}
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin-bottom: 0.75rem;">
-              {% for item in institution_links %}
-                <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="color: white; display: inline-flex; align-items: center; min-height: 44px;">{{ item.label }}</a>
-              {% endfor %}
-            </div>
-          {% endif %}
-          {% if social_links %}
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center;">
-              {% for item in social_links %}
-                <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці" style="color: white; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px;">
-                  {% if item.key == 'instagram_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm5.75-3.25a1.25 1.25 0 1 1-1.25 1.25 1.25 1.25 0 0 1 1.25-1.25z"/></svg>
-                  {% elif item.key == 'telegram_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.71 6.59-1.66 7.82c-.12.56-.46.7-.93.43l-2.58-1.9-1.24 1.2c-.14.13-.26.26-.52.26l.18-2.65 4.82-4.35c.21-.18-.05-.29-.37-.11L8.7 13.25l-2.57-.8c-.56-.17-.57-.56.12-.83l10.11-3.9c.47-.17.88.11.72.82z"/></svg>
-                  {% elif item.key == 'facebook_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3h-3.1V7.5c0-.87.24-1.46 1.52-1.46H16V3.1c-.26-.03-1.17-.1-2.22-.1-2.19 0-3.69 1.34-3.69 3.8V11H8v3h2.09v8h3.41z"/></svg>
-                  {% elif item.key == 'tiktok_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.5 3c.42 1.72 1.7 3.04 3.5 3.14v2.87c-1.39-.05-2.64-.47-3.7-1.2v5.58A5.82 5.82 0 1 1 10.54 7.2v2.82a2.95 2.95 0 1 0 2.08 2.85V3h3.88z"/></svg>
-                  {% elif item.key == 'youtube_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21.6 7.2a2.95 2.95 0 0 0-2.08-2.09C17.7 4.7 12 4.7 12 4.7s-5.7 0-7.52.41A2.95 2.95 0 0 0 2.4 7.2 30.55 30.55 0 0 0 2 12a30.55 30.55 0 0 0 .4 4.8 2.95 2.95 0 0 0 2.08 2.09c1.82.41 7.52.41 7.52.41s5.7 0 7.52-.41A2.95 2.95 0 0 0 21.6 16.8 30.55 30.55 0 0 0 22 12a30.55 30.55 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
-                  {% elif item.key == 'discord_url' %}
-                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.3 5.3A17.7 17.7 0 0 0 15.7 4l-.3.7A15.8 15.8 0 0 1 12 4.9a15.8 15.8 0 0 1-3.4-.2L8 4a17.7 17.7 0 0 0-4.6 1.3C2.2 9.1 2 12.7 2 16.3A16.7 16.7 0 0 0 8.9 18c.5-.7.9-1.5 1.2-2.3a11.8 11.8 0 0 1-1.8-.9L8 14.8c1.8.8 3.7.8 5.5 0l-.3.1a11.8 11.8 0 0 1-1.8.9c.3.8.7 1.6 1.2 2.3A16.7 16.7 0 0 0 22 16.3c0-3.6-.2-7.2-1.7-11zm-9.2 9.1c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8zm6.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8z"/></svg>
-                  {% endif %}
-                  <span>{{ item.label }}</span>
-                </a>
-              {% endfor %}
-            </div>
-          {% endif %}
-          {% if contact_email %}
-            <div style="margin-top: 1rem;">Контактна пошта: <a href="mailto:{{ contact_email }}" style="color: white;">{{ contact_email }}</a></div>
-          {% endif %}
-        </div>
-      </footer>
-    {% endif %}
-  </body>
+    </footer>
+  {% endif %}
+</body>
 </html>

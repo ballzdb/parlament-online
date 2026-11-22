@@ -1,22 +1,30 @@
 {% extends 'base.html' %}
 {% block title %}Відгуки та пропозиції{% endblock %}
 {% block content %}
-  <div class="page-heading"><div><p class="eyebrow">ЗВОРОТНИЙ ЗВ’ЯЗОК</p><h1>Відгуки та пропозиції</h1><p class="meta">Поділіться думкою про роботу парламенту або повідомте про проблему.</p></div>{% if user.is_authenticated %}<a class="btn" href="{% url 'appeals:create' %}">Нове звернення</a>{% endif %}</div>
-  <div class="record-list">
+  <div class="page-heading appeals-heading"><div><p class="eyebrow">ЗВОРОТНИЙ ЗВ’ЯЗОК</p><h1>Відгуки та пропозиції</h1><p class="meta">Поділіться думкою про роботу парламенту або повідомте про проблему. Кожне звернення має свій статус опрацювання.</p></div>{% if user.is_authenticated %}<a class="btn" href="{% url 'appeals:create' %}">＋ Нове звернення</a>{% endif %}</div>
+  <div class="appeals-list">
     {% for appeal in appeals %}
-      <article class="card record-card appeal-card">
-        <div class="appeal-heading"><h3>{{ appeal.subject }}</h3><span class="appeal-status">{{ appeal.get_status_display }}</span></div>
-        <div class="meta">{{ appeal.get_kind_display }}</div>
+      <article class="card appeal-card">
+        <div class="appeal-heading"><div><div class="appeal-kind">{{ appeal.get_kind_display }}</div><h2>{{ appeal.subject }}</h2></div><span class="appeal-status">{{ appeal.get_status_display }}</span></div>
         {% if appeal.related_idea %}<div class="meta">Щодо ідеї: <a href="{% url 'ideas:detail' appeal.related_idea.pk %}">{{ appeal.related_idea.title }}</a></div>{% endif %}
-        <p>{{ appeal.body }}</p>
+        <p class="appeal-body">{{ appeal.body }}</p>
         {% if user.is_authenticated and not user.is_student %}<div class="meta">Автор: {{ appeal.author.display_name }} · {{ appeal.author.email }}</div>{% else %}<div class="meta">Авторство приховане</div>{% endif %}
-        {% if user.is_authenticated and user.is_secretary %}<p><a class="btn secondary" href="{% url 'appeals:manage' appeal.pk %}">Опрацювати звернення</a></p>{% endif %}
         {% if appeal.public_answer %}<div class="appeal-answer"><strong>Відповідь парламенту</strong><p>{{ appeal.public_answer }}</p></div>{% endif %}
+        {% if user.is_authenticated and user.is_secretary %}<div class="appeal-actions"><a class="btn secondary" href="{% url 'appeals:manage' appeal.pk %}">Опрацювати звернення →</a></div>{% endif %}
       </article>
-    {% empty %}<div class="empty-state">Поки немає звернень.</div>{% endfor %}
+    {% empty %}<div class="empty-state">Поки немає звернень. Тут з’являтимуться пропозиції та відгуки учнів.</div>{% endfor %}
   </div>
   <style>
-    .appeal-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.appeal-heading h3{min-width:0}.appeal-status{flex:0 0 auto;padding:.28rem .65rem;border-radius:999px;background:var(--soft);font-size:.78rem;font-weight:700}.appeal-answer{margin-top:1rem;padding:.9rem 1rem;border-left:3px solid var(--accent);background:var(--soft);border-radius:0 10px 10px 0}.appeal-answer p{margin:.35rem 0 0;white-space:pre-line}
-    @media(max-width:480px){.appeal-heading{display:block}.appeal-status{display:inline-block;margin:.3rem 0}}
+    .appeals-heading{align-items:center}.appeals-heading h1{margin:.1rem 0 .45rem}.appeals-heading .meta{max-width:650px;margin:0}
+    .appeals-list{display:grid;gap:1rem}.appeal-card{padding:clamp(1.1rem,2.5vw,1.55rem)}
+    .appeal-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+    .appeal-kind{font-size:.72rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
+    .appeal-heading h2{font-size:1.22rem;margin:.3rem 0 .5rem;overflow-wrap:anywhere}
+    .appeal-status{flex:0 0 auto;padding:.35rem .7rem;border-radius:999px;background:#edf3fa;color:#315276;font-size:.78rem;font-weight:750}
+    .appeal-body{white-space:pre-line;line-height:1.7;color:#43536a;margin:1rem 0}
+    .appeal-answer{margin-top:1rem;padding:1rem 1.1rem;border-left:3px solid var(--brand);background:#eff5fc;border-radius:0 12px 12px 0}
+    .appeal-answer p{margin:.35rem 0 0;white-space:pre-line}
+    .appeal-actions{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
+    @media(max-width:560px){.appeals-heading{align-items:flex-start;flex-direction:column}.appeal-heading{display:block}.appeal-status{display:inline-flex;margin:.35rem 0}}
   </style>
 {% endblock %}
