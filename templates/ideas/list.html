@@ -1,22 +1,46 @@
 {% extends 'base.html' %}
 {% block title %}Ідеї | Парламент.Online{% endblock %}
 {% block content %}
-  <div class="page-heading">
-    <h1 style="margin:0;">Ідеї</h1>
-    {% if user.is_authenticated %}<a href="{% url 'ideas:create' %}" class="btn">Подати ідею</a>{% endif %}
+  <div class="page-heading ideas-heading">
+    <div><p class="eyebrow">ГОЛОС УЧНІВ</p><h1>Ідеї та ініціативи</h1><p class="meta">Переглядайте пропозиції, стежте за їхнім розглядом і підтримуйте корисні зміни.</p></div>
+    {% if user.is_authenticated %}<a href="{% url 'ideas:create' %}" class="btn">＋ Подати ідею</a>{% else %}<a href="{% url 'accounts:login' %}" class="btn">Увійти, щоб долучитися</a>{% endif %}
   </div>
-  <div class="record-list">
+  <div class="ideas-list">
   {% for idea in ideas %}
-    <article class="card record-card">
-      <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
-      <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
-      <p>{{ idea.body|truncatewords:55 }}</p>
-      <div class="idea-summary">
-        <span class="meta">Статус: <strong>{{ idea.get_status_display }}</strong></span>
-        <span class="meta">Підтримка: <strong>{{ idea.vote_count }}</strong></span>
-        {% if idea.moderation_status == 'pending' %}<span class="meta"><strong>Очікує перевірки</strong></span>{% elif idea.moderation_status == 'rejected' %}<span class="meta"><strong>Не опубліковано</strong></span>{% endif %}
+    <article class="card idea-card">
+      <div class="idea-card-top">
+        <span class="idea-label">ІНІЦІАТИВА</span>
+        <span class="idea-date">{{ idea.created_at|date:'d.m.Y' }}</span>
+      </div>
+      <h2><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h2>
+      <div class="idea-author">Автор: {{ idea.author.display_name|default:idea.author.email }}</div>
+      <p class="idea-excerpt">{{ idea.body|truncatewords:55 }}</p>
+      <div class="idea-card-bottom">
+        <div class="idea-tags">
+          <span class="idea-chip">◉ {{ idea.get_status_display }}</span>
+          <span class="idea-chip">♡ {{ idea.vote_count }} голосів</span>
+          {% if idea.moderation_status == 'pending' %}<span class="idea-chip pending">На модерації</span>{% elif idea.moderation_status == 'rejected' %}<span class="idea-chip rejected">Не опубліковано</span>{% endif %}
+        </div>
+        <a class="idea-open" href="{% url 'ideas:detail' idea.pk %}">Детальніше <span aria-hidden="true">→</span></a>
       </div>
     </article>
-  {% empty %}<div class="empty-state">Опублікованих ідей поки немає.</div>{% endfor %}
+  {% empty %}<div class="empty-state">Опублікованих ідей поки немає. Запропонуйте першу ініціативу.</div>{% endfor %}
   </div>
+  <style>
+    .ideas-heading{align-items:center;margin-bottom:1.6rem}.ideas-heading h1{margin:.1rem 0 .45rem}.ideas-heading .meta{max-width:620px;margin:0}
+    .ideas-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+    .idea-card{display:flex;flex-direction:column;min-width:0;padding:1.35rem;box-shadow:0 5px 20px rgba(16,36,61,.045)}
+    .idea-card-top{display:flex;align-items:center;justify-content:space-between;gap:.7rem}
+    .idea-label{font-size:.69rem;letter-spacing:.13em;font-weight:850;color:var(--brand)}
+    .idea-date,.idea-author{font-size:.82rem;color:var(--muted)}
+    .idea-card h2{font-size:1.25rem;margin:.75rem 0 .35rem;line-height:1.35;overflow-wrap:anywhere}
+    .idea-card h2 a{color:var(--text)}.idea-card h2 a:hover{color:var(--brand)}
+    .idea-excerpt{color:#45566d;margin:.8rem 0 1.2rem;white-space:pre-line}
+    .idea-card-bottom{margin-top:auto;padding-top:.9rem;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
+    .idea-tags{display:flex;flex-wrap:wrap;gap:.4rem}
+    .idea-chip{display:inline-flex;align-items:center;padding:.3rem .58rem;border-radius:999px;background:#eef3f9;color:#43546b;font-size:.77rem;font-weight:700}
+    .idea-chip.pending{background:#fff2d9;color:#8a5700}.idea-chip.rejected{background:#fce9e7;color:#a12b22}
+    .idea-open{font-size:.87rem;font-weight:800;white-space:nowrap}
+    @media(max-width:760px){.ideas-list{grid-template-columns:1fr}.ideas-heading{align-items:flex-start;flex-direction:column}}
+  </style>
 {% endblock %}
