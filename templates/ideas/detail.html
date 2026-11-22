@@ -1,24 +1,26 @@
 {% extends 'base.html' %}
 {% block title %}{{ idea.title }} | Парламент.Online{% endblock %}
 {% block content %}
-  <article class="card detail-card">
+  <a class="back-link" href="{% url 'ideas:list' %}">← До всіх ідей</a>
+  <article class="card detail-card idea-detail">
+    <div class="detail-kicker">УЧНІВСЬКА ІНІЦІАТИВА <span>·</span> {{ idea.created_at|date:'d.m.Y' }}</div>
     <h1>{{ idea.title }}</h1>
-    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }}</div>
     {% if idea.moderation_status == 'pending' %}
       <div class="message">Ця ідея ще проходить модерацію. Її бачить автор і уповноважені представники самоврядування.</div>
     {% elif idea.moderation_status == 'rejected' %}
       <div class="message">Ідею не допущено до публікації. Причина: {{ idea.moderation_reason|default:'Не вказана' }}</div>
       {% if user.pk == idea.author_id %}<p><a class="btn" href="{% url 'appeals:create' %}?idea={{ idea.pk }}">Оскаржити рішення</a></p>{% endif %}
     {% endif %}
-    <p style="white-space:pre-line;">{{ idea.body }}</p>
+    <div class="idea-body">{{ idea.body }}</div>
     <div class="idea-facts">
       <div><span>Комісія</span><strong>{{ idea.commission|default:'—' }}</strong></div>
       <div><span>Поточний статус</span><strong>{{ idea.get_status_display }}</strong></div>
       <div><span>Підтримка учнів</span><strong>{{ idea.vote_count }}</strong></div>
     </div>
-    {% if idea.completion_report %}<h3>Публічний звіт</h3><p>{{ idea.completion_report }}</p>{% endif %}
+    {% if idea.completion_report %}<section class="completion-report"><h2>Публічний звіт</h2><p>{{ idea.completion_report }}</p></section>{% endif %}
     {% if moderation_history %}
-      <section class="moderation-history" style="margin-top:1.5rem;">
+      <section class="moderation-history">
         <h2>Історія модерації</h2>
         <ol class="record-list">
           {% for entry in moderation_history %}
@@ -46,13 +48,13 @@
       {% endif %}
       {% if idea.moderation_status == 'approved' %}
         {% if not has_voted %}
-          <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати</button></form>
-        {% else %}<p class="meta">Ви вже підтримали цю ідею.</p>{% endif %}
+          <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">♡ Підтримати ідею</button></form>
+        {% else %}<p class="vote-confirmation">✓ Ви вже підтримали цю ідею.</p>{% endif %}
       {% endif %}
     </div>
   </article>
   {% if status_form %}
-    <div class="card">
+    <div class="card status-editor">
       <h2>Змінити статус виконання</h2>
       <form method="post" class="form-grid">
         {% csrf_token %}
@@ -63,4 +65,20 @@
       </form>
     </div>
   {% endif %}
+  <style>
+    .back-link{display:inline-flex;margin:0 0 1rem;font-weight:750}.idea-detail{padding:clamp(1.3rem,4vw,2.5rem)}
+    .detail-kicker{font-size:.73rem;letter-spacing:.12em;font-weight:850;color:var(--brand)}
+    .detail-kicker span{padding:0 .35rem;color:#a0aec0}.idea-detail h1{max-width:850px;margin:.75rem 0 .5rem}
+    .idea-detail .detail-meta{padding-bottom:1.2rem;border-bottom:1px solid var(--line)}
+    .idea-body{padding:1.5rem 0;white-space:pre-line;overflow-wrap:anywhere;font-size:1.06rem;line-height:1.85}
+    .idea-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin:1rem 0 1.4rem}
+    .idea-facts>div{display:grid;gap:.35rem;padding:1rem;background:var(--surface-soft);border:1px solid var(--line);border-radius:13px}
+    .idea-facts span{font-size:.8rem;color:var(--muted)}.idea-facts strong{overflow-wrap:anywhere}
+    .completion-report{padding:1.2rem;border-left:3px solid var(--brand);background:#f0f6fd;border-radius:0 13px 13px 0;margin:1.2rem 0}
+    .completion-report h2,.moderation-history h2{font-size:1.2rem;margin:0 0 .5rem}.completion-report p{margin:0;white-space:pre-line}
+    .moderation-history{margin-top:1.5rem}.moderation-history ol{padding:0;list-style:none}
+    .status-editor{margin-top:1rem;padding:clamp(1.2rem,3vw,2rem)}.status-editor h2{margin-top:0}
+    .vote-confirmation{margin:0;padding:.65rem .9rem;background:#e7f5ee;color:#12664e;border-radius:10px;font-weight:700}
+    @media(max-width:620px){.idea-facts{grid-template-columns:1fr}.detail-actions{align-items:stretch}.detail-actions .btn{width:100%}}
+  </style>
 {% endblock %}
