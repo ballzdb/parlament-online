@@ -1,34 +1,48 @@
 {% extends 'base.html' %}
 {% block title %}Події та архів | Парламент.Online{% endblock %}
 {% block content %}
-  <div class="page-heading">
-    <div><p class="eyebrow">ЖИТТЯ ЛІЦЕЮ</p><h1>Події та архів</h1><p class="meta">Майбутні заходи й результати вже проведених ініціатив.</p></div>
-  </div>
-  <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2></div>
-    <div class="record-list">
+  <div class="page-heading"><div><p class="eyebrow">ЖИТТЯ ЛІЦЕЮ</p><h1>Події та архів</h1><p class="meta">Майбутні заходи й результати вже проведених ініціатив.</p></div></div>
+  <section class="events-section">
+    <div class="events-section-heading"><div><h2>Найближчі події</h2><p>Заплановані зустрічі, заходи та ініціативи.</p></div><span class="events-count">{{ upcoming_events|length }}</span></div>
+    <div class="events-grid">
       {% for event in upcoming_events %}
-        <article class="card record-card">
-          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;">{% endif %}
-          <p>{{ event.description|truncatewords:35 }}</p>
-          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}</div>
+        <article class="card event-card">
+          <div class="event-date"><span>{{ event.starts_at|date:'d' }}</span><span>{{ event.starts_at|date:'M'|upper }}</span></div>
+          <div class="event-content">
+            <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+            <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+            {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% endif %}
+            <p>{{ event.description|truncatewords:35 }}</p>
+            <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}</div>
+          </div>
         </article>
       {% empty %}<div class="empty-state">Запланованих подій поки немає.</div>{% endfor %}
     </div>
   </section>
-  <section class="home-section">
-    <div class="home-section-heading"><h2>Архів проведених заходів</h2></div>
-    <div class="record-list">
+  <section class="events-section archive-section">
+    <div class="events-section-heading"><div><h2>Архів проведених заходів</h2><p>Збережені результати спільної роботи.</p></div><span class="events-count">{{ past_events|length }}</span></div>
+    <div class="archive-list">
       {% for event in past_events %}
-        <article class="card record-card">
-          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}{% if event.participant_count != None %} · Учасників: {{ event.participant_count }}{% endif %}</div>
-          <p>{{ event.outcome|default:event.description|truncatewords:45 }}</p>
+        <article class="card archive-card">
+          <div class="archive-date">{{ event.starts_at|date:'d.m.Y' }}</div>
+          <div class="archive-content"><h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3><div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}{% if event.participant_count != None %} · Учасників: {{ event.participant_count }}{% endif %}</div><p>{{ event.outcome|default:event.description|truncatewords:45 }}</p></div>
+          <a class="archive-open" href="{% url 'ideas:event_detail' event.pk %}" aria-label="Переглянути подію {{ event.title }}">→</a>
         </article>
       {% empty %}<div class="empty-state">Проведених заходів поки немає. Після перших подій вони з’являться тут.</div>{% endfor %}
     </div>
   </section>
+  <style>
+    .events-section{margin-top:2rem}.events-section-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid var(--line)}
+    .events-section-heading h2{margin:0}.events-section-heading p{margin:.3rem 0 0;color:var(--muted);font-size:.9rem}
+    .events-count{display:grid;place-items:center;min-width:36px;height:36px;padding:0 .5rem;border-radius:50%;background:#edf4fd;color:var(--brand);font-weight:850}
+    .events-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+    .event-card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:1rem;padding:1.2rem}
+    .event-date{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:13px;background:#edf4fd;color:var(--brand)}
+    .event-date span:first-child{font-size:1.55rem;line-height:1;font-weight:900}.event-date span:last-child{font-size:.67rem;font-weight:850;letter-spacing:.08em}
+    .event-content{min-width:0}.event-content h3{font-size:1.13rem;margin:.35rem 0}.event-content img{width:100%;max-height:170px;object-fit:cover;border-radius:11px;margin:.5rem 0}.event-content p{color:#45566d}
+    .archive-list{display:grid;gap:.7rem}.archive-card{display:grid;grid-template-columns:100px minmax(0,1fr) 36px;align-items:center;gap:1rem;padding:1rem 1.2rem}
+    .archive-date{font-weight:800;color:var(--brand);font-size:.88rem}.archive-content{min-width:0}.archive-content h3{font-size:1rem;margin:0 0 .25rem}.archive-content p{margin:.4rem 0 0;color:#536278;font-size:.9rem}
+    .archive-open{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#edf4fd;font-weight:850}
+    @media(max-width:720px){.events-grid{grid-template-columns:1fr}.archive-card{grid-template-columns:1fr 34px}.archive-date{grid-column:1/-1}.archive-open{grid-column:2;grid-row:2}}
+  </style>
 {% endblock %}
