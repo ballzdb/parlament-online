@@ -22,6 +22,7 @@ class Idea(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.UNDER_REVIEW)
     moderation_status = models.CharField(max_length=20, choices=ModerationStatus.choices, default=ModerationStatus.PENDING, db_index=True)
     moderation_reason = models.TextField(blank=True)
+    ai_review = models.JSONField(default=dict, blank=True)
     assigned_moderator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_moderation_ideas')
     moderated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='moderated_ideas')
     moderated_at = models.DateTimeField(null=True, blank=True)
