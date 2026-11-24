@@ -1,101 +1,99 @@
 {% extends 'base.html' %}
-
 {% block title %}Головна | Парламент.Online{% endblock %}
-
 {% block content %}
-  <style>
-    .home-hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:2rem; min-height:245px; padding:clamp(1.5rem,4vw,3rem); margin-bottom:1.4rem; border-radius:22px; color:#fff; background:linear-gradient(115deg,#173b68 0%,#245da8 68%,#477fc0 100%); box-shadow:0 18px 38px rgba(25,65,115,.2); }
-    .hero-copy { position:relative; z-index:1; max-width:700px; }
-    .eyebrow { font-size:.73rem; font-weight:800; letter-spacing:.16em; opacity:.78; margin-bottom:.8rem; }
-    .home-hero h1 { margin:0 0 .75rem; font-size:clamp(2.2rem,5vw,3.8rem); letter-spacing:-.055em; }
-    .home-hero h1 span { color:#cfe2ff; }
-    .home-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(1rem,2vw,1.15rem); }
-    .hero-mark { width:150px; height:150px; flex:0 0 150px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.25); border-radius:38px; transform:rotate(8deg); background:rgba(255,255,255,.1); box-shadow:inset 0 0 35px rgba(255,255,255,.08); }
-    .hero-mark span { font-size:3.2rem; font-weight:900; letter-spacing:-.1em; color:rgba(255,255,255,.9); transform:rotate(-8deg); }
-    .home-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-bottom:2.4rem; }
-    .stat-card { display:flex; flex-direction:column; justify-content:center; min-height:118px; }
-    .stat-card strong { display:block; font-size:2rem; line-height:1.2; letter-spacing:-.04em; color:var(--accent); }
-    .stat-card .meta { font-weight:650; }
-    .home-section { margin:2.2rem 0; }
-    .home-section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
-    .home-section-heading h2 { margin:0; }
-    .home-list { display:grid; gap:.85rem; }
-    .home-list .card { box-shadow:none; border-radius:14px; }
-    .home-list .card:hover { box-shadow:var(--shadow); }
-    .home-section-heading { padding-bottom:.65rem; border-bottom:1px solid var(--border); }
-    .home-section-heading a { font-weight:700; }
-    .home-list .card h3 { margin:.1rem 0 .45rem; }
-    .home-list .card p { line-height:1.65; }
-    .home-stats .card { border-radius:16px; }
-    .home-info { margin-bottom:2rem; }
-    .home-socials { display:flex; flex-wrap:wrap; gap:.65rem; }
-    .home-socials a { display:inline-flex; align-items:center; gap:.5rem; padding:.55rem .8rem; min-height:42px; border:1px solid var(--border); border-radius:10px; background:var(--soft); font-weight:650; }
-    .home-socials a:hover { text-decoration:none; border-color:var(--accent); }
-    @media(max-width:650px) { .home-hero { min-height:unset; } .hero-mark { width:84px;height:84px;flex-basis:84px;border-radius:24px; } .hero-mark span {font-size:2rem;} .home-stats {grid-template-columns:1fr;} .stat-card {min-height:88px;} }
-  </style>
   <section class="home-hero">
     <div class="hero-copy">
-      <div class="eyebrow">ШКІЛЬНЕ САМОВРЯДУВАННЯ · ОНЛАЙН</div>
-      <h1>Парламент<span>.Online</span></h1>
-      <p>Простір, де голос кожного учня може перетворитися на реальні зміни у житті ліцею.</p>
+      <div class="eyebrow">УЧНІВСЬКЕ САМОВРЯДУВАННЯ · ХАРКІВ</div>
+      <h1>Твоя ідея.<br><span>Спільні зміни.</span></h1>
+      <p>Парламент.Online — простір, де учнівські пропозиції проходять зрозумілий шлях: від подання та обговорення до голосування й реалізації.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{% url 'ideas:list' %}">Переглянути ідеї <span aria-hidden="true">→</span></a>
+        {% if user.is_authenticated %}
+          {% if not user.is_temporarily_restricted %}<a class="btn hero-secondary" href="{% url 'ideas:create' %}">＋ Запропонувати ідею</a>{% endif %}
+        {% else %}
+          <a class="btn hero-secondary" href="{% url 'accounts:register' %}">Приєднатися</a>
+        {% endif %}
+      </div>
     </div>
     <div class="hero-mark" aria-hidden="true"><span>PO</span></div>
   </section>
-  <section class="home-stats">
-    <div class="card stat-card"><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong></div>
-    <div class="card stat-card"><div class="meta">Звернень і відгуків</div><strong>{{ stats.appeal_count }}</strong></div>
-    <div class="card stat-card"><div class="meta">Для кожного учня</div><strong>Відкрито</strong></div>
+
+  <section class="home-stats" aria-label="Показники платформи">
+    <article class="card stat-card"><span class="stat-icon" aria-hidden="true">↗</span><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong><span class="stat-foot">Пропозиції, відкриті для учнів</span></article>
+    <article class="card stat-card"><span class="stat-icon" aria-hidden="true">✉</span><div class="meta">Звернення та відгуки</div><strong>{{ stats.appeal_count }}</strong><span class="stat-foot">Повідомлення до самоврядування</span></article>
+    <article class="card stat-card"><span class="stat-icon" aria-hidden="true">◎</span><div class="meta">Участь</div><strong>Відкрита</strong><span class="stat-foot">Кожен учень може подати пропозицію</span></article>
   </section>
+
+  <section class="journey-section">
+    <div class="section-intro">
+      <div><p class="eyebrow">ЯК ЦЕ ПРАЦЮЄ</p><h2>Від думки до результату</h2></div>
+      <p>Прозорий процес допомагає зрозуміти, на якому етапі перебуває кожна пропозиція.</p>
+    </div>
+    <div class="journey-grid">
+      <article class="journey-step"><span>01</span><div><h3>Запропонуй</h3><p>Опиши проблему або ідею, яка може зробити життя ліцею кращим.</p></div></article>
+      <article class="journey-step"><span>02</span><div><h3>Перевірка</h3><p>Модератори перевіряють пропозицію перед публікацією.</p></div></article>
+      <article class="journey-step"><span>03</span><div><h3>Підтримай</h3><p>Переглядай опубліковані ідеї та голосуй за ті, що важливі для тебе.</p></div></article>
+      <article class="journey-step"><span>04</span><div><h3>Реалізуймо</h3><p>Самоврядування може взяти підтриману ініціативу в роботу й опублікувати звіт.</p></div></article>
+    </div>
+  </section>
+
   {% if institution_links or social_links %}
     <section class="card home-info">
-      <div class="home-section-heading"><h2>Ліцей і парламент онлайн</h2></div>
+      <div class="section-intro compact"><div><p class="eyebrow">НАШ ЛІЦЕЙ</p><h2>Залишаймося на зв’язку</h2></div></div>
       {% if institution_links %}
-        <div class="home-socials" style="margin-bottom:1rem;">
-          {% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} ↗</a>{% endfor %}
+        <div class="home-socials institution-links">
+          {% for item in institution_links %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.label }} <span aria-hidden="true">↗</span></a>{% endfor %}
         </div>
-        <p class="meta">пр. Науки, 20, м. Харків, 61166</p>
+        <p class="meta institution-address">пр. Науки, 20, м. Харків, 61166</p>
       {% endif %}
       {% if social_links %}
         <div class="home-socials">
           {% for item in social_links %}
             <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ item.label }}, відкриється в новій вкладці">
               {% if item.key == 'instagram_url' %}<span aria-hidden="true">◎</span>{% elif item.key == 'telegram_url' %}<span aria-hidden="true">➤</span>{% elif item.key == 'facebook_url' %}<span aria-hidden="true">f</span>{% elif item.key == 'tiktok_url' %}<span aria-hidden="true">♪</span>{% elif item.key == 'youtube_url' %}<span aria-hidden="true">▶</span>{% elif item.key == 'discord_url' %}<span aria-hidden="true">◈</span>{% endif %}
-              {{ item.label }} ↗
+              {{ item.label }} <span aria-hidden="true">↗</span>
             </a>
           {% endfor %}
         </div>
       {% endif %}
     </section>
   {% endif %}
+
   <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2><a href="{% url 'ideas:events' %}">Усі події та архів →</a></div>
-    <div class="grid">
+    <div class="home-section-heading"><div><p class="eyebrow">КАЛЕНДАР</p><h2>Найближчі події</h2></div><a href="{% url 'ideas:events' %}">Усі події та архів <span aria-hidden="true">→</span></a></div>
+    <div class="grid event-preview-grid">
       {% for event in events %}
-        <article class="card">
-          <div class="meta" style="font-weight:700;color:var(--accent);">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>{% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;">{% endif %}
-          {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
-          {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
+        <article class="card event-preview">
+          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% else %}<div class="event-placeholder" aria-hidden="true"><span>КАЛЕНДАР</span><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M' }}</span></div>{% endif %}
+          <div class="event-preview-copy">
+            <div class="meta event-date">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+            <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+            {% if event.description %}<p>{{ event.description|truncatewords:25 }}</p>{% endif %}
+            {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
+          </div>
         </article>
-      {% empty %}<div class="empty-state">Найближчих подій поки немає.</div>{% endfor %}
+      {% empty %}<div class="empty-state">Найближчих подій поки немає. Коли парламент опублікує новий захід, він з’явиться тут.</div>{% endfor %}
     </div>
   </section>
-  <section class="grid">
-    <div class="home-section">
-      <div class="home-section-heading"><h2>Останні ідеї</h2></div>
-      <div class="home-list">
-        {% for idea in ideas %}
-          <article class="card"><h3>{{ idea.title }}</h3><div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div><p>{{ idea.body|truncatewords:24 }}</p><div class="meta">Статус: {{ idea.get_status_display }} · Голосів: {{ idea.vote_count }}</div></article>
-        {% empty %}<div class="empty-state">Ідей ще немає.</div>{% endfor %}
-      </div>
+
+  <section class="home-section">
+    <div class="home-section-heading"><div><p class="eyebrow">ГОЛОС УЧНІВ</p><h2>Останні ідеї</h2></div><a href="{% url 'ideas:list' %}">Усі ідеї <span aria-hidden="true">→</span></a></div>
+    <div class="home-list">
+      {% for idea in ideas %}
+        <article class="card idea-preview">
+          <div class="idea-preview-main"><h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3><p>{{ idea.body|truncatewords:28 }}</p><div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div></div>
+          <div class="idea-preview-votes"><strong>{{ idea.vote_count }}</strong><span>голосів</span></div>
+        </article>
+      {% empty %}<div class="empty-state">Опублікованих ідей поки немає. Саме час започаткувати першу.</div>{% endfor %}
     </div>
-    <div class="home-section">
-      <div class="home-section-heading"><h2>Відгуки</h2></div>
-      <div class="home-list">
-        {% for appeal in appeals %}
-          <article class="card"><h3>{{ appeal.subject }}</h3><div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div><p>{{ appeal.body|truncatewords:20 }}</p></article>
-        {% empty %}<div class="empty-state">Відгуків поки немає.</div>{% endfor %}
-      </div>
+  </section>
+
+  <section class="home-section">
+    <div class="home-section-heading"><div><p class="eyebrow">ЗВОРОТНИЙ ЗВ’ЯЗОК</p><h2>Відгуки та звернення</h2></div><a href="{% url 'appeals:list' %}">Перейти до звернень <span aria-hidden="true">→</span></a></div>
+    <div class="grid appeal-preview-grid">
+      {% for appeal in appeals %}
+        <article class="card appeal-preview"><div class="meta">{{ appeal.get_kind_display }} · {{ appeal.get_status_display }}</div><h3>{{ appeal.subject }}</h3><p>{{ appeal.body|truncatewords:22 }}</p></article>
+      {% empty %}<div class="empty-state">Публічних відгуків поки немає.</div>{% endfor %}
     </div>
   </section>
 {% endblock %}
