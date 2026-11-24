@@ -216,7 +216,7 @@ class PublicProfilePrivacyTests(TestCase):
         staff_email = 'moderator-private@example.com'
         ModerationEntry.objects.create(
             target_type='idea',
-            target_id=self.approved.pk,
+            target_id=self.idea.pk,
             verdict={
                 'action': 'approve',
                 'actor_email': staff_email,
@@ -224,6 +224,6 @@ class PublicProfilePrivacyTests(TestCase):
                 'reason': 'Перевірено.',
             },
         )
-        response = self.client.get(f'/ideas/{self.approved.pk}/')
+        response = self.client.get(f'/ideas/{self.idea.pk}/')
         self.assertContains(response, 'Історія модерації')
         self.assertNotContains(response, staff_email)
