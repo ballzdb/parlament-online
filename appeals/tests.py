@@ -206,3 +206,67 @@ class ModerationAppealTests(TestCase):
         self.assertContains(response, 'Оскаржити рішення')
         self.client.force_login(self.other_student)
         self.assertEqual(self.client.get(f'/ideas/{self.idea.pk}/').status_code, 404)
+
+
+class AppealPrivacyRegressionTests(TestCase):
+    def setUp(self):
+        self.author = User.objects.create_user(
+            email='privacy-author@khul.ukr.education',
+            password='Password123!',
+            display_name='Автор приватного звернення',
+            is_active=True,
+        )
+        self.other = User.objects.create_user(
+            email='privacy-other@khul.ukr.education',
+            password='Password123!',
+            is_active=True,
+            role=User.Role.MEMBER,
+        )
+        self.secretary = User.objects.create_user(
+            email='privacy-secretary@khul.ukr.education',
+            password='Password123!',
+            is_active=True,
+            role=User.Role.SECRETARY,
+        )
+        self.private = Appeal.objects.create(
+            author=self.author,
+            subject='Скарга з приватними деталями',
+            body='Цей текст не повинен бути публічним.',
+            visibility=Appeal.Visibility.PRIVATE,
+        )
+        self.public = Appeal.objects.create(
+            author=self.author,
+            subject='Відкритий відгук',
+            body='Цей текст можна показувати.',
+            visibility=Appeal.Visibility.PUBLIC,
+        )
+
+    def test_private_appeal_is_hidden_from_anonymous_and_other_students(self):
+        for user in (None, self.other):
+            if user is None:
+                self.client.logout()
+            else:
+                self.client.force_login(user)
+            response = self.client.get('/appeals/')
+            self.assertContains(response, self.public.subject)
+            self.assertNotContains(response, self.private.subject)
+            self.assertNotContains(response, self.private.body)
+
+    def test_only_secretary_can_see_private_appeals_and_author_identity(self):
+        self.client.force_login(self.other)
+        response = self.client.get('/appeals/')
+        self.assertNotContains(response, self.private.subject)
+        self.assertContains(response, 'Авторство приховане')
+        self.assertNotContains(response, self.author.email)
+
+        self.client.force_login(self.secretary)
+        response = self.client.get('/appeals/')
+        self.assertContains(response, self.private.subject)
+        self.assertContains(response, self.author.email)
+
+    def test_homepage_only_displays_public_appeals(self):
+        response = self.client.get('/')
+        self.assertContains(response, self.public.subject)
+        self.assertNotContains(response, self.private.subject)
+        self.assertNotContains(response, self.private.body)
+        self.assertEqual(response.context['stats']['appeal_count'], 1)

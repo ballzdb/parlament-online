@@ -13,14 +13,14 @@ from .models import Appeal
 
 
 def appeal_list(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.has_role(User.Role.SECRETARY):
+        queryset = Appeal.objects.all()
+    elif request.user.is_authenticated:
         queryset = Appeal.objects.filter(
             Q(author=request.user) | Q(visibility=Appeal.Visibility.PUBLIC)
         )
     else:
         queryset = Appeal.objects.filter(visibility=Appeal.Visibility.PUBLIC)
-    if request.user.is_authenticated and not request.user.is_student:
-        queryset = Appeal.objects.all()
     return render(request, 'appeals/list.html', {
         'appeals': queryset.distinct().select_related('author', 'related_idea'),
     })

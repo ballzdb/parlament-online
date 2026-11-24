@@ -21,7 +21,7 @@ PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRE
 
 def home(request):
     ideas = Idea.objects.filter(moderation_status=Idea.ModerationStatus.APPROVED).select_related('commission', 'author').order_by('-created_at')[:6]
-    appeals = Appeal.objects.order_by('-created_at')[:5]
+    appeals = Appeal.objects.filter(visibility=Appeal.Visibility.PUBLIC).order_by('-created_at')[:5]
     events = Event.objects.filter(starts_at__gte=timezone.now()).select_related('created_by', 'source_idea')[:6]
     context = {
         'ideas': ideas,
@@ -29,7 +29,7 @@ def home(request):
         'events': events,
         'stats': {
             'idea_count': Idea.objects.filter(moderation_status=Idea.ModerationStatus.APPROVED).count(),
-            'appeal_count': Appeal.objects.count(),
+            'appeal_count': Appeal.objects.filter(visibility=Appeal.Visibility.PUBLIC).count(),
         },
     }
     return render(request, 'home.html', context)
