@@ -73,3 +73,17 @@ class Event(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+
+class IdeaComment(models.Model):
+    idea = models.ForeignKey(Idea, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='idea_comments')
+    body = models.TextField(max_length=1200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self) -> str:
+        return f'Comment on idea #{self.idea_id} by {self.author_id}'
