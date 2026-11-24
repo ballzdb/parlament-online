@@ -52,6 +52,32 @@
       </section>
     {% endif %}
 
+    {% if idea.moderation_status == 'approved' %}
+      <section class="idea-discussion card" aria-labelledby="idea-discussion-title">
+        <h2 id="idea-discussion-title">Обговорення</h2>
+        {% if user.is_authenticated %}
+          <form method="post" class="form-grid">
+            {% csrf_token %}
+            <label for="idea-comment">Ваш коментар</label>
+            <textarea id="idea-comment" name="body" rows="3" maxlength="1200" required placeholder="Напишіть конструктивний коментар"></textarea>
+            <button class="btn" type="submit" name="comment" value="1">Додати коментар</button>
+          </form>
+        {% else %}
+          <p class="meta">Щоб долучитися до обговорення, <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">увійдіть до облікового запису</a>.</p>
+        {% endif %}
+        <div class="record-list">
+          {% for comment in comments %}
+            <article class="card">
+              <div class="meta">{{ comment.author.display_name|default:'Учень' }} · {{ comment.created_at|date:'d.m.Y H:i' }}</div>
+              <p>{{ comment.body|linebreaksbr }}</p>
+            </article>
+          {% empty %}
+            <p class="meta">Коментарів поки немає. Будьте першим, хто долучиться до обговорення.</p>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
     <div class="detail-actions idea-detail-actions">
       {% if user.is_member and idea.moderation_status == 'approved' %}
         <a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити на подію</a>
