@@ -1,32 +1,42 @@
 {% extends 'base.html' %}
 {% block title %}Події та архів | Парламент.Online{% endblock %}
 {% block content %}
-  <div class="page-heading">
-    <div><p class="eyebrow">ЖИТТЯ ЛІЦЕЮ</p><h1>Події та архів</h1><p class="meta">Майбутні заходи й результати вже проведених ініціатив.</p></div>
-  </div>
-  <section class="home-section">
-    <div class="home-section-heading"><h2>Найближчі події</h2></div>
-    <div class="record-list">
+  <header class="events-heading">
+    <div><p class="eyebrow">ЖИТТЯ ЛІЦЕЮ</p><h1>Події та архів</h1><p class="meta">Заплановані заходи, спільні ініціативи та результати вже проведених подій.</p></div>
+  </header>
+
+  <section class="events-section">
+    <div class="events-section-heading"><div><p class="eyebrow">ПОПЕРЕДУ</p><h2>Найближчі події</h2></div><span class="events-count">{{ upcoming_events|length }} заплановано</span></div>
+    <div class="events-list">
       {% for event in upcoming_events %}
-        <article class="card record-card">
-          <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-          <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;">{% endif %}
-          <p>{{ event.description|truncatewords:35 }}</p>
-          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}</div>
+        <article class="card event-card">
+          <div class="event-date-block"><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M Y' }}</span><span class="event-time">{{ event.starts_at|date:'H:i' }}</span></div>
+          <div class="event-card-content">
+            <div class="meta">ЗАПЛАНОВАНИЙ ЗАХІД</div>
+            <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+            {% if event.description %}<p>{{ event.description|truncatewords:45 }}</p>{% endif %}
+            <div class="event-card-meta"><span>Організатор: {{ event.organiser|default:'Не вказано' }}</span>{% if event.participating_classes %}<span>Класи: {{ event.participating_classes }}</span>{% endif %}</div>
+            <a class="event-more" href="{% url 'ideas:event_detail' event.pk %}">Деталі події →</a>
+          </div>
+          {% if event.image_url %}<img class="event-card-image" src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% endif %}
         </article>
-      {% empty %}<div class="empty-state">Запланованих подій поки немає.</div>{% endfor %}
+      {% empty %}<div class="empty-state"><strong>Подій поки не заплановано</strong><p>Коли з’явиться новий захід, тут буде його дата, опис та організатор.</p></div>{% endfor %}
     </div>
   </section>
-  <section class="home-section">
-    <div class="home-section-heading"><h2>Архів проведених заходів</h2></div>
-    <div class="record-list">
+
+  <section class="events-section archive-section">
+    <div class="events-section-heading"><div><p class="eyebrow">ЩО ВЖЕ ВІДБУЛОСЯ</p><h2>Архів заходів</h2></div><span class="events-count">{{ past_events|length }} у архіві</span></div>
+    <div class="archive-grid">
       {% for event in past_events %}
-        <article class="card record-card">
+        <article class="card archive-card">
           <div class="meta">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
           <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-          <div class="meta">Організатор: {{ event.organiser|default:'Не вказано' }}{% if event.participating_classes %} · Класи: {{ event.participating_classes }}{% endif %}{% if event.participant_count != None %} · Учасників: {{ event.participant_count }}{% endif %}</div>
-          <p>{{ event.outcome|default:event.description|truncatewords:45 }}</p>
+          <p>{{ event.outcome|default:event.description|truncatewords:35 }}</p>
+          <div class="archive-footer">
+            <span class="meta">{{ event.organiser|default:'Учнівське самоврядування' }}</span>
+            {% if event.participant_count != None %}<span class="participant-count">{{ event.participant_count }} учасників</span>{% endif %}
+          </div>
+          <a class="event-more" href="{% url 'ideas:event_detail' event.pk %}">Переглянути підсумок →</a>
         </article>
       {% empty %}<div class="empty-state">Проведених заходів поки немає. Після перших подій вони з’являться тут.</div>{% endfor %}
     </div>
