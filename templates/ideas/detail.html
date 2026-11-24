@@ -37,9 +37,9 @@
         <ol class="moderation-timeline">
           {% for entry in moderation_history %}
             <li>
-              <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }} · {{ entry.verdict.actor_name|default:'Модератор' }}</div>
+              <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }}</div>
               {% if entry.verdict.action == 'assigned' %}
-                <strong>Призначено модератора: {{ entry.verdict.assigned_moderator_name|default:'Модератор' }}</strong>
+                <strong>Призначено відповідального модератора</strong>
               {% elif entry.verdict.action == 'approve' %}
                 <strong>Ідею допущено до публікації</strong>
               {% elif entry.verdict.action == 'reject' %}

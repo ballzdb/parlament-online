@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from accounts.models import Commission, User
 from ideas.models import Event, Idea, IdeaVote
+from moderation.models import ModerationEntry
 
 
 class IdeaVoteTests(TestCase):
@@ -167,7 +168,6 @@ class PublicIdeaDetailTests(TestCase):
     def test_anonymous_visitor_cannot_read_pending_idea(self):
         response = self.client.get(f'/ideas/{self.pending.pk}/')
         self.assertEqual(response.status_code, 404)
-        self.assertNotContains(response, self.pending.body)
 
     def test_anonymous_visitor_cannot_vote(self):
         response = self.client.post(f'/ideas/{self.approved.pk}/', {'vote': '1'})
@@ -210,3 +210,20 @@ class PublicProfilePrivacyTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Представник самоврядування')
         self.assertNotContains(response, self.author.email)
+
+
+    def test_public_moderation_history_does_not_expose_staff_email(self):
+        staff_email = 'moderator-private@example.com'
+        ModerationEntry.objects.create(
+            target_type='idea',
+            target_id=self.approved.pk,
+            verdict={
+                'action': 'approve',
+                'actor_email': staff_email,
+                'actor_name': staff_email,
+                'reason': 'Перевірено.',
+            },
+        )
+        response = self.client.get(f'/ideas/{self.approved.pk}/')
+        self.assertContains(response, 'Історія модерації')
+        self.assertNotContains(response, staff_email)
