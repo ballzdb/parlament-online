@@ -111,6 +111,7 @@
     <div class="analytics-grid" style="margin-bottom:1rem">
       <article class="metric"><span class="metric-label">Усього поданих ідей</span><strong>{{ idea_total }}</strong></article>
       <article class="metric"><span class="metric-label">Усього голосів</span><strong>{{ idea_votes }}</strong></article>
+      <article class="metric"><span class="metric-label">Коментарі до ідей</span><strong>{{ idea_comments }}</strong><span class="metric-detail">{{ idea_comments_30d }} за останні 30 днів</span></article>
       <article class="metric"><span class="metric-label">Середній час до позначення ідеї виконаною</span><strong>{% if average_idea_days != None %}{{ average_idea_days }}{% else %}—{% endif %}</strong><span class="metric-detail">Днів, приблизна оцінка</span></article>
     </div>
     <div class="analytics-table-wrap"><table class="analytics-table">
