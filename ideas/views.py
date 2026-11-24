@@ -107,7 +107,19 @@ def idea_detail(request, pk):
         if request.method == 'POST' and 'status' in request.POST:
             status_form = IdeaStatusForm(request.POST, instance=idea)
             if status_form.is_valid():
-                status_form.save()
+                previous_status = idea.status
+                updated_idea = status_form.save()
+                if previous_status != updated_idea.status:
+                    ModerationEntry.objects.create(
+                        target_type='idea',
+                        target_id=idea.pk,
+                        verdict={
+                            'action': 'status_changed',
+                            'from_status': previous_status,
+                            'to_status': updated_idea.status,
+                            'reason': updated_idea.status_reason,
+                        },
+                    )
                 messages.success(request, 'Статус ідеї оновлено.')
                 return redirect('ideas:detail', pk=idea.pk)
         else:
