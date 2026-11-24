@@ -20,6 +20,24 @@
           <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
           <h2 style="margin:.5rem 0;">{{ idea.title }}</h2>
           <p style="white-space:pre-line;">{{ idea.body }}</p>
+          {% if idea.ai_review %}
+            <div class="message" style="margin:.8rem 0;">
+              <strong>AI screening — advisory only</strong>
+              {% if idea.ai_review.status == 'complete' %}
+                {% if idea.ai_review.flagged %}
+                  <div>Potential concerns: {{ idea.ai_review.categories|join:", " }}</div>
+                  <div>{{ idea.ai_review.explanation }}</div>
+                  <div class="meta">Confidence: {{ idea.ai_review.confidence|floatformat:2 }}</div>
+                {% else %}
+                  <div>No obvious policy concerns detected. Human review is still required.</div>
+                {% endif %}
+              {% elif idea.ai_review.status == 'not_configured' %}
+                <div>AI is not configured. Manual review only.</div>
+              {% else %}
+                <div>AI check unavailable. Manual review only.</div>
+              {% endif %}
+            </div>
+          {% endif %}
           <div class="meta">Відповідальний: {% if idea.assigned_moderator %}{{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email }}{% else %}Не призначено{% endif %}</div>
 
           {% if user.is_secretary %}
