@@ -4,47 +4,80 @@
 
 {% block content %}
   <div class="page-heading">
-    <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Черга модерації</h1><p class="meta">Нові ідеї не публікуються, доки модератор не схвалить їх.</p></div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>{% if user.is_secretary %}<a class="btn secondary" href="{% url 'moderation:sanctions' %}">Тимчасові обмеження</a>{% endif %}<span class="meta">{{ ideas|length }} очікують</span></div>
+    <div><p class="eyebrow">ПЕРЕВІРКА ПРОПОЗИЦІЙ</p><h1>Модерація ідей</h1><p class="meta">Перевіряйте нові пропозиції, публікуйте схвалені та прибирайте ті, що порушують правила.</p></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+      <a class="btn secondary" href="{% url 'moderation:rules' %}">Правила</a>
+      <a class="btn secondary" href="{% url 'moderation:sanctions' %}">Блокування користувачів</a>
+      <span class="meta">{{ ideas|length }} очікують</span>
+    </div>
   </div>
 
-  <div class="record-list">
-    {% for idea in ideas %}
-      <article class="card record-card">
-        <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
-        <h2 style="margin:.5rem 0;">{{ idea.title }}</h2>
-        <p style="white-space:pre-line;">{{ idea.body }}</p>
-        <div class="meta">Відповідальний: {% if idea.assigned_moderator %}{{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email }}{% else %}Не призначено{% endif %}</div>
+  <section class="home-section">
+    <div class="home-section-heading"><h2>Очікують перевірки</h2></div>
+    <div class="record-list">
+      {% for idea in ideas %}
+        <article class="card record-card">
+          <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
+          <h2 style="margin:.5rem 0;">{{ idea.title }}</h2>
+          <p style="white-space:pre-line;">{{ idea.body }}</p>
+          <div class="meta">Відповідальний: {% if idea.assigned_moderator %}{{ idea.assigned_moderator.display_name|default:idea.assigned_moderator.email }}{% else %}Не призначено{% endif %}</div>
 
-        {% if user.is_secretary %}
-          <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="assign">
-            <label for="moderator-{{ idea.pk }}">Призначити модератора</label>
-            <select id="moderator-{{ idea.pk }}" name="moderator" required>
-              <option value="">Оберіть відповідального</option>
-              {% for moderator in moderators %}
-                <option value="{{ moderator.pk }}" {% if idea.assigned_moderator_id == moderator.pk %}selected{% endif %}>{{ moderator.display_name|default:moderator.email }} — {{ moderator.roles_display }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn secondary" type="submit">Призначити</button>
-          </form>
-        {% endif %}
+          {% if user.is_secretary %}
+            <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="assign">
+              <label for="moderator-{{ idea.pk }}">Призначити модератора</label>
+              <select id="moderator-{{ idea.pk }}" name="moderator" required>
+                <option value="">Оберіть відповідального</option>
+                {% for moderator in moderators %}
+                  <option value="{{ moderator.pk }}" {% if idea.assigned_moderator_id == moderator.pk %}selected{% endif %}>{{ moderator.display_name|default:moderator.email }} — {{ moderator.roles_display }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn secondary" type="submit">Призначити</button>
+            </form>
+          {% endif %}
 
-        {% if user.is_moderator or user.is_secretary or idea.assigned_moderator_id == user.pk %}
-          <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
-            {% csrf_token %}
-            <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
-            <textarea id="reason-{{ idea.pk }}" name="reason" rows="2" placeholder="Пояснення рішення для автора"></textarea>
-            <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
-              <button class="btn" name="action" value="approve" type="submit">Допустити до публікації</button>
-              <button class="btn btn-danger" name="action" value="reject" type="submit">Відхилити</button>
-            </div>
-          </form>
-        {% endif %}
-      </article>
-    {% empty %}
-      <div class="empty-state">Усі ідеї перевірено. Нових заявок немає.</div>
-    {% endfor %}
-  </div>
+          {% if user.is_moderator or user.is_secretary or idea.assigned_moderator_id == user.pk %}
+            <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
+              {% csrf_token %}
+              <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
+              <textarea id="reason-{{ idea.pk }}" name="reason" rows="2" placeholder="Пояснення рішення для автора"></textarea>
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+                <button class="btn" name="action" value="approve" type="submit">Дозволити публікацію</button>
+                <button class="btn btn-danger" name="action" value="reject" type="submit">Відхилити</button>
+              </div>
+            </form>
+            <form method="post" action="{% url 'moderation:delete_idea' idea.pk %}" onsubmit="return confirm('Видалити цю ідею без можливості відновлення?');" style="margin-top:.6rem;">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit">Видалити ідею</button>
+            </form>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="empty-state">Нових ідей на перевірку немає.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="home-section-heading"><h2>Опубліковані ідеї</h2><span class="meta">Останні 30</span></div>
+    <div class="record-list">
+      {% for idea in published_ideas %}
+        <article class="card record-card">
+          <div class="meta">{{ idea.created_at|date:'d.m.Y H:i' }} · {{ idea.author.display_name|default:idea.author.email }}{% if idea.commission %} · {{ idea.commission.name }}{% endif %}</div>
+          <h3>{{ idea.title }}</h3>
+          <p style="white-space:pre-line;">{{ idea.body }}</p>
+          <div class="meta">Опубліковано: {{ idea.moderated_at|date:'d.m.Y H:i'|default:'Дата не зазначена' }} · Голосів: {{ idea.vote_count }}</div>
+          {% if user.is_moderator or user.is_secretary or idea.assigned_moderator_id == user.pk %}
+            <form method="post" action="{% url 'moderation:delete_idea' idea.pk %}" onsubmit="return confirm('Видалити опубліковану ідею? Пов’язані голоси також буде видалено.');" style="margin-top:.7rem;">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit">Видалити ідею</button>
+            </form>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="empty-state">Опублікованих ідей поки немає.</div>
+      {% endfor %}
+    </div>
+  </section>
 {% endblock %}
