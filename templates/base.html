@@ -154,7 +154,7 @@
           {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}
             <a href="{% url 'moderation:queue' %}">Модерація</a>
           {% endif %}
-          {% if user.is_authenticated and user.is_secretary %}
+          {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}
             <a href="{% url 'moderation:sanctions' %}">Обмеження</a>
           {% endif %}
           {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}

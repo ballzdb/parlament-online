@@ -179,3 +179,21 @@
  .event-date-block strong { font-size:1.7rem; }
  .event-date-block span { font-size:.64rem; }
 }
+
+/* Idea submission */
+.idea-create-layout { display:grid; grid-template-columns:minmax(240px,.78fr) minmax(0,1.22fr); gap:clamp(1rem,3vw,2.5rem); align-items:start; max-width:1080px; margin:0 auto; }
+.idea-create-intro { padding:.3rem 0; }
+.idea-create-intro .detail-breadcrumb { display:inline-block; margin-bottom:2.1rem; }
+.idea-create-intro h1 { margin:.25rem 0 .8rem; font-size:clamp(2.2rem,4vw,3.3rem); }
+.idea-create-lead { color:#586b83; font-size:1.03rem; line-height:1.8; }
+.submission-guide { margin:1.6rem 0; padding:1.2rem; border:1px solid var(--border); border-radius:15px; background:rgba(255,255,255,.72); }
+.submission-guide h2 { margin:0 0 .7rem; font-size:1.05rem; }
+.submission-guide ul { margin:0; padding-left:1.2rem; color:var(--muted); }
+.submission-guide li { margin:.55rem 0; line-height:1.6; }
+.submission-guide strong { color:var(--text); }
+.submission-note { padding:1rem 1.1rem; border-left:3px solid #3979bd; border-radius:0 12px 12px 0; background:#eaf2fb; }
+.submission-note p { margin:.35rem 0 0; color:#526982; font-size:.9rem; line-height:1.65; }
+.idea-create-card { max-width:none; margin:0; }
+.idea-create-card h2 { margin:0 0 .4rem; }
+.idea-create-card .form-grid { margin-top:1.2rem; }
+@media(max-width:780px) { .idea-create-layout { grid-template-columns:1fr; } .idea-create-intro .detail-breadcrumb { margin-bottom:1.2rem; } }

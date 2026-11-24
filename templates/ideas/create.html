@@ -1,21 +1,38 @@
 {% extends 'base.html' %}
-
-{% block title %}Нова ідея{% endblock %}
-
+{% block title %}Подати ідею | Парламент.Online{% endblock %}
 {% block content %}
-  <div class="card form-card">
-    <h1>Подати ідею</h1>
-    <form method="post" class="form-grid">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
-        </div>
-      {% endfor %}
-      <button type="submit" class="btn">Подати ідею</button>
-    </form>
+  <div class="idea-create-layout">
+    <section class="idea-create-intro">
+      <a class="detail-breadcrumb" href="{% url 'ideas:list' %}">← Повернутися до ідей</a>
+      <p class="eyebrow">ТВОЯ ІНІЦІАТИВА</p>
+      <h1>Запропонуй зміну</h1>
+      <p class="idea-create-lead">Опиши, що можна покращити в житті ліцею. Чітка пропозиція допоможе парламенту зрозуміти проблему й оцінити наступні кроки.</p>
+      <div class="submission-guide">
+        <h2>Як підготувати сильну ідею</h2>
+        <ul>
+          <li><strong>Проблема.</strong> Що саме зараз не працює або чого бракує?</li>
+          <li><strong>Рішення.</strong> Що конкретно ти пропонуєш зробити?</li>
+          <li><strong>Користь.</strong> Кому й чим це допоможе?</li>
+        </ul>
+      </div>
+      <div class="submission-note"><strong>Що буде далі?</strong><p>Після надсилання ідея потрапить на модерацію. Якщо її схвалять, вона з’явиться в каталозі, де інші учні зможуть її підтримати.</p></div>
+    </section>
+    <section class="card form-card idea-create-card">
+      <h2>Нова пропозиція</h2>
+      <p class="meta">Заповни обов’язкові поля. Не додавай приватні дані інших людей.</p>
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+            {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn">Надіслати на модерацію</button>
+      </form>
+    </section>
   </div>
 {% endblock %}
