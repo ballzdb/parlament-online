@@ -39,7 +39,7 @@
             <li>
               <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }}</div>
               {% if entry.verdict.action == 'assigned' %}
-                <strong>Призначено відповідального модератора</strong>
+                <strong>Призначено модератора</strong>
               {% elif entry.verdict.action == 'approve' %}
                 <strong>Ідею допущено до публікації</strong>
               {% elif entry.verdict.action == 'reject' %}
