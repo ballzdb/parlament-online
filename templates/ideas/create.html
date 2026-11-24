@@ -20,7 +20,8 @@
     <section class="card form-card idea-create-card">
       <h2>Нова пропозиція</h2>
       <p class="meta">Заповни обов’язкові поля. Не додавай приватні дані інших людей.</p>
-      <form method="post" class="form-grid">
+    
+  <p class="meta" role="note">Автоматична перевірка, якщо її ввімкнено, передає лише назву й опис ідеї зовнішньому сервісу Google Gemini. Не додавайте до тексту персональні або чутливі дані. AI-перевірка є допоміжною; рішення ухвалює людина.</p>\n  <form method="post" class="form-grid">
         {% csrf_token %}
         {{ form.non_field_errors }}
         {% for field in form %}
