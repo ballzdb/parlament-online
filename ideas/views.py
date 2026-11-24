@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.db import IntegrityError, transaction
 from django.db.models import F, Q
 from django.http import Http404, HttpResponseNotAllowed
@@ -89,14 +90,13 @@ def idea_create(request):
     return render(request, 'ideas/create.html', {'form': form})
 
 
-@login_required
 def idea_detail(request, pk):
     idea = get_object_or_404(Idea.objects.select_related('author', 'commission', 'assigned_moderator'), pk=pk)
-    is_parliamentarian = request.user.has_role(*PARLIAMENT_ROLES)
+    is_parliamentarian = request.user.is_authenticated and request.user.has_role(*PARLIAMENT_ROLES)
     if idea.moderation_status != Idea.ModerationStatus.APPROVED and idea.author_id != request.user.pk and not is_parliamentarian:
         raise Http404
 
-    has_voted = IdeaVote.objects.filter(idea=idea, user=request.user).exists()
+    has_voted = request.user.is_authenticated and IdeaVote.objects.filter(idea=idea, user=request.user).exists()
     moderation_history = ModerationEntry.objects.filter(target_type='idea', target_id=idea.pk).order_by('created_at')
     status_form = None
     if is_parliamentarian and idea.moderation_status == Idea.ModerationStatus.APPROVED:
@@ -110,6 +110,8 @@ def idea_detail(request, pk):
             status_form = IdeaStatusForm(instance=idea)
 
     if request.method == 'POST' and 'vote' in request.POST:
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
         if request.user.is_temporarily_restricted:
             messages.error(request, f'Голосування тимчасово обмежено до {timezone.localtime(request.user.restricted_until):%d.%m.%Y %H:%M}. Причина: {request.user.restriction_reason}')
         elif idea.moderation_status != Idea.ModerationStatus.APPROVED:

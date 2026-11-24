@@ -136,3 +136,43 @@ class IdeaDeletionTests(TestCase):
         response = self.client.get(f'/ideas/{self.idea.pk}/delete/')
         self.assertEqual(response.status_code, 405)
         self.assertTrue(Idea.objects.filter(pk=self.idea.pk).exists())
+
+
+class PublicIdeaDetailTests(TestCase):
+    def setUp(self):
+        self.author = User.objects.create_user(
+            email='public-detail-author@example.com',
+            password='Password123',
+            is_active=True,
+        )
+        self.approved = Idea.objects.create(
+            title='Відкрита учнівська ініціатива',
+            body='Опис, доступний усім відвідувачам.',
+            author=self.author,
+            moderation_status=Idea.ModerationStatus.APPROVED,
+        )
+        self.pending = Idea.objects.create(
+            title='Приватна ідея на модерації',
+            body='Цей текст не має бути публічним.',
+            author=self.author,
+            moderation_status=Idea.ModerationStatus.PENDING,
+        )
+
+    def test_anonymous_visitor_can_read_published_idea(self):
+        response = self.client.get(f'/ideas/{self.approved.pk}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.approved.title)
+        self.assertContains(response, 'увійдіть до облікового запису')
+
+    def test_anonymous_visitor_cannot_read_pending_idea(self):
+        response = self.client.get(f'/ideas/{self.pending.pk}/')
+        self.assertEqual(response.status_code, 404)
+        self.assertNotContains(response, self.pending.body)
+
+    def test_anonymous_visitor_cannot_vote(self):
+        response = self.client.post(f'/ideas/{self.approved.pk}/', {'vote': '1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+        self.approved.refresh_from_db()
+        self.assertEqual(self.approved.vote_count, 0)
+        self.assertFalse(IdeaVote.objects.filter(idea=self.approved).exists())

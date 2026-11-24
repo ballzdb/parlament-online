@@ -60,13 +60,17 @@
         </form>
       {% endif %}
       {% if idea.moderation_status == 'approved' %}
-        {% if not has_voted %}
-          {% if user.is_temporarily_restricted %}
-            <p class="meta">Голосування для вашого облікового запису тимчасово обмежено.</p>
-          {% else %}
-            <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати ідею</button></form>
-          {% endif %}
-        {% else %}<p class="meta vote-confirmation">✓ Ви вже підтримали цю ідею.</p>{% endif %}
+        {% if user.is_authenticated %}
+          {% if not has_voted %}
+            {% if user.is_temporarily_restricted %}
+              <p class="meta">Голосування для вашого облікового запису тимчасово обмежено.</p>
+            {% else %}
+              <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати ідею</button></form>
+            {% endif %}
+          {% else %}<p class="meta vote-confirmation">✓ Ви вже підтримали цю ідею.</p>{% endif %}
+        {% else %}
+          <p class="meta">Щоб підтримати цю ідею, <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">увійдіть до облікового запису</a>.</p>
+        {% endif %}
       {% endif %}
     </div>
   </article>
