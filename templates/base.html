@@ -51,6 +51,9 @@
       .nav-links { display: flex; gap: .85rem; flex-wrap: wrap; align-items: center; }
       .nav-links a { color: white; opacity: .92; font-size: .94rem; }
       .nav-links a:hover { opacity: 1; text-decoration: none; }
+      .logout-form { display:inline-flex; align-items:center; margin:0; }
+      .nav-logout { border:0; padding:0; background:transparent; color:white; font:inherit; cursor:pointer; opacity:.92; }
+      .nav-logout:hover { opacity:1; text-decoration:underline; }
       .container { max-width: 1160px; margin: 0 auto; padding: 2.2rem 1rem 3.5rem; }
       h1, h2, h3 { line-height: 1.2; letter-spacing: -.025em; }
       h1 { font-size: clamp(2rem, 4vw, 3rem); margin-top: 0; }
@@ -166,7 +169,10 @@
             {% if user.is_secretary %}
               <a href="{% url 'accounts:reset_request' %}">Скинути пароль учня</a>
             {% endif %}
-            <a href="{% url 'accounts:logout' %}">Вийти</a>
+            <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button type="submit" class="nav-logout">Вийти</button>
+            </form>
           {% else %}
             <a href="{% url 'accounts:login' %}">Увійти</a>
             <a href="{% url 'accounts:register' %}">Реєстрація</a>

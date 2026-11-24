@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from app.permissions import requires_roles
 
@@ -146,6 +147,7 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'form': form, 'login_error_reason': login_error_reason})
 
 
+@require_POST
 def logout_view(request):
     logout(request)
     messages.info(request, 'Ви вийшли з облікового запису.')

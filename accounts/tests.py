@@ -321,3 +321,24 @@ class RoleManagementTests(TestCase):
         self.assertFalse(self.student.is_staff)
         self.assertFalse(self.student.is_superuser)
         self.assertTrue(AuditLog.objects.filter(action='role_changed', user=self.student).exists())
+
+
+class LogoutMethodTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='logout-user@khul.ukr.education',
+            password='Password123',
+            is_active=True,
+        )
+
+    def test_logout_rejects_get_requests(self):
+        self.client.force_login(self.user)
+        response = self.client.get('/accounts/logout/')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(self.client.get('/accounts/profile/').status_code, 200)
+
+    def test_logout_uses_post_and_ends_the_session(self):
+        self.client.force_login(self.user)
+        response = self.client.post('/accounts/logout/')
+        self.assertRedirects(response, '/')
+        self.assertEqual(self.client.get('/accounts/profile/').status_code, 302)
