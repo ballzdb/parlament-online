@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Тимчасові обмеження | Парламент.Online{% endblock %}
+{% block title %}Блокування користувачів | Парламент.Online{% endblock %}
 {% block content %}
   <div class="page-heading">
-    <div><p class="eyebrow">ІНСТРУМЕНТИ СЕКРЕТАРЯ</p><h1>Тимчасові обмеження</h1><p class="meta">Обмеження стосується подання нових ідей та голосування. Доступ до перегляду платформи й подання апеляції зберігається.</p></div>
-    <a class="btn secondary" href="{% url 'moderation:rules' %}">Правила спільноти</a>
+    <div><p class="eyebrow">ІНСТРУМЕНТИ МОДЕРАЦІЇ</p><h1>Тимчасові блокування</h1><p class="meta">Блокування забороняє подавати нові ідеї та голосувати до вказаного часу. Перегляд платформи й подання апеляції залишаються доступними.</p></div>
+    <a class="btn secondary" href="{% url 'moderation:queue' %}">До модерації ідей</a>
   </div>
   <section class="card form-card">
-    <h2>Застосувати обмеження</h2>
+    <h2>Заблокувати користувача</h2>
     <form method="post" class="form-grid">
       {% csrf_token %}
       {% for field in form %}
         <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
       {% endfor %}
-      <button class="btn" type="submit">Застосувати до вказаного часу</button>
+      <button class="btn btn-danger" type="submit">Застосувати блокування</button>
     </form>
   </section>
   <section class="home-section">
-    <div class="home-section-heading"><h2>Активні обмеження</h2></div>
+    <div class="home-section-heading"><h2>Активні блокування</h2></div>
     <div class="record-list">
       {% for student in active_restrictions %}
         <article class="card record-card">
@@ -24,11 +24,11 @@
           <div class="meta">{{ student.email }} · До {{ student.restricted_until|date:'d.m.Y H:i' }}</div>
           <p>{{ student.restriction_reason }}</p>
           <div class="meta">Рішення ухвалив: {% if student.restricted_by %}{{ student.restricted_by.display_name|default:student.restricted_by.email }}{% else %}Не зазначено{% endif %}</div>
-          <form method="post" action="{% url 'moderation:clear_sanction' student.pk %}" onsubmit="return confirm('Достроково зняти обмеження?');" style="margin-top:.8rem;">
-            {% csrf_token %}<button class="btn secondary" type="submit">Зняти обмеження</button>
+          <form method="post" action="{% url 'moderation:clear_sanction' student.pk %}" onsubmit="return confirm('Достроково зняти блокування?');" style="margin-top:.8rem;">
+            {% csrf_token %}<button class="btn secondary" type="submit">Зняти блокування</button>
           </form>
         </article>
-      {% empty %}<div class="empty-state">Активних тимчасових обмежень немає.</div>{% endfor %}
+      {% empty %}<div class="empty-state">Активних блокувань немає.</div>{% endfor %}
     </div>
   </section>
 {% endblock %}
