@@ -13,7 +13,7 @@ from django.utils import timezone
 from accounts.models import AuditLog, Commission, PRIMARY_ADMIN_EMAIL, User
 from appeals.models import Appeal
 from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
-from .models import Event, Idea, IdeaVote
+from .models import Event, Idea, IdeaComment, IdeaVote
 from moderation.models import ModerationEntry
 from moderation.ai import review_idea
 
@@ -132,12 +132,27 @@ def idea_detail(request, pk):
                 messages.error(request, 'Ви вже голосували за цю ідею.')
         return redirect('ideas:detail', pk=idea.pk)
 
+    if request.method == 'POST' and 'comment' in request.POST:
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
+        if idea.moderation_status != Idea.ModerationStatus.APPROVED:
+            raise Http404
+        body = request.POST.get('body', '').strip()
+        if not body or len(body) > 1200:
+            messages.error(request, 'Коментар має містити від 1 до 1200 символів.')
+        else:
+            IdeaComment.objects.create(idea=idea, author=request.user, body=body)
+            messages.success(request, 'Коментар додано.')
+        return redirect('ideas:detail', pk=idea.pk)
+
+    comments = IdeaComment.objects.filter(idea=idea).select_related('author')
     return render(request, 'ideas/detail.html', {
         'idea': idea,
         'has_voted': has_voted,
         'status_form': status_form,
         'is_parliamentarian': is_parliamentarian,
         'moderation_history': moderation_history,
+        'comments': comments,
     })
 
 
