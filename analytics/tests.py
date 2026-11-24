@@ -1,7 +1,9 @@
+import csv
 from django.test import TestCase
 
 from accounts.models import PRIMARY_ADMIN_EMAIL, User
 from analytics.models import PageView
+from ideas.models import Idea
 
 
 class AnalyticsDashboardTests(TestCase):
@@ -43,3 +45,16 @@ class AnalyticsDashboardTests(TestCase):
         response = self.client.get('/analytics/export.csv')
         self.assertEqual(response.status_code, 200)
         self.assertIn('text/csv', response['Content-Type'])
+
+    def test_csv_export_neutralises_spreadsheet_formulas_in_user_content(self):
+        malicious_title = '=HYPERLINK("https://example.com","click")'
+        Idea.objects.create(
+            title=malicious_title,
+            body='Test idea',
+            author=self.admin,
+        )
+        self.client.force_login(self.admin)
+        response = self.client.get('/analytics/export.csv')
+        rows = list(csv.reader(response.content.decode('utf-8-sig').splitlines()))
+        idea_row = next(row for row in rows if row[0] == 'idea')
+        self.assertEqual(idea_row[2], "'" + malicious_title)
