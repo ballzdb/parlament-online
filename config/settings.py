@@ -9,7 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes'}
+DEBUG = os.getenv('DEBUG', 'False').lower() in {'1', 'true', 'yes'}
 SECRET_KEY = os.getenv('SECRET_KEY', '').strip()
 if not SECRET_KEY:
     if DEBUG:
@@ -107,6 +107,8 @@ STORAGES = {
 
 ALLOWED_EMAIL_DOMAIN = os.getenv('ALLOWED_EMAIL_DOMAIN', 'khul.ukr.education')
 ENV = os.getenv('ENV', 'dev').strip().lower()
+if ENV == 'prod' and DEBUG:
+    raise ImproperlyConfigured('DEBUG must be False when ENV=prod.')
 TOTAL_STUDENTS = int(os.getenv('TOTAL_STUDENTS', '0'))
 
 if ENV == 'prod' and not DEBUG:
