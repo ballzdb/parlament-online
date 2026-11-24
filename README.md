@@ -8,6 +8,8 @@
 - подання учнівських ідей;
 - пошук, сортування та посторінкова навігація в каталозі ідей;
 - модерація ідей: схвалення або відхилення з фіксацією рішення;
+- перемикач української та англійської мов інтерфейсу;
+- необов’язкова AI-перевірка ідей на можливі порушення з обов’язковим рішенням людини;
 - видалення ідей уповноваженими модераторами та парламентарями;
 - тимчасові обмеження для облікових записів із журналюванням дій;
 - голосування за опубліковані ідеї;
@@ -84,6 +86,12 @@ python manage.py runserver
 ```
 
 Без `DATABASE_URL` локальний запуск використовує SQLite. Якщо `DATABASE_URL` задано, застосунок підключається до PostgreSQL.
+
+## English interface and AI screening
+
+The shared interface includes a Ukrainian/English language switch. English translations are being expanded page by page; some user-generated content and less common screens may remain in Ukrainian until translated.
+
+Optional idea screening uses the Gemini API. Set `GEMINI_API_KEY` in `.env` locally or in the Render service environment to enable it. `GEMINI_MODEL` can override the model name. Without a key, or if the provider is unavailable, ideas are still submitted and remain in the ordinary human moderation queue. AI results are advisory only and never publish or reject an idea automatically. Provider free-tier quotas and availability can change; check Google's current Gemini API pricing and limits before relying on it.
 
 ## Команди адміністрування
 
