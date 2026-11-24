@@ -1,28 +1,42 @@
 {% extends 'base.html' %}
 {% block title %}{{ idea.title }} | Парламент.Online{% endblock %}
 {% block content %}
-  <article class="card detail-card">
+  <div class="detail-breadcrumb"><a href="{% url 'ideas:list' %}">← До каталогу ідей</a></div>
+  <article class="card detail-card idea-detail-card">
+    <div class="idea-record-topline">
+      {% if idea.moderation_status == 'approved' %}<span class="status-pill status-approved">Опубліковано</span>
+      {% elif idea.moderation_status == 'pending' %}<span class="status-pill status-pending">Очікує модерації</span>
+      {% else %}<span class="status-pill status-rejected">Відхилено</span>{% endif %}
+      {% if idea.commission %}<span class="meta">{{ idea.commission.name }}</span>{% endif %}
+    </div>
     <h1>{{ idea.title }}</h1>
-    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
+    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} <span aria-hidden="true">·</span> Подано {{ idea.created_at|date:'d.m.Y о H:i' }}</div>
+
     {% if idea.moderation_status == 'pending' %}
-      <div class="message">Ця ідея ще проходить модерацію. Її бачить автор і уповноважені представники самоврядування.</div>
+      <div class="message detail-notice"><strong>Ідея проходить перевірку.</strong><br>Після рішення модератора вона стане доступною в загальному каталозі. Поки що її бачить автор і уповноважені представники самоврядування.</div>
     {% elif idea.moderation_status == 'rejected' %}
-      <div class="message">Ідею не допущено до публікації. Причина: {{ idea.moderation_reason|default:'Не вказана' }}</div>
+      <div class="message detail-notice"><strong>Ідею не допущено до публікації.</strong><br>Причина: {{ idea.moderation_reason|default:'Не вказана' }}</div>
       {% if user.pk == idea.author_id %}<p><a class="btn" href="{% url 'appeals:create' %}?idea={{ idea.pk }}">Оскаржити рішення</a></p>{% endif %}
     {% endif %}
-    <p style="white-space:pre-line;">{{ idea.body }}</p>
-    <div class="idea-facts">
-      <div><span>Комісія</span><strong>{{ idea.commission|default:'—' }}</strong></div>
-      <div><span>Поточний статус</span><strong>{{ idea.get_status_display }}</strong></div>
-      <div><span>Підтримка учнів</span><strong>{{ idea.vote_count }}</strong></div>
-    </div>
-    {% if idea.completion_report %}<h3>Публічний звіт</h3><p>{{ idea.completion_report }}</p>{% endif %}
+
+    <section class="idea-description"><h2>Суть пропозиції</h2><p>{{ idea.body }}</p></section>
+
+    <section class="idea-facts" aria-label="Інформація про ідею">
+      <div><span>Комісія</span><strong>{{ idea.commission|default:'Не визначено' }}</strong></div>
+      <div><span>Статус виконання</span><strong>{{ idea.get_status_display }}</strong></div>
+      <div><span>Підтримка учнів</span><strong>{{ idea.vote_count }} голосів</strong></div>
+    </section>
+
+    {% if idea.completion_report %}
+      <section class="completion-report"><p class="eyebrow">РЕЗУЛЬТАТ</p><h2>Звіт про виконання</h2><p>{{ idea.completion_report }}</p></section>
+    {% endif %}
+
     {% if moderation_history %}
-      <section class="moderation-history" style="margin-top:1.5rem;">
-        <h2>Історія модерації</h2>
-        <ol class="record-list">
+      <section class="moderation-history">
+        <p class="eyebrow">ПРОЗОРІСТЬ РІШЕНЬ</p><h2>Історія модерації</h2>
+        <ol class="moderation-timeline">
           {% for entry in moderation_history %}
-            <li class="card record-card">
+            <li>
               <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }} · {{ entry.verdict.actor_name|default:entry.verdict.actor_email }}</div>
               {% if entry.verdict.action == 'assigned' %}
                 <strong>Призначено модератора: {{ entry.verdict.assigned_moderator_name|default:entry.verdict.assigned_moderator_email }}</strong>
@@ -37,30 +51,37 @@
         </ol>
       </section>
     {% endif %}
-    <div class="detail-actions">
+
+    <div class="detail-actions idea-detail-actions">
       {% if user.is_member and idea.moderation_status == 'approved' %}
-        <a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити ідею на подію</a>
+        <a class="btn" href="{% url 'ideas:event_create' idea.pk %}">Перетворити на подію</a>
         <form method="post" action="{% url 'ideas:delete' idea.pk %}" onsubmit="return confirm('Ви впевнені, що хочете остаточно видалити цю ідею?');">
           {% csrf_token %}<button type="submit" class="btn btn-danger">Видалити ідею</button>
         </form>
       {% endif %}
       {% if idea.moderation_status == 'approved' %}
         {% if not has_voted %}
-          <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати</button></form>
-        {% else %}<p class="meta">Ви вже підтримали цю ідею.</p>{% endif %}
+          {% if user.is_temporarily_restricted %}
+            <p class="meta">Голосування для вашого облікового запису тимчасово обмежено.</p>
+          {% else %}
+            <form method="post">{% csrf_token %}<input type="hidden" name="vote" value="1"><button type="submit" class="btn">Підтримати ідею</button></form>
+          {% endif %}
+        {% else %}<p class="meta vote-confirmation">✓ Ви вже підтримали цю ідею.</p>{% endif %}
       {% endif %}
     </div>
   </article>
+
   {% if status_form %}
-    <div class="card">
-      <h2>Змінити статус виконання</h2>
+    <section class="card status-editor">
+      <p class="eyebrow">РОБОТА НАД ІДЕЄЮ</p><h2>Оновити статус виконання</h2>
+      <p class="meta">Зміна статусу допомагає учням бачити, що відбувається з пропозицією після публікації.</p>
       <form method="post" class="form-grid">
         {% csrf_token %}
         {% for field in status_form %}
           <div><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}</div>
         {% endfor %}
-        <button type="submit" class="btn">Зберегти</button>
+        <button type="submit" class="btn">Зберегти статус</button>
       </form>
-    </div>
+    </section>
   {% endif %}
 {% endblock %}

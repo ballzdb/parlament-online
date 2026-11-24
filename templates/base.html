@@ -132,9 +132,12 @@
         *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
       }
     </style>
+      <meta name="theme-color" content="#102b4c">
+    <link rel="stylesheet" href="{% get_static_prefix %}css/site.css">
   </head>
   <body>
-    <nav>
+    <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
+    <nav class="site-nav" aria-label="Головна навігація">
       <div class="nav-inner">
         <div class="brand">Парламент.Online</div>
 <div class="nav-links">
@@ -151,7 +154,7 @@
           {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}
             <a href="{% url 'moderation:queue' %}">Модерація</a>
           {% endif %}
-          {% if user.is_authenticated and user.is_secretary %}
+          {% if user.is_authenticated and user.is_moderator or user.is_authenticated and user.is_secretary or user.is_authenticated and user.is_commission_head %}
             <a href="{% url 'moderation:sanctions' %}">Обмеження</a>
           {% endif %}
           {% if user.is_authenticated and user.email|lower == "ye74@khul.ukr.education" %}
@@ -171,7 +174,7 @@
         </div>
       </div>
     </nav>
-    <main class="container">
+    <main class="container" id="main-content">
       {% if messages %}
         {% for message in messages %}
           <div class="message">{{ message }}</div>

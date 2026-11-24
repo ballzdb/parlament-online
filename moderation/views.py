@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -37,18 +38,29 @@ def record_moderation_event(idea, actor, action, reason='', assigned_moderator=N
     )
 
 
+def can_moderate_idea(user, idea):
+    """Global moderators and secretaries can manage all ideas; commission heads only assigned ones."""
+    if user.has_role(User.Role.SECRETARY, User.Role.MODERATOR):
+        return True
+    return user.has_role(User.Role.COMMISSION_HEAD) and idea.assigned_moderator_id == user.pk
+
+
 @login_required
 @requires_roles(*MODERATOR_ROLES)
 def moderation_queue(request):
     pending_ideas = Idea.objects.filter(
         moderation_status=Idea.ModerationStatus.PENDING
     ).select_related('author', 'commission', 'assigned_moderator').order_by('created_at')
+    published_ideas = Idea.objects.filter(
+        moderation_status=Idea.ModerationStatus.APPROVED
+    ).select_related('author', 'commission', 'assigned_moderator').order_by('-moderated_at', '-created_at')[:30]
     moderators = [
         user for user in User.objects.filter(is_active=True).order_by('display_name', 'email')
         if user.has_role(*MODERATOR_ROLES)
     ]
     return render(request, 'moderation/queue.html', {
         'ideas': pending_ideas,
+        'published_ideas': published_ideas,
         'moderators': moderators,
     })
 
@@ -77,7 +89,7 @@ def moderate_idea(request, pk):
         )
         messages.success(request, 'Відповідального модератора призначено.')
     elif action in {'approve', 'reject'}:
-        if not is_secretary and not request.user.has_role(User.Role.MODERATOR) and idea.assigned_moderator_id != request.user.pk:
+        if not can_moderate_idea(request.user, idea):
             raise PermissionDenied
         reason = request.POST.get('reason', '').strip()
         if action == 'reject' and not reason:
@@ -90,10 +102,7 @@ def moderate_idea(request, pk):
         idea.moderation_reason = reason
         idea.moderated_by = request.user
         idea.moderated_at = timezone.now()
-        if action == 'approve':
-            idea.status = Idea.Status.SUBMITTED
-        else:
-            idea.status = Idea.Status.REJECTED
+        idea.status = Idea.Status.SUBMITTED if action == 'approve' else Idea.Status.REJECTED
         idea.save(update_fields=[
             'moderation_status', 'moderation_reason', 'moderated_by',
             'moderated_at', 'status', 'updated_at',
@@ -111,7 +120,31 @@ def moderate_idea(request, pk):
 
 
 @login_required
-@requires_roles(User.Role.SECRETARY)
+@require_POST
+@requires_roles(*MODERATOR_ROLES)
+def delete_idea(request, pk):
+    idea = get_object_or_404(Idea, pk=pk)
+    if not can_moderate_idea(request.user, idea):
+        raise PermissionDenied
+
+    title = idea.title
+    idea_id = idea.pk
+    with transaction.atomic():
+        record_moderation_event(idea, request.user, 'deleted', reason='Видалено модератором.')
+        AuditLog.objects.create(
+            action='idea_deleted_by_moderator',
+            user=request.user,
+            email=request.user.email,
+            details=f'Idea #{idea_id} "{title}" deleted by {request.user.email}',
+        )
+        idea.delete()
+
+    messages.success(request, 'Ідею видалено.')
+    return redirect('moderation:queue')
+
+
+@login_required
+@requires_roles(*MODERATOR_ROLES)
 def sanctions(request):
     if request.method == 'POST':
         form = TemporaryRestrictionForm(request.POST)
@@ -143,7 +176,7 @@ def sanctions(request):
 
 @login_required
 @require_POST
-@requires_roles(User.Role.SECRETARY)
+@requires_roles(*MODERATOR_ROLES)
 def clear_sanction(request, pk):
     student = get_object_or_404(User, pk=pk)
     student.restricted_until = None

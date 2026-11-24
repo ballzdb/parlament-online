@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import F, Q
@@ -35,16 +36,37 @@ def home(request):
 
 
 def idea_list(request):
-    ideas = Idea.objects.select_related('commission', 'author').order_by('-vote_count', '-created_at')
+    ideas = Idea.objects.select_related('commission', 'author')
     if not request.user.is_authenticated:
         ideas = ideas.filter(moderation_status=Idea.ModerationStatus.APPROVED)
-    elif request.user.has_role(*PARLIAMENT_ROLES):
-        pass
-    else:
+    elif not request.user.has_role(*PARLIAMENT_ROLES):
         ideas = ideas.filter(
             Q(moderation_status=Idea.ModerationStatus.APPROVED) | Q(author=request.user)
         )
-    return render(request, 'ideas/list.html', {'ideas': ideas})
+
+    query = request.GET.get('q', '').strip()[:100]
+    if query:
+        ideas = ideas.filter(Q(title__icontains=query) | Q(body__icontains=query))
+
+    sort = request.GET.get('sort', 'popular')
+    ordering = {
+        'popular': ('-vote_count', '-created_at'),
+        'newest': ('-created_at',),
+        'oldest': ('created_at',),
+    }
+    if sort not in ordering:
+        sort = 'popular'
+    ideas = ideas.order_by(*ordering[sort])
+
+    paginator = Paginator(ideas, 9)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'ideas/list.html', {
+        'ideas': page_obj.object_list,
+        'page_obj': page_obj,
+        'query': query,
+        'sort': sort,
+        'result_count': paginator.count,
+    })
 
 
 @login_required
