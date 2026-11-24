@@ -22,6 +22,13 @@ def _admin_only(request):
         raise PermissionDenied
 
 
+def _safe_csv_cell(value):
+    """Prevent spreadsheet formula execution for untrusted text in CSV exports."""
+    if isinstance(value, str) and value.lstrip(' \t\r\n').startswith(('=', '+', '-', '@')):
+        return "'" + value
+    return value
+
+
 @login_required
 def dashboard(request):
     _admin_only(request)
@@ -96,15 +103,19 @@ def export_csv(request):
     response['Content-Disposition'] = 'attachment; filename="parlament-online-research-data.csv"'
     response.write('\ufeff')
     writer = csv.writer(response)
-    writer.writerow(['record_type', 'timestamp', 'path_or_category', 'metric_or_status', 'value'])
+
+    def write_row(values):
+        writer.writerow([_safe_csv_cell(value) for value in values])
+
+    write_row(['record_type', 'timestamp', 'path_or_category', 'metric_or_status', 'value'])
     for item in PageView.objects.order_by('timestamp').iterator():
-        writer.writerow(['page_view', item.timestamp.isoformat(), item.path, 'logged_in' if item.user_id else 'anonymous', 1])
+        write_row(['page_view', item.timestamp.isoformat(), item.path, 'logged_in' if item.user_id else 'anonymous', 1])
     for item in EventLog.objects.order_by('timestamp').iterator():
-        writer.writerow(['event', item.timestamp.isoformat(), item.related_object, item.action, 1])
+        write_row(['event', item.timestamp.isoformat(), item.related_object, item.action, 1])
     for item in Idea.objects.order_by('created_at').iterator():
-        writer.writerow(['idea', item.created_at.isoformat(), item.title, item.status, item.vote_count])
+        write_row(['idea', item.created_at.isoformat(), item.title, item.status, item.vote_count])
     for item in Appeal.objects.order_by('created_at').iterator():
-        writer.writerow(['appeal', item.created_at.isoformat(), item.kind, item.status, 1])
+        write_row(['appeal', item.created_at.isoformat(), item.kind, item.status, 1])
     for item in IdeaVote.objects.order_by('created_at').iterator():
-        writer.writerow(['vote', item.created_at.isoformat(), 'idea:' + str(item.idea_id), 'vote', 1])
+        write_row(['vote', item.created_at.isoformat(), 'idea:' + str(item.idea_id), 'vote', 1])
     return response
