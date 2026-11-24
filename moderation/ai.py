@@ -15,7 +15,7 @@ def review_idea(title: str, body: str) -> dict:
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite").strip()
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        f"?key={api_key}"
+
     )
     prompt = f"""You are a cautious assistant screening proposals for a school student parliament.
 Review the text for: targeted harassment or bullying, threats or encouragement of violence,
@@ -33,7 +33,7 @@ Title: {title[:120]}\nBody: {body[:2000]}"""
     request = urllib.request.Request(
         endpoint,
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
         method="POST",
     )
     try:
