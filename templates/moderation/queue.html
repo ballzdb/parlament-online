@@ -31,8 +31,10 @@
                 {% else %}
                   <div>No obvious policy concerns detected. Human review is still required.</div>
                 {% endif %}
+              {% elif idea.ai_review.status == 'disabled' %}
+                <div>AI screening is disabled. Manual review only.</div>
               {% elif idea.ai_review.status == 'not_configured' %}
-                <div>AI is not configured. Manual review only.</div>
+                <div>AI is enabled but no API key is configured. Manual review only.</div>
               {% else %}
                 <div>AI check unavailable. Manual review only.</div>
               {% endif %}
