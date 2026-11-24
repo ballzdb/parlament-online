@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -108,6 +109,17 @@ def moderate_idea(request, pk):
             'moderated_at', 'status', 'updated_at',
         ])
         record_moderation_event(idea, request.user, action, reason=reason)
+        decision_text = 'опубліковано' if action == 'approve' else 'відхилено'
+        send_mail(
+            subject=f'Оновлення вашої ідеї: {idea.title[:80]}',
+            message=(
+                f'Вашу ідею «{idea.title}» {decision_text}.\\n'
+                + (f'Коментар модератора: {reason}' if reason else 'Додатковий коментар не надано.')
+            ),
+            from_email=None,
+            recipient_list=[idea.author.email],
+            fail_silently=True,
+        )
         AuditLog.objects.create(
             action=f'idea_moderation_{action}', user=request.user, email=request.user.email,
             details=f'Idea #{idea.pk}: {action}; reason={reason}',

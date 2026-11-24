@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-language-switcher="true">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -137,12 +137,14 @@
     </style>
       <meta name="theme-color" content="#102b4c">
     <link rel="stylesheet" href="{% get_static_prefix %}css/site.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}css/language.css">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
     <nav class="site-nav" aria-label="Головна навігація">
       <div class="nav-inner">
         <div class="brand">Парламент.Online</div>
+        <div class="language-switch" aria-label="Language"><button type="button" class="language-button" data-set-language="uk">УКР</button><button type="button" class="language-button" data-set-language="en">ENG</button></div>
 <div class="nav-links">
           <a href="{% url 'home' %}">Головна</a>
           <a href="{% url 'ideas:list' %}">Ідеї</a>
@@ -188,6 +190,7 @@
       {% endif %}
       {% block content %}{% endblock %}
     </main>
+    <script src="{% get_static_prefix %}js/language.js" defer></script>
 
     {% if institution_links or social_links %}
       <footer style="background: #163a67; color: white; margin-top: 2rem;">

@@ -22,6 +22,7 @@ class Idea(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.UNDER_REVIEW)
     moderation_status = models.CharField(max_length=20, choices=ModerationStatus.choices, default=ModerationStatus.PENDING, db_index=True)
     moderation_reason = models.TextField(blank=True)
+    ai_review = models.JSONField(default=dict, blank=True)
     assigned_moderator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_moderation_ideas')
     moderated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='moderated_ideas')
     moderated_at = models.DateTimeField(null=True, blank=True)
@@ -72,3 +73,17 @@ class Event(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+
+class IdeaComment(models.Model):
+    idea = models.ForeignKey(Idea, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='idea_comments')
+    body = models.TextField(max_length=1200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self) -> str:
+        return f'Comment on idea #{self.idea_id} by {self.author_id}'

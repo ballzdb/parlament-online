@@ -13,8 +13,9 @@ from django.utils import timezone
 from accounts.models import AuditLog, Commission, PRIMARY_ADMIN_EMAIL, User
 from appeals.models import Appeal
 from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
-from .models import Event, Idea, IdeaVote
+from .models import Event, Idea, IdeaComment, IdeaVote
 from moderation.models import ModerationEntry
+from moderation.ai import review_idea
 
 
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
@@ -83,6 +84,9 @@ def idea_create(request):
             idea.moderation_status = Idea.ModerationStatus.PENDING
             idea.status = Idea.Status.UNDER_REVIEW
             idea.save()
+            # AI screening is advisory only; failures never block submission.
+            idea.ai_review = review_idea(idea.title, idea.body)
+            idea.save(update_fields=['ai_review'])
             messages.success(request, 'Ідею надіслано на модерацію. Вона з’явиться у загальному списку після перевірки.')
             return redirect('ideas:list')
     else:
@@ -103,7 +107,19 @@ def idea_detail(request, pk):
         if request.method == 'POST' and 'status' in request.POST:
             status_form = IdeaStatusForm(request.POST, instance=idea)
             if status_form.is_valid():
-                status_form.save()
+                previous_status = idea.status
+                updated_idea = status_form.save()
+                if previous_status != updated_idea.status:
+                    ModerationEntry.objects.create(
+                        target_type='idea',
+                        target_id=idea.pk,
+                        verdict={
+                            'action': 'status_changed',
+                            'from_status': previous_status,
+                            'to_status': updated_idea.status,
+                            'reason': updated_idea.status_reason,
+                        },
+                    )
                 messages.success(request, 'Статус ідеї оновлено.')
                 return redirect('ideas:detail', pk=idea.pk)
         else:
@@ -128,12 +144,27 @@ def idea_detail(request, pk):
                 messages.error(request, 'Ви вже голосували за цю ідею.')
         return redirect('ideas:detail', pk=idea.pk)
 
+    if request.method == 'POST' and 'comment' in request.POST:
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
+        if idea.moderation_status != Idea.ModerationStatus.APPROVED:
+            raise Http404
+        body = request.POST.get('body', '').strip()
+        if not body or len(body) > 1200:
+            messages.error(request, 'Коментар має містити від 1 до 1200 символів.')
+        else:
+            IdeaComment.objects.create(idea=idea, author=request.user, body=body)
+            messages.success(request, 'Коментар додано.')
+        return redirect('ideas:detail', pk=idea.pk)
+
+    comments = IdeaComment.objects.filter(idea=idea).select_related('author')
     return render(request, 'ideas/detail.html', {
         'idea': idea,
         'has_voted': has_voted,
         'status_form': status_form,
         'is_parliamentarian': is_parliamentarian,
         'moderation_history': moderation_history,
+        'comments': comments,
     })
 
 

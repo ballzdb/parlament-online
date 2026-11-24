@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from accounts.models import Commission, User
-from ideas.models import Event, Idea, IdeaVote
+from ideas.models import Event, Idea, IdeaComment, IdeaVote
 from moderation.models import ModerationEntry
 
 
@@ -227,3 +227,37 @@ class PublicProfilePrivacyTests(TestCase):
         response = self.client.get(f'/ideas/{self.idea.pk}/')
         self.assertContains(response, 'Історія модерації')
         self.assertNotContains(response, staff_email)
+
+
+class IdeaDiscussionTests(TestCase):
+    def setUp(self):
+        self.author = User.objects.create_user(email='discussion-author@example.com', password='Password123', is_active=True)
+        self.student = User.objects.create_user(email='discussion-student@example.com', password='Password123', is_active=True)
+        self.idea = Idea.objects.create(
+            title='Публічна ініціатива',
+            body='Опис',
+            author=self.author,
+            moderation_status=Idea.ModerationStatus.APPROVED,
+        )
+
+    def test_signed_in_student_can_comment_on_published_idea(self):
+        self.client.force_login(self.student)
+        response = self.client.post(f'/ideas/{self.idea.pk}/', {'comment': '1', 'body': 'Підтримую цю пропозицію.'})
+        self.assertEqual(response.status_code, 302)
+        comment = IdeaComment.objects.get(idea=self.idea)
+        self.assertEqual(comment.author, self.student)
+        self.assertEqual(comment.body, 'Підтримую цю пропозицію.')
+
+    def test_comment_is_not_allowed_on_pending_idea(self):
+        self.idea.moderation_status = Idea.ModerationStatus.PENDING
+        self.idea.save(update_fields=['moderation_status'])
+        self.client.force_login(self.student)
+        response = self.client.post(f'/ideas/{self.idea.pk}/', {'comment': '1', 'body': 'Test'})
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(IdeaComment.objects.exists())
+
+    def test_anonymous_user_must_sign_in_to_comment(self):
+        response = self.client.post(f'/ideas/{self.idea.pk}/', {'comment': '1', 'body': 'Test'})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+        self.assertFalse(IdeaComment.objects.exists())
