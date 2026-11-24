@@ -44,6 +44,8 @@
                 <strong>Ідею допущено до публікації</strong>
               {% elif entry.verdict.action == 'reject' %}
                 <strong>Ідею відхилено</strong>
+              {% elif entry.verdict.action == 'status_changed' %}
+                <strong>Оновлено статус виконання: {{ entry.verdict.to_status }}</strong>
               {% endif %}
               {% if entry.verdict.reason %}<p>{{ entry.verdict.reason }}</p>{% endif %}
             </li>
