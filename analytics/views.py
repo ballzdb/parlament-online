@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from accounts.models import PRIMARY_ADMIN_EMAIL, User
 from appeals.models import Appeal
-from ideas.models import Idea, IdeaVote
+from ideas.models import Idea, IdeaComment, IdeaVote
 
 from .models import EventLog, PageView
 
@@ -87,6 +87,8 @@ def dashboard(request):
         'grade_stats': grade_stats,
         'idea_total': Idea.objects.count(),
         'idea_votes': IdeaVote.objects.count(),
+        'idea_comments': IdeaComment.objects.count(),
+        'idea_comments_30d': IdeaComment.objects.filter(created_at__gte=month_ago).count(),
         'idea_statuses': idea_statuses,
         'average_idea_days': average_idea_days,
         'appeal_total': Appeal.objects.count(),
