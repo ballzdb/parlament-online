@@ -132,9 +132,12 @@
         *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
       }
     </style>
+      <meta name="theme-color" content="#102b4c">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
   </head>
   <body>
-    <nav>
+    <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
+    <nav class="site-nav" aria-label="Головна навігація">
       <div class="nav-inner">
         <div class="brand">Парламент.Online</div>
 <div class="nav-links">
@@ -171,7 +174,7 @@
         </div>
       </div>
     </nav>
-    <main class="container">
+    <main class="container" id="main-content">
       {% if messages %}
         {% for message in messages %}
           <div class="message">{{ message }}</div>
