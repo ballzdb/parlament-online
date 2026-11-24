@@ -34,6 +34,7 @@
           <p>{{ event.outcome|default:event.description|truncatewords:35 }}</p>
           <div class="archive-footer">
             <span class="meta">{{ event.organiser|default:'Учнівське самоврядування' }}</span>
+            {% if event.participating_classes %}<span class="meta">Класи: {{ event.participating_classes }}</span>{% endif %}
             {% if event.participant_count != None %}<span class="participant-count">{{ event.participant_count }} учасників</span>{% endif %}
           </div>
           <a class="event-more" href="{% url 'ideas:event_detail' event.pk %}">Переглянути підсумок →</a>
