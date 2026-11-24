@@ -91,7 +91,7 @@ python manage.py runserver
 
 The shared interface includes a Ukrainian/English language switch. English translations are being expanded page by page; some user-generated content and less common screens may remain in Ukrainian until translated.
 
-Optional idea screening uses the Gemini API. Set `GEMINI_API_KEY` in `.env` locally or in the Render service environment to enable it. `GEMINI_MODEL` can override the model name. Without a key, or if the provider is unavailable, ideas are still submitted and remain in the ordinary human moderation queue. AI results are advisory only and never publish or reject an idea automatically. Provider free-tier quotas and availability can change; check Google's current Gemini API pricing and limits before relying on it.
+Optional idea screening uses the Gemini API and is **disabled by default**. Only enable it after the school has reviewed the provider's data-processing terms and approved sending student-submitted text to Google. To enable it, set both `GEMINI_AI_SCREENING_ENABLED=True` and `GEMINI_API_KEY` in the Render service environment (or local `.env`). `GEMINI_MODEL` can override the model name. If the feature is disabled, the key is missing, or the provider is unavailable, ideas are still submitted and remain in the ordinary human moderation queue. AI results are advisory only and never publish or reject an idea automatically. Provider free-tier quotas and availability can change; check Google's current Gemini API pricing, limits and data terms before relying on it.
 
 ## Команди адміністрування
 
