@@ -1,22 +1,55 @@
 {% extends 'base.html' %}
 {% block title %}Ідеї | Парламент.Online{% endblock %}
 {% block content %}
-  <div class="page-heading">
-    <h1 style="margin:0;">Ідеї</h1>
-    {% if user.is_authenticated %}<a href="{% url 'ideas:create' %}" class="btn">Подати ідею</a>{% endif %}
-  </div>
-  <div class="record-list">
-  {% for idea in ideas %}
-    <article class="card record-card">
-      <h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3>
-      <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div>
-      <p>{{ idea.body|truncatewords:55 }}</p>
-      <div class="idea-summary">
-        <span class="meta">Статус: <strong>{{ idea.get_status_display }}</strong></span>
-        <span class="meta">Підтримка: <strong>{{ idea.vote_count }}</strong></span>
-        {% if idea.moderation_status == 'pending' %}<span class="meta"><strong>Очікує перевірки</strong></span>{% elif idea.moderation_status == 'rejected' %}<span class="meta"><strong>Не опубліковано</strong></span>{% endif %}
+  <header class="ideas-heading">
+    <div><p class="eyebrow">ІНІЦІАТИВИ УЧНІВ</p><h1>Каталог ідей</h1><p class="meta">Переглядай пропозиції, дізнавайся про їхній статус і підтримуй ті, що мають значення.</p></div>
+    {% if user.is_authenticated and not user.is_temporarily_restricted %}<a href="{% url 'ideas:create' %}" class="btn">＋ Подати ідею</a>{% endif %}
+  </header>
+
+  <section class="idea-discovery card" aria-label="Пошук і сортування ідей">
+    <form method="get" class="idea-search-form">
+      <div class="idea-search-field"><label for="idea-query">Пошук за назвою або описом</label><input id="idea-query" type="search" name="q" value="{{ query }}" placeholder="Наприклад, шкільний простір або спорт"></div>
+      <div class="idea-sort-field"><label for="idea-sort">Сортувати</label><select id="idea-sort" name="sort">
+        <option value="popular" {% if sort == 'popular' %}selected{% endif %}>За підтримкою</option>
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Спочатку нові</option>
+        <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Спочатку давні</option>
+      </select></div>
+      <button class="btn" type="submit">Знайти</button>
+      {% if query or sort != 'popular' %}<a class="clear-search" href="{% url 'ideas:list' %}">Скинути</a>{% endif %}
+    </form>
+    <div class="idea-results-meta"><strong>{{ result_count }}</strong> {% if result_count == 1 %}ідея{% elif result_count > 1 and result_count < 5 %}ідеї{% else %}ідей{% endif %}{% if query %} за запитом «{{ query }}»{% endif %}</div>
+  </section>
+
+  <div class="record-list ideas-record-list">
+    {% for idea in ideas %}
+      <article class="card idea-record">
+        <div class="idea-record-content">
+          <div class="idea-record-topline">
+            {% if idea.moderation_status == 'approved' %}<span class="status-pill status-approved">Опубліковано</span>
+            {% elif idea.moderation_status == 'pending' %}<span class="status-pill status-pending">На модерації</span>
+            {% else %}<span class="status-pill status-rejected">Не опубліковано</span>{% endif %}
+            {% if idea.commission %}<span class="meta">{{ idea.commission.name }}</span>{% endif %}
+          </div>
+          <h2><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h2>
+          <p>{{ idea.body|truncatewords:42 }}</p>
+          <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} <span aria-hidden="true">·</span> {{ idea.created_at|date:'d.m.Y' }}</div>
+        </div>
+        <aside class="idea-record-support"><strong>{{ idea.vote_count }}</strong><span>голосів</span><a href="{% url 'ideas:detail' idea.pk %}">Детальніше <span aria-hidden="true">→</span></a></aside>
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <strong>{% if query %}За цим запитом нічого не знайдено{% else %}Ідей поки немає{% endif %}</strong>
+        <p>{% if query %}Спробуй змінити формулювання або скинь пошук.{% else %}Коли учні подадуть перші пропозиції, вони з’являться тут.{% endif %}</p>
+        {% if query %}<a class="btn secondary" href="{% url 'ideas:list' %}">Показати всі ідеї</a>{% endif %}
       </div>
-    </article>
-  {% empty %}<div class="empty-state">Опублікованих ідей поки немає.</div>{% endfor %}
+    {% endfor %}
   </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Сторінки каталогу">
+      {% if page_obj.has_previous %}<a class="btn secondary" href="?q={{ query|urlencode }}&sort={{ sort }}&page={{ page_obj.previous_page_number }}">← Назад</a>{% else %}<span class="btn secondary is-disabled">← Назад</span>{% endif %}
+      <span class="pagination-count">Сторінка <strong>{{ page_obj.number }}</strong> з {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a class="btn secondary" href="?q={{ query|urlencode }}&sort={{ sort }}&page={{ page_obj.next_page_number }}">Далі →</a>{% else %}<span class="btn secondary is-disabled">Далі →</span>{% endif %}
+    </nav>
+  {% endif %}
 {% endblock %}
