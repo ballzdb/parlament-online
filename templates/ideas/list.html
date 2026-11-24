@@ -32,7 +32,7 @@
           </div>
           <h2><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h2>
           <p>{{ idea.body|truncatewords:42 }}</p>
-          <div class="meta">Автор: {{ idea.author.display_name|default:idea.author.email }} <span aria-hidden="true">·</span> {{ idea.created_at|date:'d.m.Y' }}</div>
+          <div class="meta">Автор: {{ idea.author.display_name|default:'Учень' }} <span aria-hidden="true">·</span> {{ idea.created_at|date:'d.m.Y' }}</div>
         </div>
         <aside class="idea-record-support"><strong>{{ idea.vote_count }}</strong><span>голосів</span><a href="{% url 'ideas:detail' idea.pk %}">Детальніше <span aria-hidden="true">→</span></a></aside>
       </article>

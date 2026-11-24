@@ -10,7 +10,7 @@
       {% if idea.commission %}<span class="meta">{{ idea.commission.name }}</span>{% endif %}
     </div>
     <h1>{{ idea.title }}</h1>
-    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:idea.author.email }} <span aria-hidden="true">·</span> Подано {{ idea.created_at|date:'d.m.Y о H:i' }}</div>
+    <div class="meta detail-meta">Автор: {{ idea.author.display_name|default:'Учень' }} <span aria-hidden="true">·</span> Подано {{ idea.created_at|date:'d.m.Y о H:i' }}</div>
 
     {% if idea.moderation_status == 'pending' %}
       <div class="message detail-notice"><strong>Ідея проходить перевірку.</strong><br>Після рішення модератора вона стане доступною в загальному каталозі. Поки що її бачить автор і уповноважені представники самоврядування.</div>
@@ -37,9 +37,9 @@
         <ol class="moderation-timeline">
           {% for entry in moderation_history %}
             <li>
-              <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }} · {{ entry.verdict.actor_name|default:entry.verdict.actor_email }}</div>
+              <div class="meta">{{ entry.created_at|date:'d.m.Y H:i' }} · {{ entry.verdict.actor_name|default:'Модератор' }}</div>
               {% if entry.verdict.action == 'assigned' %}
-                <strong>Призначено модератора: {{ entry.verdict.assigned_moderator_name|default:entry.verdict.assigned_moderator_email }}</strong>
+                <strong>Призначено модератора: {{ entry.verdict.assigned_moderator_name|default:'Модератор' }}</strong>
               {% elif entry.verdict.action == 'approve' %}
                 <strong>Ідею допущено до публікації</strong>
               {% elif entry.verdict.action == 'reject' %}

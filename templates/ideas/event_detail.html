@@ -9,7 +9,7 @@
       <div><span>Організатор</span><strong>{{ event.organiser|default:'Не вказано' }}</strong></div>
       <div><span>Кількість учасників</span><strong>{% if event.participant_count != None %}{{ event.participant_count }}{% else %}Не зазначено{% endif %}</strong></div>
       <div><span>Класи</span><strong>{{ event.participating_classes|default:'Не зазначено' }}</strong></div>
-      <div><span>Створив запис</span><strong>{{ event.created_by.display_name|default:event.created_by.email }}</strong></div>
+      <div><span>Створив запис</span><strong>{{ event.created_by.display_name|default:'Представник самоврядування' }}</strong></div>
       {% if event.source_idea %}<div><span>Пов’язана ідея</span><strong><a href="{% url 'ideas:detail' event.source_idea.pk %}">{{ event.source_idea.title }}</a></strong></div>{% endif %}
     </div>
     {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px;margin:1rem 0;">{% endif %}

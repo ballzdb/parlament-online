@@ -81,7 +81,7 @@
     <div class="home-list">
       {% for idea in ideas %}
         <article class="card idea-preview">
-          <div class="idea-preview-main"><h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3><p>{{ idea.body|truncatewords:28 }}</p><div class="meta">{{ idea.author.display_name|default:idea.author.email }} · {{ idea.created_at|date:'d.m.Y' }}</div></div>
+          <div class="idea-preview-main"><h3><a href="{% url 'ideas:detail' idea.pk %}">{{ idea.title }}</a></h3><p>{{ idea.body|truncatewords:28 }}</p><div class="meta">{{ idea.author.display_name|default:'Учень' }} · {{ idea.created_at|date:'d.m.Y' }}</div></div>
           <div class="idea-preview-votes"><strong>{{ idea.vote_count }}</strong><span>голосів</span></div>
         </article>
       {% empty %}<div class="empty-state">Опублікованих ідей поки немає. Саме час започаткувати першу.</div>{% endfor %}

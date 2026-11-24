@@ -176,3 +176,37 @@ class PublicIdeaDetailTests(TestCase):
         self.approved.refresh_from_db()
         self.assertEqual(self.approved.vote_count, 0)
         self.assertFalse(IdeaVote.objects.filter(idea=self.approved).exists())
+
+
+class PublicProfilePrivacyTests(TestCase):
+    def setUp(self):
+        self.author = User.objects.create_user(
+            email='private-address@example.com',
+            password='Password123',
+            display_name='',
+            is_active=True,
+        )
+        self.idea = Idea.objects.create(
+            title='Публічна ідея без відкритої пошти',
+            body='Зміст публічної ініціативи.',
+            author=self.author,
+            moderation_status=Idea.ModerationStatus.APPROVED,
+        )
+
+    def test_public_idea_pages_do_not_expose_author_email(self):
+        for path in ('/', '/ideas/', f'/ideas/{self.idea.pk}/'):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'Учень')
+            self.assertNotContains(response, self.author.email)
+
+    def test_public_event_page_does_not_expose_creator_email(self):
+        event = Event.objects.create(
+            title='Відкритий захід',
+            starts_at=timezone.now() + timedelta(days=1),
+            created_by=self.author,
+        )
+        response = self.client.get(f'/ideas/events/{event.pk}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Представник самоврядування')
+        self.assertNotContains(response, self.author.email)
