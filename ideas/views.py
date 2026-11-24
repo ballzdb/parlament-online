@@ -15,6 +15,7 @@ from appeals.models import Appeal
 from .forms import EventCreateForm, IdeaForm, IdeaStatusForm
 from .models import Event, Idea, IdeaVote
 from moderation.models import ModerationEntry
+from moderation.ai import review_idea
 
 
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
@@ -83,6 +84,9 @@ def idea_create(request):
             idea.moderation_status = Idea.ModerationStatus.PENDING
             idea.status = Idea.Status.UNDER_REVIEW
             idea.save()
+            # AI screening is advisory only; failures never block submission.
+            idea.ai_review = review_idea(idea.title, idea.body)
+            idea.save(update_fields=['ai_review'])
             messages.success(request, 'Ідею надіслано на модерацію. Вона з’явиться у загальному списку після перевірки.')
             return redirect('ideas:list')
     else:
