@@ -247,3 +247,17 @@
   .home-stats { grid-template-columns:1fr; }
   .stat-card { min-height:88px; }
 }
+
+/* Parliament identity on the homepage */
+.hero-mark { overflow:hidden; width:180px; height:180px; flex-basis:180px; border:0; border-radius:24px; background:transparent; transform:none; box-shadow:none; }
+.hero-mark img { display:block; width:100%; height:100%; object-fit:contain; border-radius:18px; }
+.home-parliament-brand { display:flex; align-items:center; gap:1.1rem; padding:1rem 0 1.25rem; }
+.home-parliament-brand img { display:block; width:112px; height:112px; object-fit:cover; border-radius:14px; }
+.home-parliament-brand strong { display:block; font-size:1.12rem; }
+.home-parliament-brand p { margin:.15rem 0 .45rem; }
+.home-parliament-brand a { font-weight:750; }
+@media(max-width:650px) {
+  .hero-mark { width:92px; height:92px; flex-basis:92px; border-radius:14px; }
+  .home-parliament-brand { align-items:flex-start; }
+  .home-parliament-brand img { width:84px; height:84px; }
+}
