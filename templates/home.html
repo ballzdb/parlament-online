@@ -37,8 +37,7 @@
     </div>
   </section>
 
-  {% if institution_links or social_links %}
-    <section class="card home-info">
+  <section class="card home-info">
       <div class="section-intro compact"><div><p class="eyebrow">НАШ ЛІЦЕЙ</p><h2>Ліцей і парламент онлайн</h2></div></div>
       <div class="home-parliament-brand">
         <img src="{% get_static_prefix %}img/karazin-next-logo.webp" alt="Логотип учнівського парламенту Каразінці NEXT" loading="lazy">
@@ -64,8 +63,7 @@
           {% endfor %}
         </div>
       {% endif %}
-    </section>
-  {% endif %}
+  </section>
 
   <section class="home-section">
     <div class="home-section-heading"><div><p class="eyebrow">КАЛЕНДАР</p><h2>Найближчі події</h2></div><a href="{% url 'ideas:events' %}">Усі події та архів <span aria-hidden="true">→</span></a></div>
