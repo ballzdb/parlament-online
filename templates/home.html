@@ -23,13 +23,18 @@
     <div class="home-section-heading"><div><p class="eyebrow">КАЛЕНДАР</p><h2>Найближчі події</h2></div><a href="{% url 'ideas:events' %}">Усі події та архів <span aria-hidden="true">→</span></a></div>
     <div class="grid event-preview-grid">
       {% for event in events %}
-        <article class="card event-preview">
+        <article class="card event-preview{% if forloop.first %} event-preview-featured{% endif %}">
           {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% else %}<div class="event-placeholder" aria-hidden="true"><span>КАЛЕНДАР</span><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M' }}</span></div>{% endif %}
           <div class="event-preview-copy">
+            {% if forloop.first %}<span class="event-feature-label">НАЙБЛИЖЧА ПОДІЯ</span>{% endif %}
             <div class="meta event-date">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
             <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-            {% if event.description %}<p>{{ event.description|truncatewords:25 }}</p>{% endif %}
-            {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
+            {% if event.description %}<p>{{ event.description|truncatewords:35 }}</p>{% endif %}
+            <div class="event-preview-meta">
+              {% if event.organiser %}<span>{{ event.organiser }}</span>{% endif %}
+              {% if event.participating_classes %}<span>Класи: {{ event.participating_classes }}</span>{% endif %}
+            </div>
+            <a class="event-preview-link" href="{% url 'ideas:event_detail' event.pk %}">Детальніше про подію <span aria-hidden="true">→</span></a>
           </div>
         </article>
       {% empty %}<div class="empty-state">Найближчих подій поки немає. Коли парламент опублікує новий захід, він з’явиться тут.</div>{% endfor %}
