@@ -47,7 +47,30 @@
         gap: 1rem;
         flex-wrap: wrap;
       }
-      .brand { font-weight: 800; letter-spacing: -.03em; font-size: 1.12rem; white-space: nowrap; }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: .7rem;
+        min-width: 0;
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        font-size: 1.12rem;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .brand:hover { color: #fff; text-decoration: none; }
+      .brand-logo {
+        display: block;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #fff;
+        padding: 3px;
+      }
+      .brand-name { line-height: 1.15; }
       .nav-links { display: flex; gap: .85rem; flex-wrap: wrap; align-items: center; }
       .nav-links a { color: white; opacity: .92; font-size: .94rem; }
       .nav-links a:hover { opacity: 1; text-decoration: none; }
@@ -142,7 +165,10 @@
     <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
     <nav class="site-nav" aria-label="Головна навігація">
       <div class="nav-inner">
-        <div class="brand">Парламент.Online</div>
+        <a class="brand" href="{% url 'home' %}" aria-label="Парламент.Online — на головну">
+          <img class="brand-logo" src="{% static 'img/karazin-next-logo.webp' %}" alt="">
+          <span class="brand-name">Парламент.Online</span>
+        </a>
 <div class="nav-links">
           <a href="{% url 'home' %}">Головна</a>
           <a href="{% url 'ideas:list' %}">Ідеї</a>
