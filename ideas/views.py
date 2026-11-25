@@ -217,8 +217,3 @@ def idea_delete(request, pk):
     idea.delete()
     messages.success(request, 'Ідею видалено.')
     return redirect('ideas:list')
-
-
-
-def research_feedback(request):
-    return render(request, 'research_feedback.html')
