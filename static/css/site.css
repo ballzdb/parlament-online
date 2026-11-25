@@ -288,3 +288,65 @@
   .home-parliament-brand > div { min-width:0; }
   .home-parliament-brand p { line-height:1.5; }
 }
+
+
+/* Homepage hierarchy: upcoming events take centre stage */
+.home-hero {
+  min-height: 230px;
+  padding: clamp(1.35rem, 3vw, 2.25rem);
+  margin-bottom: 1.15rem;
+}
+.home-hero h1 {
+  font-size: clamp(1.7rem, 3.5vw, 2.65rem);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+  margin-bottom: .65rem;
+}
+.home-hero p {
+  max-width: 590px;
+  font-size: clamp(.92rem, 1.5vw, 1.02rem);
+  line-height: 1.6;
+}
+.home-hero .eyebrow { margin-bottom: .55rem; }
+.hero-actions { margin-top: 1rem; }
+.hero-mark {
+  width: clamp(96px, 12vw, 142px);
+  height: clamp(96px, 12vw, 142px);
+  flex-basis: clamp(96px, 12vw, 142px);
+}
+.home-section:has(.event-preview-grid) {
+  margin: .6rem 0 2.4rem;
+}
+.home-section:has(.event-preview-grid) .home-section-heading {
+  padding-bottom: .8rem;
+  border-bottom-width: 2px;
+}
+.home-section:has(.event-preview-grid) .home-section-heading h2 {
+  font-size: clamp(1.55rem, 2.8vw, 2rem);
+}
+.event-preview-grid {
+  gap: 1rem;
+}
+.event-preview {
+  grid-template-columns: 128px minmax(0,1fr);
+  gap: 1.1rem;
+  padding: 1rem;
+  border-radius: 17px;
+}
+.event-preview > img, .event-placeholder {
+  width: 128px;
+  height: 144px;
+}
+.event-preview-copy h3 { font-size: 1.12rem; line-height: 1.35; }
+@media(max-width:650px) {
+  .home-hero { min-height: unset; }
+  .hero-mark {
+    width: clamp(68px, 19vw, 92px);
+    height: clamp(68px, 19vw, 92px);
+    flex-basis: clamp(68px, 19vw, 92px);
+  }
+}
+@media(max-width:520px) {
+  .event-preview { grid-template-columns: 88px minmax(0,1fr); gap: .8rem; }
+  .event-preview > img, .event-placeholder { width: 88px; height: 112px; }
+}
