@@ -384,9 +384,9 @@
 .nav-inner { min-height: 48px; }
 .brand { gap: .65rem; }
 .brand-logo {
-  width: 44px;
-  height: 44px;
-  flex-basis: 44px;
+  width: 60px;
+  height: 60px;
+  flex-basis: 60px;
   border: 1px solid rgba(255,255,255,.22);
   box-shadow: 0 3px 10px rgba(0,0,0,.14);
 }
@@ -488,7 +488,7 @@ input:hover, select:hover, textarea:hover { border-color: #aebfd4; }
 @media (max-width: 760px) {
   .nav-inner { align-items: center; }
   .brand { font-size: 1.02rem; }
-  .brand-logo { width: 40px; height: 40px; flex-basis: 40px; }
+  .brand-logo { width: 52px; height: 52px; flex-basis: 52px; }
   .nav-links { width: 100%; gap: .15rem .25rem; }
   .nav-links > a, .nav-logout { min-height: 38px; padding: .35rem .5rem; font-size: .86rem; }
   .container { width: min(100% - 1.25rem, 1160px); padding-left: 0; padding-right: 0; }
