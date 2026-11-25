@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Головна | Парламент.Online{% endblock %}
 {% block content %}
   <section class="home-hero">
@@ -15,7 +16,7 @@
         {% endif %}
       </div>
     </div>
-    <div class="hero-mark"><img src="{% get_static_prefix %}img/karazin-next-logo.webp" alt="Логотип учнівського парламенту — Каразінці NEXT"></div>
+    <div class="hero-mark"><img src="{% static 'img/karazin-next-logo.webp' %}" alt="Логотип учнівського парламенту — Каразінці NEXT"></div>
   </section>
 
   <section class="home-stats" aria-label="Показники платформи">
@@ -40,7 +41,7 @@
   <section class="card home-info">
       <div class="section-intro compact"><div><p class="eyebrow">НАШ ЛІЦЕЙ</p><h2>Ліцей і парламент онлайн</h2></div></div>
       <div class="home-parliament-brand">
-        <img src="{% get_static_prefix %}img/karazin-next-logo.webp" alt="Логотип учнівського парламенту Каразінці NEXT" loading="lazy">
+        <img src="{% static 'img/karazin-next-logo.webp' %}" alt="Логотип учнівського парламенту Каразінці NEXT" loading="lazy">
         <div>
           <strong>Каразінці NEXT</strong>
           <p class="meta">Учнівське самоврядування Каразінського ліцею</p>
