@@ -4,6 +4,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Парламент.Online — цифровий простір учнівського самоврядування: ідеї, голосування, події та зворотний зв’язок.">
+    <meta name="color-scheme" content="light">
     <title>{% block title %}Парламент.Online{% endblock %}</title>
     <style>
       :root {
@@ -159,7 +161,9 @@
       }
     </style>
       <meta name="theme-color" content="#102b4c">
-    <link rel="stylesheet" href="{% get_static_prefix %}css/site.css">
+    <link rel="icon" type="image/webp" href="{% static 'img/karazin-next-logo.webp' %}">
+    <link rel="preload" as="image" href="{% static 'img/karazin-next-logo.webp' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Перейти до основного вмісту</a>
@@ -217,7 +221,11 @@
 
     {% if institution_links or social_links %}
       <footer style="background: #163a67; color: white; margin-top: 2rem;">
-        <div class="container" style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+        <div class="container footer-inner" style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+          <a class="footer-brand" href="{% url 'home' %}">
+            <img src="{% static 'img/karazin-next-logo.webp' %}" alt="" width="38" height="38" loading="lazy">
+            <span><strong>Парламент.Online</strong><small>Каразінці NEXT</small></span>
+          </a>
           {% if institution_links %}
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin-bottom: 0.75rem;">
               {% for item in institution_links %}
