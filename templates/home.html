@@ -19,6 +19,23 @@
     <div class="hero-mark"><img src="{% static 'img/karazin-next-logo.webp' %}" alt="Логотип учнівського парламенту — Каразінці NEXT"></div>
   </section>
 
+  <section class="home-section">
+    <div class="home-section-heading"><div><p class="eyebrow">КАЛЕНДАР</p><h2>Найближчі події</h2></div><a href="{% url 'ideas:events' %}">Усі події та архів <span aria-hidden="true">→</span></a></div>
+    <div class="grid event-preview-grid">
+      {% for event in events %}
+        <article class="card event-preview">
+          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% else %}<div class="event-placeholder" aria-hidden="true"><span>КАЛЕНДАР</span><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M' }}</span></div>{% endif %}
+          <div class="event-preview-copy">
+            <div class="meta event-date">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
+            <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
+            {% if event.description %}<p>{{ event.description|truncatewords:25 }}</p>{% endif %}
+            {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
+          </div>
+        </article>
+      {% empty %}<div class="empty-state">Найближчих подій поки немає. Коли парламент опублікує новий захід, він з’явиться тут.</div>{% endfor %}
+    </div>
+  </section>
+
   <section class="home-stats" aria-label="Показники платформи">
     <article class="card stat-card"><span class="stat-icon" aria-hidden="true">↗</span><div class="meta">Опубліковані ідеї</div><strong>{{ stats.idea_count }}</strong><span class="stat-foot">Пропозиції, відкриті для учнів</span></article>
     <article class="card stat-card"><span class="stat-icon" aria-hidden="true">✉</span><div class="meta">Звернення та відгуки</div><strong>{{ stats.appeal_count }}</strong><span class="stat-foot">Повідомлення до самоврядування</span></article>
@@ -64,23 +81,6 @@
           {% endfor %}
         </div>
       {% endif %}
-  </section>
-
-  <section class="home-section">
-    <div class="home-section-heading"><div><p class="eyebrow">КАЛЕНДАР</p><h2>Найближчі події</h2></div><a href="{% url 'ideas:events' %}">Усі події та архів <span aria-hidden="true">→</span></a></div>
-    <div class="grid event-preview-grid">
-      {% for event in events %}
-        <article class="card event-preview">
-          {% if event.image_url %}<img src="{{ event.image_url }}" alt="Зображення події: {{ event.title }}" loading="lazy" referrerpolicy="no-referrer">{% else %}<div class="event-placeholder" aria-hidden="true"><span>КАЛЕНДАР</span><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M' }}</span></div>{% endif %}
-          <div class="event-preview-copy">
-            <div class="meta event-date">{{ event.starts_at|date:'d.m.Y' }} · {{ event.starts_at|date:'H:i' }}</div>
-            <h3><a href="{% url 'ideas:event_detail' event.pk %}">{{ event.title }}</a></h3>
-            {% if event.description %}<p>{{ event.description|truncatewords:25 }}</p>{% endif %}
-            {% if event.source_idea %}<div class="meta">За ідеєю: {{ event.source_idea.title }}</div>{% endif %}
-          </div>
-        </article>
-      {% empty %}<div class="empty-state">Найближчих подій поки немає. Коли парламент опублікує новий захід, він з’явиться тут.</div>{% endfor %}
-    </div>
   </section>
 
   <section class="home-section">
