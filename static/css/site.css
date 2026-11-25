@@ -654,3 +654,40 @@ button, .btn { min-height: 42px; }
   .journey-step { transition: none; }
   .journey-step:hover { transform: none; }
 }
+
+/* Karazin University-inspired visual identity */
+:root {
+  --bg: #f5f7fb; --panel: #fff; --accent: #174b83; --accent-strong: #10365f;
+  --muted: #66758a; --text: #172b43; --border: #d9e1eb; --nav: #102f55;
+  --soft: #eaf0f7; --gold: #c7a45b; --gold-light: #ead9ad; --azure: #3976ad;
+  --shadow: 0 12px 32px rgba(16,47,85,.075);
+}
+body { background: linear-gradient(90deg,transparent 0,transparent calc(50% - 600px),rgba(23,75,131,.018) calc(50% - 600px),rgba(23,75,131,.018) calc(50% + 600px),transparent calc(50% + 600px)),var(--bg); }
+h1,h2,h3 { color:#15395f; letter-spacing:-.028em; }
+.site-nav,nav { background:linear-gradient(105deg,#102f55 0%,#174b83 68%,#1c568f 100%); border-bottom:3px solid var(--gold); }
+.brand-logo { border:2px solid var(--gold); border-radius:8px; background:#fff; }
+.nav-links > a:hover,.nav-links > a:focus-visible,.nav-logout:hover { background:rgba(255,255,255,.12); }
+.btn,button[type=submit] { background:#174b83; border:1px solid #174b83; border-radius:7px; box-shadow:0 3px 9px rgba(16,47,85,.12); }
+.btn:hover,button[type=submit]:hover { background:#10365f; border-color:#10365f; }
+.btn.secondary { background:#fff; color:#174b83; border:1px solid #cbd7e5; box-shadow:none; }
+.card { border-radius:10px; box-shadow:0 6px 20px rgba(16,47,85,.055); }
+.card:hover { box-shadow:0 11px 28px rgba(16,47,85,.09); }
+.eyebrow { color:#9a7837; font-weight:850; letter-spacing:.14em; }
+.home-hero { background:linear-gradient(112deg,rgba(12,43,78,.97),rgba(23,75,131,.94)); border:0; border-bottom:4px solid var(--gold); border-radius:8px; box-shadow:0 16px 38px rgba(16,47,85,.18); }
+.home-hero h1 { color:#fff; } .home-hero h1 span { color:#e8d5a5; } .home-hero .eyebrow { color:#e3ca8e; }
+.home-hero .hero-secondary { border-color:rgba(234,217,173,.72); color:#fff; }
+.hero-mark img { border:3px solid var(--gold); border-radius:8px; box-shadow:0 8px 26px rgba(0,0,0,.2); }
+.home-section-heading,.section-intro { border-bottom:1px solid #d9e1eb; padding-bottom:.75rem; }
+.home-section-heading h2,.section-intro h2 { color:#15395f; }
+.event-feature-label,.event-date { color:#9a7837; }
+.event-placeholder { background:linear-gradient(145deg,#edf2f8,#dce7f2); color:#174b83; border:1px solid #d3dfec; }
+.stat-card { border-top:3px solid var(--gold); } .stat-icon { background:#f4efdf; color:#8c6b2f; }
+.journey-step { border-radius:8px; background:#fff; border-top:2px solid #d7c18b; }
+.journey-step > span { border-radius:6px; background:#eaf0f7; color:#174b83; }
+.home-cta { border-radius:8px; border:1px solid #d9e1eb; border-left:4px solid var(--gold); background:linear-gradient(115deg,#fff,#f0f4f9); }
+.home-info { border-radius:8px; border-top:3px solid var(--gold); }
+.home-parliament-brand { border-radius:8px; border-left:3px solid var(--gold); background:#f4f7fb; }
+footer { background:#102f55 !important; border-top:3px solid var(--gold); }
+input:focus,select:focus,textarea:focus { border-color:#3976ad; box-shadow:0 0 0 3px rgba(57,118,173,.13); }
+::selection { background:#dce8f4; color:#102f55; }
+@media(max-width:760px) { .home-hero { border-radius:8px; } }
