@@ -753,3 +753,10 @@ p { text-wrap: pretty; }
 .idea-preview h3 a { color: #15395f; }
 .idea-preview h3 a:hover { color: #174b83; }
 .idea-preview-votes { border: 1px solid #d9e1eb; background: #f3f6fa; }
+
+/* 10 — Platform statistics */
+.home-stats { align-items: stretch; }
+.stat-card { border-top: 3px solid #c7a45b; }
+.stat-card .meta { color: #53677e; }
+.stat-card strong { color: #174b83; font-variant-numeric: tabular-nums; }
+.stat-foot { max-width: 25ch; line-height: 1.45; }
