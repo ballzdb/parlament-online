@@ -108,6 +108,13 @@ class IdeaDeletionTests(TestCase):
             role=User.Role.SECRETARY,
             is_active=True,
         )
+        self.moderator = User.objects.create_user(
+            email='moderator@khul.ukr.education',
+            password='Password123',
+            display_name='Модератор',
+            role=User.Role.MODERATOR,
+            is_active=True,
+        )
         self.idea = Idea.objects.create(
             title='Тестова ідея',
             body='Опис ідеї',
@@ -131,6 +138,23 @@ class IdeaDeletionTests(TestCase):
         response = self.client.post(f'/ideas/{self.idea.pk}/delete/')
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Idea.objects.filter(pk=self.idea.pk).exists())
+
+    def test_moderator_can_delete_idea(self):
+        self.client.force_login(self.moderator)
+        response = self.client.post(f'/ideas/{self.idea.pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Idea.objects.filter(pk=self.idea.pk).exists())
+
+    def test_moderator_can_open_pending_idea_and_sees_delete_action(self):
+        self.client.force_login(self.moderator)
+        response = self.client.get(f'/ideas/{self.idea.pk}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Видалити ідею')
+
+    def test_moderator_sees_pending_ideas_in_catalogue(self):
+        self.client.force_login(self.moderator)
+        response = self.client.get('/ideas/')
+        self.assertContains(response, self.idea.title)
 
     def test_delete_requires_post(self):
         self.client.force_login(self.member)
