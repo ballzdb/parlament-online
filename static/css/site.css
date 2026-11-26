@@ -808,3 +808,9 @@ table a { font-weight: 650; }
 .pagination { flex-wrap: wrap; }
 .pagination .btn { min-width: 42px; text-align: center; }
 .pagination-count { font-variant-numeric: tabular-nums; }
+
+/* 19 — Consistent interaction feedback */
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .event-preview, .idea-preview, .appeal-preview, .stat-card { transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+  .event-preview:hover, .idea-preview:hover, .appeal-preview:hover { transform: translateY(-2px); }
+}
