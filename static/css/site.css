@@ -691,3 +691,10 @@ footer { background:#102f55 !important; border-top:3px solid var(--gold); }
 input:focus,select:focus,textarea:focus { border-color:#3976ad; box-shadow:0 0 0 3px rgba(57,118,173,.13); }
 ::selection { background:#dce8f4; color:#102f55; }
 @media(max-width:760px) { .home-hero { border-radius:8px; } }
+
+
+/* 01 — Refined typographic rhythm */
+body { font-size: 16px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+.meta { letter-spacing: .005em; }
