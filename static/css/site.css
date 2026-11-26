@@ -803,3 +803,8 @@ th { background: #edf2f8; color: #15395f; letter-spacing: .035em; text-transform
 td { color: #314761; }
 tbody tr:hover { background: #f7f9fc; }
 table a { font-weight: 650; }
+
+/* 18 — Pagination */
+.pagination { flex-wrap: wrap; }
+.pagination .btn { min-width: 42px; text-align: center; }
+.pagination-count { font-variant-numeric: tabular-nums; }
