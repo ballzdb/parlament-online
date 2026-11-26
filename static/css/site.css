@@ -760,3 +760,9 @@ p { text-wrap: pretty; }
 .stat-card .meta { color: #53677e; }
 .stat-card strong { color: #174b83; font-variant-numeric: tabular-nums; }
 .stat-foot { max-width: 25ch; line-height: 1.45; }
+
+/* 11 — Participation journey */
+.journey-step { align-items: flex-start; }
+.journey-step > span { border: 1px solid #d7c18b; background: #f7f3e8; color: #8c6b2f; }
+.journey-step h3 { color: #15395f; }
+.journey-step p { text-wrap: pretty; }
