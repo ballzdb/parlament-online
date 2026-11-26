@@ -705,3 +705,12 @@ p { text-wrap: pretty; }
 .home-section-heading { align-items: end; }
 .home-section-heading > a { color: #174b83; }
 .home-section-heading > a:hover { color: #9a7837; }
+
+/* 03 — Navigation details */
+.site-nav .nav-links > a { position: relative; text-decoration: none; }
+.site-nav .nav-links > a::after {
+  content: ""; position: absolute; left: .62rem; right: .62rem; bottom: .2rem;
+  height: 2px; background: #d9bd7b; transform: scaleX(0); transform-origin: left;
+  transition: transform .18s ease;
+}
+.site-nav .nav-links > a:hover::after, .site-nav .nav-links > a:focus-visible::after { transform: scaleX(1); }
