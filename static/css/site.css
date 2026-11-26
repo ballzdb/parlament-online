@@ -698,3 +698,10 @@ body { font-size: 16px; -webkit-font-smoothing: antialiased; text-rendering: opt
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 .meta { letter-spacing: .005em; }
+
+/* 02 — Section heading hierarchy */
+.home-section-heading h2, .section-intro h2 { font-weight: 800; }
+.home-section-heading .eyebrow, .section-intro .eyebrow { font-size: .68rem; }
+.home-section-heading { align-items: end; }
+.home-section-heading > a { color: #174b83; }
+.home-section-heading > a:hover { color: #9a7837; }
