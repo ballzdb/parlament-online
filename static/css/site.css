@@ -797,3 +797,9 @@ input[type=checkbox], input[type=radio] { accent-color: #174b83; }
 .errorlist { border-left: 3px solid #b42318; }
 .status-pill { letter-spacing: .015em; }
 .empty-state { border-color: #c7d4e3; background: linear-gradient(145deg,#fff,#f5f8fc); }
+
+/* 17 — Data tables */
+th { background: #edf2f8; color: #15395f; letter-spacing: .035em; text-transform: uppercase; }
+td { color: #314761; }
+tbody tr:hover { background: #f7f9fc; }
+table a { font-weight: 650; }
