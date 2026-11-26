@@ -773,3 +773,9 @@ p { text-wrap: pretty; }
 .home-cta-copy p:last-child { color: #53677e; }
 .home-cta-actions .btn { min-width: 190px; }
 .home-cta-secondary { color: #174b83; text-underline-offset: 3px; }
+
+/* 13 — School identity and social links */
+.home-info { background: linear-gradient(145deg,#fff,#f8fafd); }
+.home-parliament-brand img { border: 2px solid #d7c18b; }
+.home-socials a { color: #174b83; transition: background .16s ease,border-color .16s ease,transform .16s ease; }
+.home-socials a:hover { background: #edf3f9; transform: translateY(-1px); }
