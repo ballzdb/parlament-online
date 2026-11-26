@@ -20,6 +20,13 @@ from moderation.models import ModerationEntry
 PARLIAMENT_ROLES = (User.Role.MEMBER, User.Role.COMMISSION_HEAD, User.Role.SECRETARY)
 
 
+def can_manage_ideas(user):
+    if not user.is_authenticated:
+        return False
+    is_admin = user.email.casefold() == PRIMARY_ADMIN_EMAIL or user.is_staff or user.is_superuser
+    return is_admin or user.has_role(User.Role.MODERATOR, *PARLIAMENT_ROLES)
+
+
 def home(request):
     ideas = Idea.objects.filter(moderation_status=Idea.ModerationStatus.APPROVED).select_related('commission', 'author').order_by('-created_at')[:6]
     appeals = Appeal.objects.filter(visibility=Appeal.Visibility.PUBLIC).order_by('-created_at')[:5]
@@ -40,7 +47,7 @@ def idea_list(request):
     ideas = Idea.objects.select_related('commission', 'author')
     if not request.user.is_authenticated:
         ideas = ideas.filter(moderation_status=Idea.ModerationStatus.APPROVED)
-    elif not request.user.has_role(*PARLIAMENT_ROLES):
+    elif not can_manage_ideas(request.user):
         ideas = ideas.filter(
             Q(moderation_status=Idea.ModerationStatus.APPROVED) | Q(author=request.user)
         )
@@ -67,6 +74,7 @@ def idea_list(request):
         'query': query,
         'sort': sort,
         'result_count': paginator.count,
+        'can_delete_ideas': can_manage_ideas(request.user),
     })
 
 
@@ -93,7 +101,8 @@ def idea_create(request):
 def idea_detail(request, pk):
     idea = get_object_or_404(Idea.objects.select_related('author', 'commission', 'assigned_moderator'), pk=pk)
     is_parliamentarian = request.user.is_authenticated and request.user.has_role(*PARLIAMENT_ROLES)
-    if idea.moderation_status != Idea.ModerationStatus.APPROVED and idea.author_id != request.user.pk and not is_parliamentarian:
+    can_delete = can_manage_ideas(request.user)
+    if idea.moderation_status != Idea.ModerationStatus.APPROVED and idea.author_id != request.user.pk and not can_delete:
         raise Http404
 
     has_voted = request.user.is_authenticated and IdeaVote.objects.filter(idea=idea, user=request.user).exists()
@@ -133,6 +142,7 @@ def idea_detail(request, pk):
         'has_voted': has_voted,
         'status_form': status_form,
         'is_parliamentarian': is_parliamentarian,
+        'can_delete_ideas': can_delete,
         'moderation_history': moderation_history,
     })
 
@@ -199,9 +209,7 @@ def idea_delete(request, pk):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    is_admin = request.user.email.casefold() == PRIMARY_ADMIN_EMAIL
-    is_parliamentarian = request.user.is_member
-    if not (is_admin or is_parliamentarian):
+    if not can_manage_ideas(request.user):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
 
