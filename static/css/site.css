@@ -746,3 +746,10 @@ p { text-wrap: pretty; }
 .event-preview:not(.event-preview-featured) { border-left: 3px solid #d7c18b; }
 .event-preview-link { color: #174b83; }
 .event-preview-link:hover { color: #9a7837; }
+
+/* 09 — Idea previews */
+.idea-preview { border-left: 3px solid transparent; }
+.idea-preview:hover { border-left-color: #c7a45b; }
+.idea-preview h3 a { color: #15395f; }
+.idea-preview h3 a:hover { color: #174b83; }
+.idea-preview-votes { border: 1px solid #d9e1eb; background: #f3f6fa; }
