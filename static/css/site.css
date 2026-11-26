@@ -779,3 +779,8 @@ p { text-wrap: pretty; }
 .home-parliament-brand img { border: 2px solid #d7c18b; }
 .home-socials a { color: #174b83; transition: background .16s ease,border-color .16s ease,transform .16s ease; }
 .home-socials a:hover { background: #edf3f9; transform: translateY(-1px); }
+
+/* 14 — Inner page headings */
+.page-heading, .ideas-heading { padding-bottom: .85rem; border-bottom: 1px solid #d9e1eb; }
+.page-heading h1, .ideas-heading h1 { color: #15395f; }
+.page-heading .eyebrow, .ideas-heading .eyebrow { margin-bottom: .3rem; }
