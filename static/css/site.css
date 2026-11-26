@@ -814,3 +814,30 @@ table a { font-weight: 650; }
   .event-preview, .idea-preview, .appeal-preview, .stat-card { transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
   .event-preview:hover, .idea-preview:hover, .appeal-preview:hover { transform: translateY(-2px); }
 }
+
+/* 20 — Responsive finishing, accessibility and navigation button reset */
+.site-nav .nav-logout { background: transparent; border: 0; box-shadow: none; color: #fff; }
+.site-nav .nav-logout:hover { background: rgba(255,255,255,.12); }
+:target { scroll-margin-top: 6rem; }
+a, button { -webkit-tap-highlight-color: rgba(23,75,131,.12); }
+@media (max-width: 760px) {
+  .home-section-heading { align-items: flex-start; }
+  .home-section-heading > a { font-size: .88rem; }
+  .home-cta-actions .btn { width: 100%; }
+  .page-heading, .ideas-heading { gap: .7rem; }
+}
+@media (max-width: 460px) {
+  body { font-size: 15px; }
+  .home-hero { padding: 1.15rem; }
+  .home-hero h1 { font-size: clamp(1.55rem,8vw,2rem); }
+  .home-section { margin: 1.6rem 0; }
+  .card { border-radius: 9px; }
+}
+@media print {
+  .site-nav, footer, .btn, .hero-actions, .home-cta-actions { display: none !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .card { box-shadow: none !important; break-inside: avoid; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
