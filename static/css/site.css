@@ -766,3 +766,10 @@ p { text-wrap: pretty; }
 .journey-step > span { border: 1px solid #d7c18b; background: #f7f3e8; color: #8c6b2f; }
 .journey-step h3 { color: #15395f; }
 .journey-step p { text-wrap: pretty; }
+
+/* 12 — Participation callout */
+.home-cta { position: relative; }
+.home-cta-copy h2 { color: #15395f; }
+.home-cta-copy p:last-child { color: #53677e; }
+.home-cta-actions .btn { min-width: 190px; }
+.home-cta-secondary { color: #174b83; text-underline-offset: 3px; }
