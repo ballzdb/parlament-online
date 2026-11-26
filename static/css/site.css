@@ -784,3 +784,10 @@ p { text-wrap: pretty; }
 .page-heading, .ideas-heading { padding-bottom: .85rem; border-bottom: 1px solid #d9e1eb; }
 .page-heading h1, .ideas-heading h1 { color: #15395f; }
 .page-heading .eyebrow, .ideas-heading .eyebrow { margin-bottom: .3rem; }
+
+/* 15 — Form controls */
+input, select, textarea { border-color: #cbd7e5; }
+input::placeholder, textarea::placeholder { color: #8190a2; opacity: 1; }
+form label { color: #294665; }
+input:focus, select:focus, textarea:focus { background: #fff; }
+input[type=checkbox], input[type=radio] { accent-color: #174b83; }
