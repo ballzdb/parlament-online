@@ -791,3 +791,9 @@ input::placeholder, textarea::placeholder { color: #8190a2; opacity: 1; }
 form label { color: #294665; }
 input:focus, select:focus, textarea:focus { background: #fff; }
 input[type=checkbox], input[type=radio] { accent-color: #174b83; }
+
+/* 16 — Feedback and status surfaces */
+.message { border-left-color: #c7a45b; background: #f8f6ef; }
+.errorlist { border-left: 3px solid #b42318; }
+.status-pill { letter-spacing: .015em; }
+.empty-state { border-color: #c7d4e3; background: linear-gradient(145deg,#fff,#f5f8fc); }
