@@ -34,7 +34,9 @@
           <p>{{ idea.body|truncatewords:42 }}</p>
           <div class="meta">Автор: {{ idea.author.display_name|default:'Учень' }} <span aria-hidden="true">·</span> {{ idea.created_at|date:'d.m.Y' }}</div>
         </div>
-        <aside class="idea-record-support"><strong>{{ idea.vote_count }}</strong><span>голосів</span><a href="{% url 'ideas:detail' idea.pk %}">Детальніше <span aria-hidden="true">→</span></a></aside>
+        <aside class="idea-record-support"><strong>{{ idea.vote_count }}</strong><span>голосів</span><a href="{% url 'ideas:detail' idea.pk %}">Детальніше <span aria-hidden="true">→</span></a>
+          {% if can_delete_ideas %}<form method="post" action="{% url 'ideas:delete' idea.pk %}" onsubmit="return confirm('Остаточно видалити цю ідею? Цю дію неможливо скасувати.');">{% csrf_token %}<button type="submit" class="btn btn-danger">Видалити</button></form>{% endif %}
+        </aside>
       </article>
     {% empty %}
       <div class="empty-state">
