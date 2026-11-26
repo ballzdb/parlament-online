@@ -732,3 +732,9 @@ p { text-wrap: pretty; }
 .btn:active, button[type=submit]:active { transform: translateY(1px); box-shadow: 0 1px 4px rgba(16,47,85,.16); }
 .btn.secondary:hover { background: #f4f7fb; border-color: #9eb4ce; color: #10365f; }
 .hero-secondary:hover { background: rgba(255,255,255,.2) !important; }
+
+/* 07 — Card surface consistency */
+.card { border-color: #dce4ee; background-image: linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0)); }
+.card h3 { color: #15395f; }
+.card a { text-underline-offset: 3px; }
+.card:focus-within { border-color: #9db5d0; }
