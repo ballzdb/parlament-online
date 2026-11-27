@@ -60,26 +60,6 @@
     </div>
   </section>
 
-  <section class="home-cta" aria-labelledby="home-cta-title">
-    <div class="home-cta-copy">
-      <p class="eyebrow">ТВОЯ ДУМКА МАЄ ЗНАЧЕННЯ</p>
-      <h2 id="home-cta-title">Що варто змінити у нашому ліцеї?</h2>
-      <p>Поділися пропозицією, підтримай важливу ініціативу або стеж за тим, як парламент втілює рішення.</p>
-    </div>
-    <div class="home-cta-actions">
-      {% if user.is_authenticated %}
-        {% if not user.is_temporarily_restricted %}
-          <a class="btn" href="{% url 'ideas:create' %}">Запропонувати ідею <span aria-hidden="true">→</span></a>
-        {% else %}
-          <a class="btn" href="{% url 'ideas:list' %}">Переглянути ідеї <span aria-hidden="true">→</span></a>
-        {% endif %}
-      {% else %}
-        <a class="btn" href="{% url 'accounts:register' %}">Приєднатися <span aria-hidden="true">→</span></a>
-        <a class="home-cta-secondary" href="{% url 'ideas:list' %}">Спочатку переглянути ідеї</a>
-      {% endif %}
-    </div>
-  </section>
-
   <section class="card home-info">
       <div class="section-intro compact"><div><p class="eyebrow">НАШ ЛІЦЕЙ</p><h2>Ліцей і парламент онлайн</h2></div></div>
       <div class="home-parliament-brand">
