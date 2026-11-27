@@ -61,6 +61,7 @@ class IdeaModerationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Ідея без модератора')
         self.assertContains(response, 'Не призначено')
+        self.assertContains(response, 'Недостатньо інформації для розгляду')
 
     def test_unassigned_moderator_cannot_approve(self):
         idea = Idea.objects.create(title='Ініціатива', body='Опис', author=self.student)
@@ -71,16 +72,59 @@ class IdeaModerationWorkflowTests(TestCase):
         self.client.force_login(other)
         self.assertEqual(self.client.post(f'/moderation/idea/{idea.pk}/', {'action': 'approve'}).status_code, 403)
 
-    def test_rejection_requires_reason(self):
-        idea = Idea.objects.create(title='Ініціатива', body='Опис', author=self.student, assigned_moderator=self.moderator)
+    def test_rejection_requires_a_valid_category_but_not_a_written_reason(self):
+        idea = Idea.objects.create(
+            title='Ініціатива', body='Опис', author=self.student,
+            assigned_moderator=self.moderator,
+        )
         self.client.force_login(self.moderator)
-        self.client.post(f'/moderation/idea/{idea.pk}/', {'action': 'reject', 'reason': ''})
+
+        response = self.client.post(f'/moderation/idea/{idea.pk}/', {
+            'action': 'reject', 'category': '', 'comment': '',
+        })
+        self.assertEqual(response.status_code, 302)
         idea.refresh_from_db()
         self.assertEqual(idea.moderation_status, Idea.ModerationStatus.PENDING)
-        self.client.post(f'/moderation/idea/{idea.pk}/', {'action': 'reject', 'reason': 'Потрібно уточнити пропозицію'})
+
+        response = self.client.post(f'/moderation/idea/{idea.pk}/', {
+            'action': 'reject', 'category': 'duplicate', 'comment': '',
+        })
+        self.assertEqual(response.status_code, 302)
         idea.refresh_from_db()
         self.assertEqual(idea.moderation_status, Idea.ModerationStatus.REJECTED)
-        self.assertEqual(idea.moderation_reason, 'Потрібно уточнити пропозицію')
+        self.assertEqual(idea.moderation_reason, 'Дублює вже подану або реалізовану ідею.')
+        entry = ModerationEntry.objects.get(target_type='idea', target_id=idea.pk, verdict__action='reject')
+        self.assertEqual(entry.verdict['category'], 'duplicate')
+        self.assertEqual(entry.verdict['category_label'], 'Дублює вже подану або реалізовану ідею')
+
+    def test_rejection_can_include_an_optional_explanation(self):
+        idea = Idea.objects.create(
+            title='Ініціатива', body='Опис', author=self.student,
+            assigned_moderator=self.moderator,
+        )
+        self.client.force_login(self.moderator)
+        self.client.post(f'/moderation/idea/{idea.pk}/', {
+            'action': 'reject',
+            'category': 'insufficient_detail',
+            'comment': 'Додайте орієнтовну вартість та відповідальних.',
+        })
+        idea.refresh_from_db()
+        self.assertEqual(
+            idea.moderation_reason,
+            'Недостатньо інформації для розгляду. Додайте орієнтовну вартість та відповідальних.',
+        )
+
+    def test_invalid_rejection_category_does_not_reject_idea(self):
+        idea = Idea.objects.create(
+            title='Ініціатива', body='Опис', author=self.student,
+            assigned_moderator=self.moderator,
+        )
+        self.client.force_login(self.moderator)
+        self.client.post(f'/moderation/idea/{idea.pk}/', {
+            'action': 'reject', 'category': 'not-a-category',
+        })
+        idea.refresh_from_db()
+        self.assertEqual(idea.moderation_status, Idea.ModerationStatus.PENDING)
 
 
 class EventArchiveTests(TestCase):
