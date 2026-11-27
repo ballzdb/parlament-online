@@ -12,13 +12,14 @@ from accounts.models import AuditLog, User
 from app.permissions import requires_roles
 from ideas.models import Idea
 from .models import ModerationEntry
-from .forms import TemporaryRestrictionForm
+from .forms import IdeaRejectionForm, REJECTION_CATEGORIES, TemporaryRestrictionForm
 
 
 MODERATOR_ROLES = (User.Role.SECRETARY, User.Role.COMMISSION_HEAD, User.Role.MODERATOR)
+REJECTION_CATEGORY_LABELS = dict(REJECTION_CATEGORIES)
 
 
-def record_moderation_event(idea, actor, action, reason='', assigned_moderator=None):
+def record_moderation_event(idea, actor, action, reason='', category='', assigned_moderator=None):
     """Keep a human-readable, append-only record of each moderation decision."""
     verdict = {
         'action': action,
@@ -27,6 +28,9 @@ def record_moderation_event(idea, actor, action, reason='', assigned_moderator=N
         'actor_name': actor.display_name or actor.email,
         'reason': reason,
     }
+    if category:
+        verdict['category'] = category
+        verdict['category_label'] = REJECTION_CATEGORY_LABELS.get(category, '')
     if assigned_moderator is not None:
         verdict['assigned_moderator_id'] = assigned_moderator.pk
         verdict['assigned_moderator_email'] = assigned_moderator.email
@@ -62,6 +66,7 @@ def moderation_queue(request):
         'ideas': pending_ideas,
         'published_ideas': published_ideas,
         'moderators': moderators,
+        'rejection_categories': REJECTION_CATEGORIES,
     })
 
 
@@ -91,10 +96,21 @@ def moderate_idea(request, pk):
     elif action in {'approve', 'reject'}:
         if not can_moderate_idea(request.user, idea):
             raise PermissionDenied
-        reason = request.POST.get('reason', '').strip()
-        if action == 'reject' and not reason:
-            messages.error(request, 'Для відхилення обов’язково вкажіть причину.')
-            return redirect('moderation:queue')
+
+        reason = ''
+        category = ''
+        if action == 'reject':
+            rejection_form = IdeaRejectionForm(request.POST)
+            if not rejection_form.is_valid():
+                messages.error(request, 'Оберіть категорію відхилення. Додаткове пояснення можна не заповнювати.')
+                return redirect('moderation:queue')
+            category = rejection_form.cleaned_data['category']
+            category_label = REJECTION_CATEGORY_LABELS[category]
+            comment = rejection_form.cleaned_data['comment'].strip()
+            reason = f'{category_label}.'
+            if comment:
+                reason = f'{reason} {comment}'
+
         idea.moderation_status = (
             Idea.ModerationStatus.APPROVED if action == 'approve'
             else Idea.ModerationStatus.REJECTED
@@ -107,10 +123,10 @@ def moderate_idea(request, pk):
             'moderation_status', 'moderation_reason', 'moderated_by',
             'moderated_at', 'status', 'updated_at',
         ])
-        record_moderation_event(idea, request.user, action, reason=reason)
+        record_moderation_event(idea, request.user, action, reason=reason, category=category)
         AuditLog.objects.create(
             action=f'idea_moderation_{action}', user=request.user, email=request.user.email,
-            details=f'Idea #{idea.pk}: {action}; reason={reason}',
+            details=f'Idea #{idea.pk}: {action}; category={category}; reason={reason}',
         )
         messages.success(request, 'Ідею опубліковано.' if action == 'approve' else 'Ідею відхилено.')
     else:
