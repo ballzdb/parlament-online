@@ -40,12 +40,20 @@
           {% if user.is_moderator or user.is_secretary or idea.assigned_moderator_id == user.pk %}
             <form method="post" action="{% url 'moderation:moderate_idea' idea.pk %}" class="form-grid" style="margin-top:1rem;">
               {% csrf_token %}
-              <label for="reason-{{ idea.pk }}">Коментар / причина (обов’язково для відхилення)</label>
-              <textarea id="reason-{{ idea.pk }}" name="reason" rows="2" placeholder="Пояснення рішення для автора"></textarea>
+              <label for="rejection-category-{{ idea.pk }}">Причина відхилення</label>
+              <select id="rejection-category-{{ idea.pk }}" name="category">
+                <option value="">Оберіть готову причину</option>
+                {% for value, label in rejection_categories %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              <label for="rejection-comment-{{ idea.pk }}">Додаткове пояснення (необов’язково)</label>
+              <textarea id="rejection-comment-{{ idea.pk }}" name="comment" rows="2" maxlength="500" placeholder="Можна залишити порожнім"></textarea>
               <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
                 <button class="btn" name="action" value="approve" type="submit">Дозволити публікацію</button>
                 <button class="btn btn-danger" name="action" value="reject" type="submit">Відхилити</button>
               </div>
+              <p class="meta" style="margin:0;">Для відхилення достатньо вибрати категорію. Писати пояснення вручну не потрібно.</p>
             </form>
             <form method="post" action="{% url 'moderation:delete_idea' idea.pk %}" onsubmit="return confirm('Видалити цю ідею без можливості відновлення?');" style="margin-top:.6rem;">
               {% csrf_token %}
