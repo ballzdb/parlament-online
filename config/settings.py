@@ -144,8 +144,8 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in {'1', 'true', 'yes
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() in {'1', 'true', 'yes'}
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
 DEFAULT_FROM_EMAIL = os.getenv(
-    'DEFAULT_FROM_EMAIL',
-    os.getenv('RESEND_FROM_EMAIL', 'Parlament.Online <no-reply@khul.ukr.education>'),
+    'BREVO_FROM_EMAIL',
+    os.getenv('DEFAULT_FROM_EMAIL', os.getenv('RESEND_FROM_EMAIL', 'Parlament.Online <parlament.online.khul@gmail.com>')),
 )
 EMAIL_BACKEND = os.getenv(
     'EMAIL_BACKEND',
