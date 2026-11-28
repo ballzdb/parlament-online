@@ -204,15 +204,6 @@ def login_view(request):
             login_error_reason = 'Аккаунт не активований.'
         elif form.is_valid():
             user = form.get_user()
-            if user is not None and not user.email_verified_at:
-                request.session['pending_email_verification_user_id'] = user.pk
-                messages.warning(request, 'Спочатку підтвердіть електронну пошту.')
-                try:
-                    _send_verification_email(request, user)
-                except Exception:
-                    logger.exception('Could not send login verification email')
-                    messages.error(request, 'Не вдалося надіслати лист. Скористайтеся повторним надсиланням на сторінці підтвердження.')
-                return redirect('accounts:verification_pending')
             if user is not None:
                 _clear_login_failure(request, email)
                 if getattr(user, 'must_change_password', False):
