@@ -101,11 +101,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STORAGES = {
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-        # Keep template rendering resilient when tests or a fresh local setup
-        # have not run collectstatic yet. Production still serves hashed files
-        # normally after the build step.
-        'OPTIONS': {'manifest_strict': False},
+        'BACKEND': 'config.storage.NonStrictCompressedManifestStaticFilesStorage',
     },
 }
 
