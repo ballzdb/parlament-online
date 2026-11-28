@@ -6,7 +6,7 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm
 
-from .models import User
+from .models import PendingRegistration, User
 from .utils import is_allowed_email, normalize_email
 
 
@@ -24,8 +24,10 @@ class RegistrationForm(forms.Form):
         email = normalize_email(self.cleaned_data.get('email'))
         if not is_allowed_email(email):
             raise forms.ValidationError('Реєстрація доступна лише для пошти @khul.ukr.education.')
-        if User.objects.filter(email__iexact=email, is_active=True).exists():
+        if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('Користувач з такою поштою вже існує.')
+        if PendingRegistration.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Для цієї пошти вже очікується підтвердження.')
         return email
 
     def clean_school_class(self):
