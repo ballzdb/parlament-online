@@ -133,6 +133,7 @@ if not DEBUG:
 
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
 
+BREVO_API_KEY = os.getenv('BREVO_API_KEY', '').strip()
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '').strip()
 RESEND_TIMEOUT = int(os.getenv('RESEND_TIMEOUT', '15'))
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
@@ -148,9 +149,10 @@ DEFAULT_FROM_EMAIL = os.getenv(
 )
 EMAIL_BACKEND = os.getenv(
     'EMAIL_BACKEND',
-    'accounts.email_backend.ResendEmailBackend' if RESEND_API_KEY
-    else ('django.core.mail.backends.console.EmailBackend' if DEBUG and not EMAIL_HOST
-          else 'django.core.mail.backends.smtp.EmailBackend'),
+    'accounts.brevo_email_backend.BrevoEmailBackend' if BREVO_API_KEY
+    else ('accounts.email_backend.ResendEmailBackend' if RESEND_API_KEY
+          else ('django.core.mail.backends.console.EmailBackend' if DEBUG and not EMAIL_HOST
+                else 'django.core.mail.backends.smtp.EmailBackend')),
 )
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
