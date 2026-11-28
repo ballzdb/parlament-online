@@ -281,4 +281,4 @@ class PendingRegistration(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'Pending registration: {this.email}'
+        return f'Pending registration: {self.email}'
