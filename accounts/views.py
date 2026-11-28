@@ -204,6 +204,9 @@ def login_view(request):
             login_error_reason = 'Аккаунт не активований.'
         elif form.is_valid():
             user = form.get_user()
+            if user is not None and not user.email_verified_at:
+                form.add_error(None, 'Електронну пошту не підтверджено.')
+                user = None
             if user is not None:
                 _clear_login_failure(request, email)
                 if getattr(user, 'must_change_password', False):
