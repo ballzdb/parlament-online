@@ -265,3 +265,20 @@ class EmailVerification(models.Model):
 
     def __str__(self) -> str:
         return f'Email verification for {self.user.email}'
+
+class PendingRegistration(models.Model):
+    email = models.EmailField(unique=True, db_index=True)
+    password_hash = models.CharField(max_length=128)
+    display_name = models.CharField(max_length=120)
+    grade = models.PositiveSmallIntegerField()
+    class_letter = models.CharField(max_length=10, blank=True)
+    token_hash = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    last_sent_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Pending registration: {this.email}'
