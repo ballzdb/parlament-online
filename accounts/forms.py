@@ -26,8 +26,6 @@ class RegistrationForm(forms.Form):
             raise forms.ValidationError('Реєстрація доступна лише для пошти @khul.ukr.education.')
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('Користувач з такою поштою вже існує.')
-        if PendingRegistration.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('Для цієї пошти вже очікується підтвердження.')
         return email
 
     def clean_school_class(self):
