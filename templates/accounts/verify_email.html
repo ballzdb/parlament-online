@@ -1,24 +1,14 @@
 {% extends 'base.html' %}
-
 {% block title %}Підтвердження пошти{% endblock %}
-
 {% block content %}
-  <div class="card form-card">
-    <h1>Підтвердження електронної пошти</h1>
-    <p>Ми надіслали шестизначний код на <strong>{{ email }}</strong>.</p>
-    <p>Введіть його нижче. Код дійсний протягом 10 хвилин.</p>
+  <div class="auth-wrap"><section class="card auth-card">
+    <p class="eyebrow">ПАРЛАМЕНТ.ONLINE</p>
+    <h1>Підтвердіть електронну пошту</h1>
+    <p>Підтвердьте адресу <strong>{{ email }}</strong>, щоб завершити реєстрацію та створити обліковий запис.</p>
     <form method="post" class="form-grid">
       {% csrf_token %}
-      <div>
-        <label for="verification-code">Код підтвердження</label>
-        <input id="verification-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" minlength="6" required>
-      </div>
       <button type="submit" class="btn">Підтвердити пошту</button>
     </form>
-    <form method="post" class="form-grid" style="margin-top: 1rem;">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="resend">
-      <button type="submit" class="btn secondary">Надіслати код повторно</button>
-    </form>
-  </div>
+    <p class="meta" style="margin-top:1rem">Якщо ви не реєструвалися, просто закрийте цю сторінку.</p>
+  </section></div>
 {% endblock %}

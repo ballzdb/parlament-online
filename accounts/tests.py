@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from django.core import mail
 
-from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
+from .models import AuditLog, Commission, PendingRegistration, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
 from .utils import is_allowed_email
 
 
@@ -20,7 +20,7 @@ username_key = key_for(117, 115, 101, 114, 110, 97, 109, 101)
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class AccountFlowTests(TestCase):
-    def test_registration_creates_unverified_account_and_sends_email(self):
+    def test_registration_creates_only_pending_record_until_email_is_verified(self):
         payload = {
             'email': 'student@khul.ukr.education',
             display_key: 'Student',
@@ -29,13 +29,12 @@ class AccountFlowTests(TestCase):
         }
         response = self.client.post('/accounts/register/', payload)
         self.assertRedirects(response, '/accounts/verification-pending/')
-        user = User.objects.get(email='student@khul.ukr.education')
-        self.assertTrue(user.is_active)
-        self.assertIsNone(user.email_verified_at)
+        pending = PendingRegistration.objects.get(email='student@khul.ukr.education')
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Підтвердіть електронну пошту', mail.outbox[0].subject)
-        self.assertEqual(user.role, User.Role.STUDENT)
-        self.assertEqual((user.grade, user.class_letter), (9, 'А'))
+        self.assertEqual(pending.display_name, 'Student')
+        self.assertEqual((pending.grade, pending.class_letter), (9, 'А'))
 
     def test_registration_rejects_invalid_class(self):
         response = self.client.post(
@@ -119,21 +118,22 @@ class AccountFlowTests(TestCase):
         )
         self.assertRedirects(registered, '/accounts/verification-pending/')
         blocked = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
-        self.assertRedirects(blocked, '/accounts/verification-pending/')
+        self.assertEqual(blocked.status_code, 200)
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
         import re
         verify_url = re.search(r'https?://[^\s]+', mail.outbox[-1].body).group(0)
-        verified = self.client.get(verify_url)
+        opened = self.client.get(verify_url)
+        self.assertEqual(opened.status_code, 200)
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
+        verified = self.client.post(verify_url)
         self.assertRedirects(verified, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
         self.assertIsNotNone(user.email_verified_at)
+        self.assertFalse(PendingRegistration.objects.filter(email=user.email).exists())
         response = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
         self.assertEqual(response.status_code, 302)
 
-    def test_repeated_registration_activates_previous_pending_account(self):
-        User.objects.create_user(
-            email='INACTIVE@khul.ukr.education',
-            **{pw_key: 'OldPass123', display_key: 'OldUser', 'grade': 9, 'class_letter': 'A', 'is_active': False},
-        )
+    def test_registration_does_not_create_user_until_confirmation(self):
         response = self.client.post(
             '/accounts/register/',
             {
@@ -144,9 +144,8 @@ class AccountFlowTests(TestCase):
             },
         )
         self.assertRedirects(response, '/accounts/verification-pending/')
-        user = User.objects.get(email='inactive@khul.ukr.education')
-        self.assertTrue(user.is_active)
-        self.assertTrue(user.check_password('Password123'))
+        self.assertFalse(User.objects.filter(email='inactive@khul.ukr.education').exists())
+        self.assertTrue(PendingRegistration.objects.filter(email='inactive@khul.ukr.education').exists())
 
     def test_registration_failure_does_not_leave_user_record(self):
         before = User.objects.filter(email__iexact='student@khul.ukr.education').count()
@@ -165,10 +164,34 @@ class AccountFlowTests(TestCase):
     def test_login_accepts_email_with_spaces_and_different_case(self):
         User.objects.create_user(
             email='student@khul.ukr.education',
-            **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True},
+            **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True, 'email_verified_at': timezone.now()},
         )
         response = self.client.post('/accounts/login/', {username_key: '  STUDENT@KHUL.UKR.EDUCATION  ', pw_key: 'Password123'})
         self.assertEqual(response.status_code, 302)
+
+
+    def test_expired_pending_registration_can_be_submitted_again(self):
+        from datetime import timedelta
+
+        payload = {
+            'email': 'again@khul.ukr.education',
+            display_key: 'Student',
+            'school_class': '9-А',
+            pw_key: 'Password123',
+        }
+        first = self.client.post('/accounts/register/', payload)
+        self.assertRedirects(first, '/accounts/verification-pending/')
+        pending = PendingRegistration.objects.get(email=payload['email'])
+        pending.expires_at = timezone.now() - timedelta(seconds=1)
+        pending.save(update_fields=['expires_at'])
+
+        second = self.client.post('/accounts/register/', payload)
+
+        self.assertRedirects(second, '/accounts/verification-pending/')
+        pending = PendingRegistration.objects.get(email=payload['email'])
+        self.assertGreater(pending.expires_at, timezone.now())
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertFalse(User.objects.filter(email=payload['email']).exists())
 
 
 class CommissionAndSettingsTests(TestCase):
@@ -282,6 +305,8 @@ class RoleManagementTests(TestCase):
             email='ye74@khul.ukr.education',
             password='Password123',
             is_active=True,
+            is_staff=True,
+            is_superuser=True,
         )
         self.admin.role = User.Role.SECRETARY
         self.admin.save(update_fields=['role'])
@@ -333,6 +358,44 @@ class RoleManagementTests(TestCase):
         self.assertFalse(self.student.is_staff)
         self.assertFalse(self.student.is_superuser)
         self.assertTrue(AuditLog.objects.filter(action='role_changed', user=self.student).exists())
+
+
+    def test_admin_removes_user_without_destroying_ideas_or_events(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from ideas.models import Event, Idea
+
+        idea = Idea.objects.create(title='Ідея учня', body='Текст ідеї', author=self.student)
+        event = Event.objects.create(
+            title='Захід учня',
+            description='Збережений захід',
+            starts_at=timezone.now() + timedelta(days=1),
+            created_by=self.student,
+        )
+        AuditLog.objects.create(action='profile_updated', email=self.student.email, user=self.student, details=self.student.email)
+        old_email = self.student.email
+        self.client.force_login(self.admin)
+
+        response = self.client.post('/accounts/roles/', {'action': 'delete_user', 'user_id': self.student.pk})
+
+        self.assertRedirects(response, '/accounts/roles/')
+        self.student.refresh_from_db()
+        self.assertFalse(self.student.is_active)
+        self.assertNotEqual(self.student.email, old_email)
+        self.assertFalse(self.student.has_usable_password())
+        self.assertEqual(self.student.display_name, 'Видалений користувач')
+        self.assertTrue(Idea.objects.filter(pk=idea.pk).exists())
+        self.assertEqual(Idea.objects.get(pk=idea.pk).author.display_name, 'Видалений користувач')
+        self.assertTrue(Event.objects.filter(pk=event.pk).exists())
+        self.assertFalse(AuditLog.objects.filter(email=old_email).exists())
+        self.assertTrue(AuditLog.objects.filter(action='user_deleted', details__contains=f'account_id={self.student.pk}').exists())
+
+    def test_non_admin_cannot_delete_users(self):
+        self.client.force_login(self.student)
+        response = self.client.post('/accounts/roles/', {'action': 'delete_user', 'user_id': self.student.pk})
+        self.assertEqual(response.status_code, 403)
+        self.student.refresh_from_db()
+        self.assertTrue(self.student.is_active)
 
 
 class LogoutMethodTests(TestCase):
