@@ -121,7 +121,7 @@ class AccountFlowTests(TestCase):
         blocked = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
         self.assertRedirects(blocked, '/accounts/verification-pending/')
         import re
-        verify_url = re.search(r'https?://[^\\s]+', mail.outbox[-1].body).group(0)
+        verify_url = re.search(r'https?://[^\s]+', mail.outbox[-1].body).group(0)
         verified = self.client.get(verify_url)
         self.assertRedirects(verified, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
