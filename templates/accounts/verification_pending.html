@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Підтвердження пошти{% endblock %}
+{% block content %}
+  <div class="auth-wrap"><section class="card auth-card">
+    <div class="auth-heading"><span class="auth-mark" aria-hidden="true">P.</span><div><p class="eyebrow">ПАРЛАМЕНТ.ONLINE</p><h1>Перевірте електронну пошту</h1></div></div>
+    <p>Ми надіслали лист із посиланням для підтвердження на:</p>
+    <p><strong>{{ email }}</strong></p>
+    <p class="meta">Відкрийте лист і натисніть «Підтвердити пошту». Посилання діє 30 хвилин. Перевірте також папку «Спам».</p>
+    <form method="post" action="{% url 'accounts:resend_verification_email' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn">Надіслати лист повторно</button>
+    </form>
+    <p class="meta" style="margin-top:1rem"><a href="{% url 'accounts:login' %}">Повернутися до входу</a></p>
+  </section></div>
+  <style>
+    .auth-wrap{max-width:520px;margin:clamp(1rem,5vh,3.5rem) auto}.auth-card{padding:clamp(1.3rem,4vw,2.2rem)}
+    .auth-heading{display:flex;align-items:center;gap:1rem;margin-bottom:1.35rem}.auth-heading h1{margin:.1rem 0;font-size:clamp(1.45rem,4vw,2rem)}
+    .auth-mark{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:16px;background:var(--soft);color:var(--accent);font-size:1.35rem;font-weight:900}
+  </style>
+{% endblock %}
