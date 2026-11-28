@@ -194,7 +194,7 @@ def register_view(request):
                 return render(request, 'accounts/register.html', {'form': form})
             grade, class_letter = form.cleaned_data['school_class']
             now = timezone.now()
-            PendingRegistration.objects.filter(expires_at__lt=now - timedelta(days=1)).delete()
+            PendingRegistration.objects.filter(expires_at__lt=now).delete()
             pending, _ = PendingRegistration.objects.update_or_create(
                 email=email,
                 defaults={

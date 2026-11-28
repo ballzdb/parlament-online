@@ -170,6 +170,30 @@ class AccountFlowTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+    def test_expired_pending_registration_can_be_submitted_again(self):
+        from datetime import timedelta
+
+        payload = {
+            'email': 'again@khul.ukr.education',
+            display_key: 'Student',
+            'school_class': '9-А',
+            pw_key: 'Password123',
+        }
+        first = self.client.post('/accounts/register/', payload)
+        self.assertRedirects(first, '/accounts/verification-pending/')
+        pending = PendingRegistration.objects.get(email=payload['email'])
+        pending.expires_at = timezone.now() - timedelta(seconds=1)
+        pending.save(update_fields=['expires_at'])
+
+        second = self.client.post('/accounts/register/', payload)
+
+        self.assertRedirects(second, '/accounts/verification-pending/')
+        pending.refresh_from_db()
+        self.assertGreater(pending.expires_at, timezone.now())
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertFalse(User.objects.filter(email=payload['email']).exists())
+
+
 class CommissionAndSettingsTests(TestCase):
     def test_default_commissions_are_seeded_idempotently(self):
         Commission.objects.all().delete()

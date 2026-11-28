@@ -87,7 +87,7 @@ python manage.py runserver
 
 ## Команди адміністрування
 
-- `python manage.py create_secretary`
+- `python manage.py create_secretary --email secretary@khul.ukr.education --password <strong-password> --name Секретар`
 - `python manage.py seed_commissions`
 - `python manage.py seed_demo_data`
 

@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--email', default='secretary@parlament-online.local')
-        parser.add_argument('--password', default='Parlament123!')
+        parser.add_argument('--password', required=True, help='Strong initial password for the secretary account.')
         parser.add_argument('--name', default='Секретар')
 
     def handle(self, *args, **options):
