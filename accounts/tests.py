@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from django.core import mail
 
-from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
+from .models import AuditLog, Commission, PendingRegistration, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
 from .utils import is_allowed_email
 
 
@@ -20,7 +20,7 @@ username_key = key_for(117, 115, 101, 114, 110, 97, 109, 101)
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class AccountFlowTests(TestCase):
-    def test_registration_creates_unverified_account_and_sends_email(self):
+    def test_registration_creates_only_pending_record_until_email_is_verified(self):
         payload = {
             'email': 'student@khul.ukr.education',
             display_key: 'Student',
@@ -29,13 +29,12 @@ class AccountFlowTests(TestCase):
         }
         response = self.client.post('/accounts/register/', payload)
         self.assertRedirects(response, '/accounts/verification-pending/')
-        user = User.objects.get(email='student@khul.ukr.education')
-        self.assertTrue(user.is_active)
-        self.assertIsNone(user.email_verified_at)
+        pending = PendingRegistration.objects.get(email='student@khul.ukr.education')
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Підтвердіть електронну пошту', mail.outbox[0].subject)
-        self.assertEqual(user.role, User.Role.STUDENT)
-        self.assertEqual((user.grade, user.class_letter), (9, 'А'))
+        self.assertEqual(pending.display_name, 'Student')
+        self.assertEqual((pending.grade, pending.class_letter), (9, 'А'))
 
     def test_registration_rejects_invalid_class(self):
         response = self.client.post(
@@ -126,14 +125,11 @@ class AccountFlowTests(TestCase):
         self.assertRedirects(verified, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
         self.assertIsNotNone(user.email_verified_at)
+        self.assertFalse(PendingRegistration.objects.filter(email=user.email).exists())
         response = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
         self.assertEqual(response.status_code, 302)
 
-    def test_repeated_registration_activates_previous_pending_account(self):
-        User.objects.create_user(
-            email='INACTIVE@khul.ukr.education',
-            **{pw_key: 'OldPass123', display_key: 'OldUser', 'grade': 9, 'class_letter': 'A', 'is_active': False},
-        )
+    def test_registration_does_not_create_user_until_confirmation(self):
         response = self.client.post(
             '/accounts/register/',
             {
@@ -144,9 +140,8 @@ class AccountFlowTests(TestCase):
             },
         )
         self.assertRedirects(response, '/accounts/verification-pending/')
-        user = User.objects.get(email='inactive@khul.ukr.education')
-        self.assertTrue(user.is_active)
-        self.assertTrue(user.check_password('Password123'))
+        self.assertFalse(User.objects.filter(email='inactive@khul.ukr.education').exists())
+        self.assertTrue(PendingRegistration.objects.filter(email='inactive@khul.ukr.education').exists())
 
     def test_registration_failure_does_not_leave_user_record(self):
         before = User.objects.filter(email__iexact='student@khul.ukr.education').count()
@@ -165,7 +160,7 @@ class AccountFlowTests(TestCase):
     def test_login_accepts_email_with_spaces_and_different_case(self):
         User.objects.create_user(
             email='student@khul.ukr.education',
-            **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True},
+            **{pw_key: 'Password123', display_key: 'Student', 'grade': 9, 'class_letter': 'A', 'is_active': True, 'email_verified_at': timezone.now()},
         )
         response = self.client.post('/accounts/login/', {username_key: '  STUDENT@KHUL.UKR.EDUCATION  ', pw_key: 'Password123'})
         self.assertEqual(response.status_code, 302)
