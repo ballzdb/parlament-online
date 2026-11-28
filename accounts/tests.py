@@ -188,7 +188,7 @@ class AccountFlowTests(TestCase):
         second = self.client.post('/accounts/register/', payload)
 
         self.assertRedirects(second, '/accounts/verification-pending/')
-        pending.refresh_from_db()
+        pending = PendingRegistration.objects.get(email=payload['email'])
         self.assertGreater(pending.expires_at, timezone.now())
         self.assertEqual(len(mail.outbox), 2)
         self.assertFalse(User.objects.filter(email=payload['email']).exists())
