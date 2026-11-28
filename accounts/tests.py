@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
-from django.core.mail import outbox
+from django.core import mail
 
 from .models import AuditLog, Commission, SiteSettings, User, ensure_default_site_settings, get_institution_links, get_public_social_links
 from .utils import is_allowed_email
@@ -32,8 +32,8 @@ class AccountFlowTests(TestCase):
         user = User.objects.get(email='student@khul.ukr.education')
         self.assertTrue(user.is_active)
         self.assertIsNone(user.email_verified_at)
-        self.assertEqual(len(outbox), 1)
-        self.assertIn('Підтвердіть електронну пошту', outbox[0].subject)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Підтвердіть електронну пошту', mail.outbox[0].subject)
         self.assertEqual(user.role, User.Role.STUDENT)
         self.assertEqual((user.grade, user.class_letter), (9, 'А'))
 
@@ -121,7 +121,7 @@ class AccountFlowTests(TestCase):
         blocked = self.client.post('/accounts/login/', {username_key: ' Student@Khul.Ukr.Education ', pw_key: 'Password123'})
         self.assertRedirects(blocked, '/accounts/verification-pending/')
         import re
-        verify_url = re.search(r'https?://[^\\s]+', outbox[-1].body).group(0)
+        verify_url = re.search(r'https?://[^\\s]+', mail.outbox[-1].body).group(0)
         verified = self.client.get(verify_url)
         self.assertRedirects(verified, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
