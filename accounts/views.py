@@ -4,6 +4,7 @@ import secrets
 import logging
 import hashlib
 import html
+import uuid
 from datetime import timedelta
 
 from django.conf import settings
@@ -17,12 +18,12 @@ from django.urls import reverse
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from app.permissions import requires_roles
 
 from .forms import EmailAuthenticationForm, PasswordChangeForm, RegistrationForm
-from .models import AuditLog, EmailVerification, PendingRegistration, PRIMARY_ADMIN_EMAIL, User
+from .models import AuditLog, PendingRegistration, PRIMARY_ADMIN_EMAIL, User
 from .utils import normalize_email
 
 logger = logging.getLogger(__name__)
@@ -122,32 +123,62 @@ def resend_verification_email(request):
             messages.info(request, "Зачекайте хвилину перед повторним надсиланням.")
     return redirect("accounts:verification_pending")
 
+@require_http_methods(["GET", "POST"])
 def verify_email(request, pending_id, token):
     pending = PendingRegistration.objects.filter(pk=pending_id).first()
     supplied_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    if pending is None or pending.expires_at <= timezone.now() or not secrets.compare_digest(pending.token_hash, supplied_hash):
+
+    def is_valid(candidate):
+        return bool(
+            candidate
+            and candidate.expires_at > timezone.now()
+            and candidate.token_hash
+            and secrets.compare_digest(candidate.token_hash, supplied_hash)
+        )
+
+    if not is_valid(pending):
         messages.error(request, "Посилання недійсне або прострочене. Запросіть новий лист.")
         if pending:
             request.session["pending_registration_id"] = pending.pk
             return redirect("accounts:verification_pending")
         return redirect("accounts:register")
+
+    request.session["pending_registration_id"] = pending.pk
+    if request.method == "GET":
+        return render(request, "accounts/verify_email.html", {"email": pending.email})
+
     with transaction.atomic():
+        pending = PendingRegistration.objects.select_for_update().filter(pk=pending_id).first()
+        if not is_valid(pending):
+            messages.error(request, "Посилання недійсне або прострочене. Запросіть новий лист.")
+            return redirect("accounts:verification_pending")
+
         if User.objects.filter(email__iexact=pending.email).exists():
             pending.delete()
-            messages.error(request, "Обліковий запис із цією поштою вже існує.")
+            request.session.pop("pending_registration_id", None)
+            messages.error(request, "Обліковий запис із цією поштою вже існує. Спробуйте увійти.")
             return redirect("accounts:login")
+
         user = User(
-            email=pending.email, password=pending.password_hash, role=User.Role.STUDENT,
-            additional_roles=[], display_name=pending.display_name, grade=pending.grade,
-            class_letter=pending.class_letter, is_active=True, email_verified_at=timezone.now(),
+            email=pending.email,
+            password=pending.password_hash,
+            role=User.Role.STUDENT,
+            additional_roles=[],
+            display_name=pending.display_name,
+            grade=pending.grade,
+            class_letter=pending.class_letter,
+            is_active=True,
+            email_verified_at=timezone.now(),
             must_change_password=False,
         )
         user.save()
         AuditLog.objects.create(action="email_verified", email=user.email, user=user)
         pending.delete()
+
     request.session.pop("pending_registration_id", None)
     messages.success(request, "Пошту підтверджено. Обліковий запис створено — тепер можна увійти.")
     return redirect("accounts:login")
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -281,7 +312,7 @@ def profile_view(request):
 
 @login_required
 def role_management(request):
-    if request.user.email.casefold() != PRIMARY_ADMIN_EMAIL:
+    if not request.user.is_active or not request.user.is_superuser or request.user.email.casefold() != PRIMARY_ADMIN_EMAIL:
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
 
@@ -297,10 +328,40 @@ def role_management(request):
         elif target.email.casefold() == PRIMARY_ADMIN_EMAIL or target.pk == request.user.pk:
             messages.error(request, 'Цей обліковий запис не можна видалити.')
         else:
-            email = target.email
-            AuditLog.objects.create(action='user_deleted', email=email, details=f'deleted_by={request.user.email}')
-            target.delete()
-            messages.success(request, f'Користувача {email} видалено.')
+            with transaction.atomic():
+                old_email = target.email
+                AuditLog.objects.filter(user=target).update(email='', details='', user=None)
+                target.commission_memberships.all().delete()
+                User.objects.filter(restricted_by=target).update(restricted_by=None)
+                target.email = f'deleted+{uuid.uuid4().hex}@deleted.invalid'
+                target.display_name = 'Видалений користувач'
+                target.grade = None
+                target.class_letter = ''
+                target.set_unusable_password()
+                target.is_active = False
+                target.is_staff = False
+                target.is_superuser = False
+                target.role = User.Role.STUDENT
+                target.additional_roles = []
+                target.email_verified_at = None
+                target.anon_key = None
+                target.last_seen_at = None
+                target.restricted_until = None
+                target.restriction_reason = ''
+                target.restricted_by = None
+                target.save(update_fields=[
+                    'email', 'display_name', 'grade', 'class_letter', 'password',
+                    'is_active', 'is_staff', 'is_superuser', 'role', 'additional_roles',
+                    'email_verified_at', 'anon_key', 'last_seen_at', 'restricted_until',
+                    'restriction_reason', 'restricted_by',
+                ])
+                AuditLog.objects.create(
+                    action='user_deleted',
+                    email='',
+                    details=f'account_id={target.pk}; deleted_by={request.user.email}',
+                    user=None,
+                )
+            messages.success(request, 'Обліковий запис видалено та знеособлено. Ідеї й історію діяльності збережено.')
         return redirect('accounts:role_management')
     if request.method == 'POST':
         try:

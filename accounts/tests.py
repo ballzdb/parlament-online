@@ -122,7 +122,10 @@ class AccountFlowTests(TestCase):
         self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
         import re
         verify_url = re.search(r'https?://[^\s]+', mail.outbox[-1].body).group(0)
-        verified = self.client.get(verify_url)
+        opened = self.client.get(verify_url)
+        self.assertEqual(opened.status_code, 200)
+        self.assertFalse(User.objects.filter(email='student@khul.ukr.education').exists())
+        verified = self.client.post(verify_url)
         self.assertRedirects(verified, '/accounts/login/')
         user = User.objects.get(email='student@khul.ukr.education')
         self.assertIsNotNone(user.email_verified_at)
@@ -278,6 +281,8 @@ class RoleManagementTests(TestCase):
             email='ye74@khul.ukr.education',
             password='Password123',
             is_active=True,
+            is_staff=True,
+            is_superuser=True,
         )
         self.admin.role = User.Role.SECRETARY
         self.admin.save(update_fields=['role'])
@@ -329,6 +334,44 @@ class RoleManagementTests(TestCase):
         self.assertFalse(self.student.is_staff)
         self.assertFalse(self.student.is_superuser)
         self.assertTrue(AuditLog.objects.filter(action='role_changed', user=self.student).exists())
+
+
+    def test_admin_removes_user_without_destroying_ideas_or_events(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from ideas.models import Event, Idea
+
+        idea = Idea.objects.create(title='Ідея учня', body='Текст ідеї', author=self.student)
+        event = Event.objects.create(
+            title='Захід учня',
+            description='Збережений захід',
+            starts_at=timezone.now() + timedelta(days=1),
+            created_by=self.student,
+        )
+        AuditLog.objects.create(action='profile_updated', email=self.student.email, user=self.student, details=self.student.email)
+        old_email = self.student.email
+        self.client.force_login(self.admin)
+
+        response = self.client.post('/accounts/roles/', {'action': 'delete_user', 'user_id': self.student.pk})
+
+        self.assertRedirects(response, '/accounts/roles/')
+        self.student.refresh_from_db()
+        self.assertFalse(self.student.is_active)
+        self.assertNotEqual(self.student.email, old_email)
+        self.assertFalse(self.student.has_usable_password())
+        self.assertEqual(self.student.display_name, 'Видалений користувач')
+        self.assertTrue(Idea.objects.filter(pk=idea.pk).exists())
+        self.assertEqual(Idea.objects.get(pk=idea.pk).author.display_name, 'Видалений користувач')
+        self.assertTrue(Event.objects.filter(pk=event.pk).exists())
+        self.assertFalse(AuditLog.objects.filter(email=old_email).exists())
+        self.assertTrue(AuditLog.objects.filter(action='user_deleted', details__contains=f'account_id={self.student.pk}').exists())
+
+    def test_non_admin_cannot_delete_users(self):
+        self.client.force_login(self.student)
+        response = self.client.post('/accounts/roles/', {'action': 'delete_user', 'user_id': self.student.pk})
+        self.assertEqual(response.status_code, 403)
+        self.student.refresh_from_db()
+        self.assertTrue(self.student.is_active)
 
 
 class LogoutMethodTests(TestCase):
